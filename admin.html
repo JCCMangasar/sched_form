@@ -128,10 +128,14 @@
         /* Container for title and action buttons */
         .header-bar > div {
             display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .btnbtn {
+            display: flex;
             flex-direction: row;
             gap: 12px;
         }
-        
         /* The redesigned navigation button */
         .nav-btn {
             display: inline-block;
@@ -165,8 +169,10 @@
     <div class="header-bar">
         <div>
             <h1>Schedule Management Dashboard</h1>
+            <div class=btnbtn>
             <a href="view.html" class="nav-btn">📊 View Master Table</a>
             <a href="index.html" class="nav-btn">[] Open Sched-Form</a>
+            <div>
         </div>
         <input type="text" id="adminSearch" class="search-box" placeholder="🔎 Search by Name, Category, Day..." onkeyup="filterReportTable()">
     </div>
