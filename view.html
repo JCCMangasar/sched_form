@@ -177,24 +177,7 @@
 </div>
 
 <script>
-// =============== ADMIN GATEKEEPER SECURITY ===============
-(function checkAdminAccess() {
-    const ADMIN_PASSWORD = "july27,1914"; // Make sure this matches the password above!
-    
-    if (sessionStorage.getItem("admin_authenticated") === "true") {
-        return; 
-    }
 
-    const userAttempt = prompt("🔒 Restricted Area: Please enter the Administrator Password to continue:");
-
-    if (userAttempt === ADMIN_PASSWORD) {
-        sessionStorage.setItem("admin_authenticated", "true");
-    } else {
-        alert("❌ Incorrect password. Access Denied.");
-        window.location.href = "index.html";
-        document.body.innerHTML = "<h1>Access Denied. Redirecting...</h1>";
-    }
-})();
 // Change this to your live Cloudflare Worker URL
 const WORKER_URL = "https://schedule-api.jakemm04.workers.dev"; 
 let groupedData = [];
