@@ -49,14 +49,13 @@
             margin-bottom: 8px;
         }
 
-        input[type="text"], select {
+        input[type="text"] {
             width: 100%;
             padding: 10px;
             border: 1px solid var(--border-color);
             border-radius: 4px;
             box-sizing: border-box;
             font-size: 16px;
-            background-color: #fff;
         }
 
         .section-header {
@@ -103,17 +102,43 @@
             border-radius: 4px;
         }
 
-        /* Church section styling */
         .church-container {
             display: none;
             padding-left: 10px;
+        }
+
+        /* Styling for the Department checklist grid */
+        .dept-selection-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .dept-checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #eef2f7;
+            padding: 10px;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .dept-schedule-block {
+            display: none;
+            background: #fafafa;
+            border-left: 4px solid var(--primary-color);
+            padding: 15px;
+            border-radius: 0 4px 4px 0;
+            margin-bottom: 15px;
         }
 
         .church-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
             gap: 12px;
-            padding: 10px 0;
             margin-top: 10px;
         }
 
@@ -121,10 +146,10 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            background: #fafafa;
+            background: #ffffff;
             padding: 8px;
             border-radius: 4px;
-            border: 1px solid #eee;
+            border: 1px solid #ddd;
             cursor: pointer;
         }
 
@@ -196,23 +221,18 @@
         </div>
         
         <div id="church_section" class="church-container">
-            <div class="form-group">
-                <label for="kagawaran">Choose Kagawaran / Department:</label>
-                <select id="kagawaran" onchange="handleKagawaranChange()">
-                    <option value="">-- Select Department --</option>
-                    <option value="PNK (MT)">PNK (MT)</option>
-                    <option value="FINANCE">FINANCE</option>
-                    <option value="MANG-AAWIT">MANG-AAWIT</option>
-                    <option value="SCAN">SCAN</option>
-                    <option value="DIAKONO/DIAKONESA">DIAKONO/DIAKONESA</option>
-                    <option value="KALIHIM">KALIHIM</option>
-                </select>
+            <label>Choose your Kagawaran / Department (Select all that apply):</label>
+            
+            <div class="dept-selection-grid">
+                <label class="dept-checkbox-item"><input type="checkbox" class="dept-trigger" value="PNK-MT" onchange="toggleDeptSchedule(this)"> PNK (MT)</label>
+                <label class="dept-checkbox-item"><input type="checkbox" class="dept-trigger" value="FINANCE" onchange="toggleDeptSchedule(this)"> FINANCE</label>
+                <label class="dept-checkbox-item"><input type="checkbox" class="dept-trigger" value="MANG-AAWIT" onchange="toggleDeptSchedule(this)"> MANG-AAWIT</label>
+                <label class="dept-checkbox-item"><input type="checkbox" class="dept-trigger" value="SCAN" onchange="toggleDeptSchedule(this)"> SCAN</label>
+                <label class="dept-checkbox-item"><input type="checkbox" class="dept-trigger" value="DIAKONO-DIAKONESA" onchange="toggleDeptSchedule(this)"> DIAKONO/DIAKONESA</label>
+                <label class="dept-checkbox-item"><input type="checkbox" class="dept-trigger" value="KALIHIM" onchange="toggleDeptSchedule(this)"> KALIHIM</label>
             </div>
             
-            <div id="church_slots_wrapper" style="display: none;">
-                <label>Select Available Time Slots:</label>
-                <div id="church_slots_grid" class="church-grid"></div>
-            </div>
+            <div id="dynamic_church_schedules"></div>
         </div>
 
         <button type="submit">Submit Schedule</button>
@@ -228,13 +248,13 @@ const churchSlots = [
     "Sat 6am", "Sat 10am (Laan)", "Sat 2pm", "Sat 6pm", "Sun 6am", "Sun 10am", "Sun 2pm"
 ];
 
-// Paste your actual live Cloudflare Worker URL here
+// Paste your live Cloudflare Worker URL here
 const WORKER_URL = "https://schedule-api.jakemm04.workers.dev"; 
 
 window.addEventListener('DOMContentLoaded', () => {
     generateDayInputs('work_section', 'work');
     generateDayInputs('school_section', 'school');
-    generateChurchInputs();
+    buildChurchSchedulesHTML();
 });
 
 function generateDayInputs(containerId, prefix) {
@@ -254,17 +274,29 @@ function generateDayInputs(containerId, prefix) {
     container.innerHTML = html;
 }
 
-function generateChurchInputs() {
-    const container = document.getElementById('church_slots_grid');
-    let html = '';
-    churchSlots.forEach(slot => {
-        html += `
-            <label class="church-item">
-                <input type="checkbox" class="church-slot" value="${slot}">
-                <span>${slot}</span>
-            </label>`;
+// Pre-builds separate time blocks for every single department hidden out of view
+function buildChurchSchedulesHTML() {
+    const container = document.getElementById('dynamic_church_schedules');
+    const departments = ["PNK-MT", "FINANCE", "MANG-AAWIT", "SCAN", "DIAKONO-DIAKONESA", "KALIHIM"];
+    let mainHtml = '';
+    
+    departments.forEach(dept => {
+        let slotsHtml = '';
+        churchSlots.forEach(slot => {
+            slotsHtml += `
+                <label class="church-item">
+                    <input type="checkbox" class="church-slot" data-dept="${dept}" value="${slot}">
+                    <span>${slot}</span>
+                </label>`;
+        });
+        
+        mainHtml += `
+            <div id="schedule_block_${dept}" class="dept-schedule-block">
+                <strong>Schedule for ${dept.replace('-', '/')}</strong>
+                <div class="church-grid">${slotsHtml}</div>
+            </div>`;
     });
-    container.innerHTML = html;
+    container.innerHTML = mainHtml;
 }
 
 function toggleSection(sectionId, checkbox) {
@@ -276,19 +308,22 @@ function toggleChurchSection(checkbox) {
     const section = document.getElementById('church_section');
     section.classList.toggle('show-block', checkbox.checked);
     if(!checkbox.checked) {
-        document.getElementById('kagawaran').value = "";
-        document.getElementById('church_slots_wrapper').style.display = 'none';
+        // Clear all nested selections if the top category is turned off
+        document.querySelectorAll('.dept-trigger').forEach(cb => { cb.checked = false; });
+        document.querySelectorAll('.dept-schedule-block').forEach(div => { div.style.display = 'none'; });
+        document.querySelectorAll('.church-slot').forEach(cb => { cb.checked = false; });
     }
 }
 
-function handleKagawaranChange() {
-    const kagawaranSelect = document.getElementById('kagawaran');
-    const slotsWrapper = document.getElementById('church_slots_wrapper');
-    
-    if (kagawaranSelect.value !== "") {
-        slotsWrapper.style.display = 'block';
+// Shows or hides specific time slots based on individual department triggers
+function toggleDeptSchedule(checkbox) {
+    const block = document.getElementById(`schedule_block_${checkbox.value}`);
+    if(checkbox.checked) {
+        block.style.display = 'block';
     } else {
-        slotsWrapper.style.display = 'none';
+        block.style.display = 'none';
+        // Clear checkboxes inside this section if unchecked
+        document.querySelectorAll(`.church-slot[data-dept="${checkbox.value}"]`).forEach(cb => { cb.checked = false; });
     }
 }
 
@@ -299,7 +334,6 @@ document.getElementById('scheduleForm').addEventListener('submit', async functio
     const isWorkEnabled = document.getElementById('enable_work').checked;
     const isSchoolEnabled = document.getElementById('enable_school').checked;
     const isChurchEnabled = document.getElementById('enable_church').checked;
-    const selectedKagawaran = document.getElementById('kagawaran').value;
     
     let payloadItems = [];
 
@@ -324,32 +358,35 @@ document.getElementById('scheduleForm').addEventListener('submit', async functio
     }
 
     if (isChurchEnabled) {
-        if (!selectedKagawaran) {
-            alert("Please choose a Kagawaran/Department first.");
+        const activeDepts = Array.from(document.querySelectorAll('.dept-trigger:checked')).map(el => el.value);
+        
+        if (activeDepts.length === 0) {
+            alert("Please check at least one Kagawaran/Department under Church Office.");
             return;
         }
-        
-        const checkedSlots = Array.from(document.querySelectorAll('.church-slot:checked')).map(el => el.value);
-        checkedSlots.forEach(slot => {
-            // We append the Kagawaran name right into the type metadata field (e.g., "church: SCAN")
-            payloadItems.push({ 
-                type: `church: ${selectedKagawaran}`, 
-                day_or_slot: slot, 
-                time_in: '', 
-                time_out: '' 
+
+        activeDepts.forEach(dept => {
+            const checkedSlots = Array.from(document.querySelectorAll(`.church-slot[data-dept="${dept}"]:checked`)).map(el => el.value);
+            checkedSlots.forEach(slot => {
+                payloadItems.push({ 
+                    type: `church: ${dept.replace('-', '/')}`, 
+                    day_or_slot: slot, 
+                    time_in: '', 
+                    time_out: '' 
+                });
             });
         });
     }
 
     if (payloadItems.length === 0) {
-        alert("Please fill out at least one schedule entry before submitting.");
+        alert("Please select at least one schedule option before submitting.");
         return;
     }
 
     const outputContainer = document.getElementById('outputContainer');
     try {
         outputContainer.style.display = 'block';
-        outputContainer.innerHTML = "Saving schedule to D1 database...";
+        outputContainer.innerHTML = "Saving schedule rows to D1 database...";
 
         const response = await fetch(`${WORKER_URL}/api/submit`, {
             method: 'POST',
@@ -360,14 +397,14 @@ document.getElementById('scheduleForm').addEventListener('submit', async functio
         const result = await response.json();
 
         if (response.ok) {
-            outputContainer.innerHTML = `<h3>Success!</h3><p>Thank you, ${name}. Your schedules have been securely recorded.</p>`;
+            outputContainer.innerHTML = `<h3>Success!</h3><p>Thank you, ${name}. Your specific duty entries have been saved.</p>`;
             document.getElementById('scheduleForm').reset();
             
-            // Re-hide all dynamic interface grids
+            // Clean interface collapse
             document.getElementById('work_section').classList.remove('show-section');
             document.getElementById('school_section').classList.remove('show-section');
             document.getElementById('church_section').classList.remove('show-block');
-            document.getElementById('church_slots_wrapper').style.display = 'none';
+            document.querySelectorAll('.dept-schedule-block').forEach(div => { div.style.display = 'none'; });
         } else {
             throw new Error(result.error || "Failed to save schedule.");
         }
