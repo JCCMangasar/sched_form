@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schedule Input Form</title>
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --bg-color: #f5f7fa;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --border-color: #dddddd;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 700px;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        h2, h3 {
+            margin-top: 0;
+            color: #222;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        .section-header {
+            background: #f0f4f8;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-header input[type="checkbox"] {
+            transform: scale(1.2);
+        }
+
+        .schedule-grid {
+            display: none; /* Hidden by default, toggled by JS */
+            grid-template-columns: 1fr 2fr;
+            gap: 10px;
+            padding-left: 10px;
+        }
+
+        .day-row {
+            display: contents;
+        }
+
+        .day-label {
+            font-weight: 500;
+            align-self: center;
+            text-transform: capitalize;
+        }
+
+        .time-inputs {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .time-inputs input[type="time"] {
+            padding: 6px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+
+        /* Church section styling */
+        .church-grid {
+            display: none;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px;
+            padding: 10px;
+        }
+
+        .church-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #fafafa;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #eee;
+            cursor: pointer;
+        }
+
+        /* Utility class to show active sections */
+        .show-section {
+            display: grid !important;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 25px;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background-color: #357abd;
+        }
+
+        .output-box {
+            background: #eef9f1;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 20px;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 700px;
+            box-sizing: border-box;
+        }
+
+        pre {
+            margin: 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Schedule Registration</h2>
+    <form action="" method="POST">
+        
+        <div class="form-group">
+            <label for="name">Full Name:</label>
+            <input type="text" id="name" name="name" required placeholder="John Doe">
+        </div>
+
+        <?php
+        $days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+        ?>
+
+        <div class="section-header">
+            <input type="checkbox" id="enable_work" name="enable_work" value="1" onclick="toggleSection('work_section', this)">
+            <label for="enable_work" style="margin:0;">Schedule for Work</label>
+        </div>
+        <div id="work_section" class="schedule-grid">
+            <?php foreach ($days as $day): ?>
+                <div class="day-row">
+                    <span class="day-label"><?= ucfirst($day) ?>:</span>
+                    <div class="time-inputs">
+                        <label>In: <input type="time" name="work[<?= $day ?>][in]"></label>
+                        <label>Out: <input type="time" name="work[<?= $day ?>][out]"></label>
+                    </div>
+                </div>
+            <?php endmap; ?>
+        </div>
+
+        <div class="section-header">
+            <input type="checkbox" id="enable_school" name="enable_school" value="1" onclick="toggleSection('school_section', this)">
+            <label for="enable_school" style="margin:0;">Schedule for School</label>
+        </div>
+        <div id="school_section" class="schedule-grid">
+            <?php foreach ($days as $day): ?>
+                <div class="day-row">
+                    <span class="day-label"><?= ucfirst($day) ?>:</span>
+                    <div class="time-inputs">
+                        <label>In: <input type="time" name="school[<?= $day ?>][in]"></label>
+                        <label>Out: <input type="time" name="school[<?= $day ?>][out]"></label>
+                    </div>
+                </div>
+            <?php endmap; ?>
+        </div>
+
+        <div class="section-header">
+            <input type="checkbox" id="enable_church" name="enable_church" value="1" onclick="toggleSection('church_section', this)">
+            <label for="enable_church" style="margin:0;">Schedule for Church Office</label>
+        </div>
+        <div id="church_section" class="church-grid">
+            <?php
+            $church_slots = [
+                "Wed 5am", "Wed 5pm", "Wed 8pm",
+                "Thu 5am", "Thu 5pm", "Thu 8pm",
+                "Sat 6am", "Sat 10am (Laan)", "Sat 2pm", "Sat 6pm",
+                "Sun 6am", "Sun 10am", "Sun 2pm"
+            ];
+            foreach ($church_slots as $slot) {
+                $slug = strtolower(str_replace([' ', '(', ')'], ['_', '', ''], $slot));
+                echo "
+                <label class='church-item'>
+                    <input type='checkbox' name='church[]' value='$slot'>
+                    <span>$slot</span>
+                </label>";
+            }
+            ?>
+        </div>
+
+        <button type="submit" name="submit">Submit Schedule</button>
+    </form>
+</div>
+
+<?php
+if (isset($_POST['submit'])) {
+    echo '<div class="output-box">';
+    echo '<h3>Submitted Data:</h3>';
+    
+    $name = htmlspecialchars($_POST['name']);
+    echo "<strong>Name:</strong> " . $name . "<br><br>";
+
+    // Process Work
+    if (isset($_POST['enable_work'])) {
+        echo "<strong>Work Schedule:</strong><br>";
+        foreach ($_POST['work'] as $day => $times) {
+            if (!empty($times['in']) || !empty($times['out'])) {
+                echo "- " . ucfirst($day) . ": In at " . $times['in'] . " | Out at " . $times['out'] . "<br>";
+            }
+        }
+        echo "<br>";
+    }
+
+    // Process School
+    if (isset($_POST['enable_school'])) {
+        echo "<strong>School Schedule:</strong><br>";
+        foreach ($_POST['school'] as $day => $times) {
+            if (!empty($times['in']) || !empty($times['out'])) {
+                echo "- " . ucfirst($day) . ": In at " . $times['in'] . " | Out at " . $times['out'] . "<br>";
+            }
+        }
+        echo "<br>";
+    }
+
+    // Process Church
+    if (isset($_POST['enable_church']) && isset($_POST['church'])) {
+        echo "<strong>Church Office Duties:</strong><br>";
+        foreach ($_POST['church'] as $slot) {
+            echo "- " . htmlspecialchars($slot) . "<br>";
+        }
+    } elseif (isset($_POST['enable_church'])) {
+        echo "<strong>Church Office Duties:</strong> None selected.<br>";
+    }
+
+    echo '</div>';
+}
+?>
+
+<script>
+// Simple JavaScript function to show/hide schedule details dynamically
+function toggleSection(sectionId, checkbox) {
+    const section = document.getElementById(sectionId);
+    if (checkbox.checked) {
+        section.classList.add('show-section');
+    } else {
+        section.classList.remove('show-section');
+    }
+}
+</script>
+
+</body>
+</html>
