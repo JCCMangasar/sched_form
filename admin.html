@@ -1,0 +1,24 @@
+<script>
+async function loadAdminReport() {
+    const response = await fetch("YOUR_WORKER_URL_HERE/api/reports");
+    const records = await response.json();
+    
+    let tableHtml = `<table border="1">
+        <tr><th>Name</th><th>Category</th><th>Day/Slot</th><th>Time In</th><th>Time Out</th></tr>`;
+        
+    records.forEach(row => {
+        tableHtml += `<tr>
+            <td>${row.name}</td>
+            <td>${row.schedule_type}</td>
+            <td>${row.day_or_slot}</td>
+            <td>${row.time_in || 'N/A'}</td>
+            <td>${row.time_out || 'N/A'}</td>
+        </tr>`;
+    });
+    
+    tableHtml += `</table>`;
+    document.getElementById('reportDiv').innerHTML = tableHtml;
+}
+window.onload = loadAdminReport;
+</script>
+<div id="reportDiv">Loading Admin Report...</div>
