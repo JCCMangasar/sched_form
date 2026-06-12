@@ -190,12 +190,37 @@
             max-width: 700px;
             box-sizing: border-box;
         }
+                .nav-btn {
+            display: inline-block;
+            align-self: flex-start;
+            background-color: var(--accent); /* Uses your dashboard's bright blue */
+            color: white;
+            text-decoration: none; /* Removes the ugly default underline */
+            padding: 10px 18px;
+            font-weight: 600;
+            font-size: 14px;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(52, 152, 219, 0.2);
+            transition: all 0.2s ease-in-out;
+        }
+        
+        /* Smooth pop effect when hovering */
+        .nav-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+        }
+        
+        .nav-btn:active {
+            transform: translateY(0);
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h2>Schedule Registration</h2>
+    <a href="view.html" class="nav-btn">📊 View Master Table</a>
     <form id="scheduleForm">
         
         <div class="form-group">
