@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Master Schedule View</title>
+    <style>
+        :root {
+            --primary: #1e293b;
+            --accent: #0f766e;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --border: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 30px;
+            color: #334155;
+        }
+
+        .wrapper {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        h1 { margin: 0; color: var(--primary); font-size: 26px; }
+
+        .search-box {
+            width: 100%;
+            max-width: 300px;
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .table-card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            border: 1px solid var(--border);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        th {
+            background-color: #f1f5f9;
+            color: #475569;
+            font-weight: 600;
+            padding: 14px;
+            border-bottom: 2px solid var(--border);
+            text-align: center;
+        }
+
+        th.left-align, td.left-align {
+            text-align: left;
+        }
+
+        td {
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+            border-right: 1px solid #f1f5f9;
+        }
+
+        tr:hover { background-color: #f8fafc; }
+
+        /* Schedule column sub-styling */
+        .schedule-list {
+            margin: 0;
+            padding-left: 18px;
+            list-style-type: square;
+        }
+
+        .schedule-list li {
+            margin-bottom: 4px;
+        }
+
+        .dept-tag {
+            background-color: #f3e8ff;
+            color: #6b21a8;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 4px;
+        }
+
+        .time-text {
+            color: #0f766e;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+<div class="wrapper">
+    <div class="header-bar">
+        <h1>Master Rosters & Schedules</h1>
+        <input type="text" id="viewSearch" class="search-box" placeholder="🔎 Search members..." onkeyup="filterViewTable()">
+    </div>
+
+    <div class="table-card">
+        <table>
+            <thead>
+                <tr>
+                    <th class="left-align" style="width: 200px;">Full Name</th>
+                    <th>Work Schedule</th>
+                    <th>School Schedule</th>
+                    <th>Church Office Duties</th>
+                </tr>
+            </thead>
+            <tbody id="viewTableBody">
+                <tr><td colspan="4" style="text-align:center; padding:30px;">Compiling schedule views...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+// Change this to your live Cloudflare Worker URL
+const WORKER_URL = "https://schedule-api.jakemm04.workers.dev"; 
+let groupedData = [];
+
+window.addEventListener('DOMContentLoaded', loadMasterView);
+
+async function loadMasterView() {
+    try {
+        const response = await fetch(`${WORKER_URL}/api/reports`);
+        if (!response.ok) throw new Error("Failed to load records.");
+        const rawRecords = await response.json();
+        
+        groupedData = groupRecordsByName(rawRecords);
+        renderViewTable(groupedData);
+    } catch (err) {
+        document.getElementById('viewTableBody').innerHTML = `<tr><td colspan="4" style="text-align:center; color:red; padding:30px;">Error: ${err.message}</td></tr>`;
+    }
+}
+
+// Smart logic that merges individual database entries into single profiles
+function groupRecordsByName(records) {
+    const groups = {};
+    
+    records.forEach(row => {
+        if (!groups[row.name]) {
+            groups[row.name] = { name: row.name, work: [], school: [], church: {} };
+        }
+        
+        const capDay = row.day_or_slot.charAt(0).toUpperCase() + row.day_or_slot.slice(1);
+        
+        if (row.schedule_type === 'work') {
+            groups[row.name].work.push(`<li><strong>${capDay}:</strong> <span class="time-text">${row.time_in || '--'} - ${row.time_out || '--'}</span></li>`);
+        } 
+        else if (row.schedule_type === 'school') {
+            groups[row.name].school.push(`<li><strong>${capDay}:</strong> <span class="time-text">${row.time_in || '--'} - ${row.time_out || '--'}</span></li>`);
+        } 
+        else if (row.schedule_type.startsWith('church:')) {
+            const deptName = row.schedule_type.replace('church: ', '');
+            if (!groups[row.name].church[deptName]) {
+                groups[row.name].church[deptName] = [];
+            }
+            groups[row.name].church[deptName].push(row.day_or_slot);
+        }
+    });
+    
+    return Object.values(groups);
+}
+
+function renderViewTable(profiles) {
+    const tbody = document.getElementById('viewTableBody');
+    if(profiles.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:30px;">No logs found.</td></tr>`;
+        return;
+    }
+
+    let html = '';
+    profiles.forEach(user => {
+        // Compile church blocks beautifully 
+        let churchHtml = '';
+        for (const [dept, slots] of Object.entries(user.church)) {
+            churchHtml += `<div><span class="dept-tag">${dept}</span>: ${slots.join(', ')}</div>`;
+        }
+
+        html += `
+        <tr>
+            <td class="left-align" style="font-weight:600; color:#1e293b;">${user.name}</td>
+            <td>${user.work.length > 0 ? `<ul class="schedule-list">${user.work.join('')}</ul>` : '<i style="color:#94a3b8;">None</i>'}</td>
+            <td>${user.school.length > 0 ? `<ul class="schedule-list">${user.school.join('')}</ul>` : '<i style="color:#94a3b8;">None</i>'}</td>
+            <td>${churchHtml !== '' ? churchHtml : '<i style="color:#94a3b8;">None</i>'}</td>
+        </tr>`;
+    });
+    tbody.innerHTML = html;
+}
+
+function filterViewTable() {
+    const query = document.getElementById('viewSearch').value.toLowerCase();
+    const filtered = groupedData.filter(user => user.name.toLowerCase().includes(query));
+    renderViewTable(filtered);
+}
+</script>
+
+</body>
+</html>
