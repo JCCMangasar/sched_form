@@ -193,13 +193,13 @@
 <script>
 const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 const churchSlots = [
-    "Wed 5am", "Wed 5pm", "Wed 8pm",
-    "Thu 5am", "Thu 5pm", "Thu 8pm",
-    "Sat 6am", "Sat 10am (Laan)", "Sat 2pm", "Sat 6pm",
-    "Sun 6am", "Sun 10am", "Sun 2pm"
+    "Wed 5am", "Wed 5pm", "Wed 8pm", "Thu 5am", "Thu 5pm", "Thu 8pm",
+    "Sat 6am", "Sat 10am (Laan)", "Sat 2pm", "Sat 6pm", "Sun 6am", "Sun 10am", "Sun 2pm"
 ];
 
-// Replaces PHP dynamic loop generation using standard JS setup
+// Change this to your live Cloudflare Worker URL
+const WORKER_URL = "YOUR_WORKER_URL_HERE"; 
+
 window.addEventListener('DOMContentLoaded', () => {
     generateDayInputs('work_section', 'work');
     generateDayInputs('school_section', 'school');
@@ -238,69 +238,77 @@ function generateChurchInputs() {
 
 function toggleSection(sectionId, checkbox) {
     const section = document.getElementById(sectionId);
-    if (checkbox.checked) {
-        section.classList.add('show-section');
-    } else {
-        section.classList.remove('show-section');
-    }
+    section.classList.toggle('show-section', checkbox.checked);
 }
 
-// Replaces the PHP $_POST submit function using Javascript
-document.getElementById('scheduleForm').addEventListener('submit', function(e) {
-    e.preventDefault(); 
+document.getElementById('scheduleForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
     
     const name = document.getElementById('name').value;
     const isWorkEnabled = document.getElementById('enable_work').checked;
     const isSchoolEnabled = document.getElementById('enable_school').checked;
     const isChurchEnabled = document.getElementById('enable_church').checked;
     
-    let outputHtml = `<h3>Submitted Data:</h3>`;
-    outputHtml += `<strong>Name:</strong> ${name}<br><br>`;
+    // This array collects all active entries to send to D1
+    let payloadItems = [];
 
-    // Process Work
     if (isWorkEnabled) {
-        outputHtml += `<strong>Work Schedule:</strong><br>`;
         days.forEach(day => {
             const timeIn = document.querySelector(`.work-in[data-day="${day}"]`).value;
             const timeOut = document.querySelector(`.work-out[data-day="${day}"]`).value;
             if (timeIn || timeOut) {
-                const capDay = day.charAt(0).toUpperCase() + day.slice(1);
-                outputHtml += `- ${capDay}: In at ${timeIn || '--:--'} | Out at ${timeOut || '--:--'}<br>`;
+                payloadItems.push({ type: 'work', day_or_slot: day, time_in: timeIn, time_out: timeOut });
             }
         });
-        outputHtml += `<br>`;
     }
 
-    // Process School
     if (isSchoolEnabled) {
-        outputHtml += `<strong>School Schedule:</strong><br>`;
         days.forEach(day => {
             const timeIn = document.querySelector(`.school-in[data-day="${day}"]`).value;
             const timeOut = document.querySelector(`.school-out[data-day="${day}"]`).value;
             if (timeIn || timeOut) {
-                const capDay = day.charAt(0).toUpperCase() + day.slice(1);
-                outputHtml += `- ${capDay}: In at ${timeIn || '--:--'} | Out at ${timeOut || '--:--'}<br>`;
+                payloadItems.push({ type: 'school', day_or_slot: day, time_in: timeIn, time_out: timeOut });
             }
         });
-        outputHtml += `<br>`;
     }
 
-    // Process Church
     if (isChurchEnabled) {
-        outputHtml += `<strong>Church Office Duties:</strong><br>`;
         const checkedSlots = Array.from(document.querySelectorAll('.church-slot:checked')).map(el => el.value);
-        if (checkedSlots.length > 0) {
-            checkedSlots.forEach(slot => {
-                outputHtml += `- ${slot}<br>`;
-            });
-        } else {
-            outputHtml += `None selected.<br>`;
-        }
+        checkedSlots.forEach(slot => {
+            payloadItems.push({ type: 'church', day_or_slot: slot, time_in: '', time_out: '' });
+        });
     }
 
+    if (payloadItems.length === 0) {
+        alert("Please fill out at least one schedule entry.");
+        return;
+    }
+
+    // Send the data via Fetch API to your Cloudflare Worker
     const outputContainer = document.getElementById('outputContainer');
-    outputContainer.innerHTML = outputHtml;
-    outputContainer.style.display = 'block';
+    try {
+        outputContainer.style.display = 'block';
+        outputContainer.innerHTML = "Saving schedule to database...";
+
+        const response = await fetch(`${WORKER_URL}/api/submit`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: name, items: payloadItems })
+        });
+
+        if (response.ok) {
+            outputContainer.innerHTML = `<h3>Success!</h3><p>Thank you, ${name}. Your schedule has been saved.</p>`;
+            document.getElementById('scheduleForm').reset();
+            // Hide custom sections again
+            document.getElementById('work_section').classList.remove('show-section');
+            document.getElementById('school_section').classList.remove('show-section');
+            document.getElementById('church_section').classList.remove('show-section');
+        } else {
+            throw new Error("Failed to save schedule.");
+        }
+    } catch (error) {
+        outputContainer.innerHTML = `<h3 style="color:red;">Error</h3><p>${error.message}</p>`;
+    }
 });
 </script>
 
