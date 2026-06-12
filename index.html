@@ -397,7 +397,9 @@ document.getElementById('scheduleForm').addEventListener('submit', async functio
         const result = await response.json();
 
         if (response.ok) {
-            outputContainer.innerHTML = `<h3>Success!</h3><p>Thank you, ${name}. Your specific duty entries have been saved.</p>`;
+            outputContainer.innerHTML = `<h3>Success!</h3><p>Thank you, ${name}. Your specific duty entries have been saved.
+            <br>If you want to update your schedule, kindly contact the Administrator (tsv lead).
+            <br>If want to add the another schedule, make sure the name format you input was the same to your last entry of schedules. </p>`;
             document.getElementById('scheduleForm').reset();
             
             // Clean interface collapse
