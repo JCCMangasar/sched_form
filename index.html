@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Schedule Input Form</title>
+    <title>Schedule Registration Form</title>
     <style>
         :root {
             --primary-color: #4a90e2;
@@ -49,13 +49,14 @@
             margin-bottom: 8px;
         }
 
-        input[type="text"] {
+        input[type="text"], select {
             width: 100%;
             padding: 10px;
             border: 1px solid var(--border-color);
             border-radius: 4px;
             box-sizing: border-box;
             font-size: 16px;
+            background-color: #fff;
         }
 
         .section-header {
@@ -102,11 +103,18 @@
             border-radius: 4px;
         }
 
-        .church-grid {
+        /* Church section styling */
+        .church-container {
             display: none;
+            padding-left: 10px;
+        }
+
+        .church-grid {
+            display: grid;
             grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
             gap: 12px;
-            padding: 10px;
+            padding: 10px 0;
+            margin-top: 10px;
         }
 
         .church-item {
@@ -122,6 +130,10 @@
 
         .show-section {
             display: grid !important;
+        }
+        
+        .show-block {
+            display: block !important;
         }
 
         button {
@@ -179,10 +191,29 @@
         <div id="school_section" class="schedule-grid"></div>
 
         <div class="section-header">
-            <input type="checkbox" id="enable_church" onchange="toggleSection('church_section', this)">
+            <input type="checkbox" id="enable_church" onchange="toggleChurchSection(this)">
             <label for="enable_church" style="margin:0;">Schedule for Church Office</label>
         </div>
-        <div id="church_section" class="church-grid"></div>
+        
+        <div id="church_section" class="church-container">
+            <div class="form-group">
+                <label for="kagawaran">Choose Kagawaran / Department:</label>
+                <select id="kagawaran" onchange="handleKagawaranChange()">
+                    <option value="">-- Select Department --</option>
+                    <option value="PNK (MT)">PNK (MT)</option>
+                    <option value="FINANCE">FINANCE</option>
+                    <option value="MANG-AAWIT">MANG-AAWIT</option>
+                    <option value="SCAN">SCAN</option>
+                    <option value="DIAKONO/DIAKONESA">DIAKONO/DIAKONESA</option>
+                    <option value="KALIHIM">KALIHIM</option>
+                </select>
+            </div>
+            
+            <div id="church_slots_wrapper" style="display: none;">
+                <label>Select Available Time Slots:</label>
+                <div id="church_slots_grid" class="church-grid"></div>
+            </div>
+        </div>
 
         <button type="submit">Submit Schedule</button>
     </form>
@@ -197,7 +228,7 @@ const churchSlots = [
     "Sat 6am", "Sat 10am (Laan)", "Sat 2pm", "Sat 6pm", "Sun 6am", "Sun 10am", "Sun 2pm"
 ];
 
-// Change this to your live Cloudflare Worker URL
+// Paste your actual live Cloudflare Worker URL here
 const WORKER_URL = "https://schedule-api.jakemm04.workers.dev"; 
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -224,7 +255,7 @@ function generateDayInputs(containerId, prefix) {
 }
 
 function generateChurchInputs() {
-    const container = document.getElementById('church_section');
+    const container = document.getElementById('church_slots_grid');
     let html = '';
     churchSlots.forEach(slot => {
         html += `
@@ -241,6 +272,26 @@ function toggleSection(sectionId, checkbox) {
     section.classList.toggle('show-section', checkbox.checked);
 }
 
+function toggleChurchSection(checkbox) {
+    const section = document.getElementById('church_section');
+    section.classList.toggle('show-block', checkbox.checked);
+    if(!checkbox.checked) {
+        document.getElementById('kagawaran').value = "";
+        document.getElementById('church_slots_wrapper').style.display = 'none';
+    }
+}
+
+function handleKagawaranChange() {
+    const kagawaranSelect = document.getElementById('kagawaran');
+    const slotsWrapper = document.getElementById('church_slots_wrapper');
+    
+    if (kagawaranSelect.value !== "") {
+        slotsWrapper.style.display = 'block';
+    } else {
+        slotsWrapper.style.display = 'none';
+    }
+}
+
 document.getElementById('scheduleForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     
@@ -248,8 +299,8 @@ document.getElementById('scheduleForm').addEventListener('submit', async functio
     const isWorkEnabled = document.getElementById('enable_work').checked;
     const isSchoolEnabled = document.getElementById('enable_school').checked;
     const isChurchEnabled = document.getElementById('enable_church').checked;
+    const selectedKagawaran = document.getElementById('kagawaran').value;
     
-    // This array collects all active entries to send to D1
     let payloadItems = [];
 
     if (isWorkEnabled) {
@@ -273,22 +324,32 @@ document.getElementById('scheduleForm').addEventListener('submit', async functio
     }
 
     if (isChurchEnabled) {
+        if (!selectedKagawaran) {
+            alert("Please choose a Kagawaran/Department first.");
+            return;
+        }
+        
         const checkedSlots = Array.from(document.querySelectorAll('.church-slot:checked')).map(el => el.value);
         checkedSlots.forEach(slot => {
-            payloadItems.push({ type: 'church', day_or_slot: slot, time_in: '', time_out: '' });
+            // We append the Kagawaran name right into the type metadata field (e.g., "church: SCAN")
+            payloadItems.push({ 
+                type: `church: ${selectedKagawaran}`, 
+                day_or_slot: slot, 
+                time_in: '', 
+                time_out: '' 
+            });
         });
     }
 
     if (payloadItems.length === 0) {
-        alert("Please fill out at least one schedule entry.");
+        alert("Please fill out at least one schedule entry before submitting.");
         return;
     }
 
-    // Send the data via Fetch API to your Cloudflare Worker
     const outputContainer = document.getElementById('outputContainer');
     try {
         outputContainer.style.display = 'block';
-        outputContainer.innerHTML = "Saving schedule to database...";
+        outputContainer.innerHTML = "Saving schedule to D1 database...";
 
         const response = await fetch(`${WORKER_URL}/api/submit`, {
             method: 'POST',
@@ -296,15 +357,19 @@ document.getElementById('scheduleForm').addEventListener('submit', async functio
             body: JSON.stringify({ name: name, items: payloadItems })
         });
 
+        const result = await response.json();
+
         if (response.ok) {
-            outputContainer.innerHTML = `<h3>Success!</h3><p>Thank you, ${name}. Your schedule has been saved.</p>`;
+            outputContainer.innerHTML = `<h3>Success!</h3><p>Thank you, ${name}. Your schedules have been securely recorded.</p>`;
             document.getElementById('scheduleForm').reset();
-            // Hide custom sections again
+            
+            // Re-hide all dynamic interface grids
             document.getElementById('work_section').classList.remove('show-section');
             document.getElementById('school_section').classList.remove('show-section');
-            document.getElementById('church_section').classList.remove('show-section');
+            document.getElementById('church_section').classList.remove('show-block');
+            document.getElementById('church_slots_wrapper').style.display = 'none';
         } else {
-            throw new Error("Failed to save schedule.");
+            throw new Error(result.error || "Failed to save schedule.");
         }
     } catch (error) {
         outputContainer.innerHTML = `<h3 style="color:red;">Error</h3><p>${error.message}</p>`;
