@@ -28,13 +28,6 @@
             margin: 0 auto;
         }
 
-        .header-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-
         h1 { margin: 0; color: var(--primary); font-size: 28px; }
 
         .search-box {
@@ -122,15 +115,59 @@
             font-weight: 600;
             display: none;
         }
+
+                /* Update the header layout to stack elements cleanly */
+        .header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end; /* Aligns search bar perfectly with buttons */
+            margin-bottom: 30px;
+            gap: 20px;
+        }
+        
+        /* Container for title and action buttons */
+        .header-bar > div {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        /* The redesigned navigation button */
+        .nav-btn {
+            display: inline-block;
+            align-self: flex-start;
+            background-color: var(--accent); /* Uses your dashboard's bright blue */
+            color: white;
+            text-decoration: none; /* Removes the ugly default underline */
+            padding: 10px 18px;
+            font-weight: 600;
+            font-size: 14px;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(52, 152, 219, 0.2);
+            transition: all 0.2s ease-in-out;
+        }
+        
+        /* Smooth pop effect when hovering */
+        .nav-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+        }
+        
+        .nav-btn:active {
+            transform: translateY(0);
+        }
     </style>
 </head>
 <body>
 
 <div class="dashboard-wrapper">
     <div class="header-bar">
-        <h1>Schedule Management Dashboard</h1>
+        <div>
+            <h1>Schedule Management Dashboard</h1>
+            <a href="view.html" class="nav-btn">📊 View Master Table</a>
+        </div>
         <input type="text" id="adminSearch" class="search-box" placeholder="🔎 Search by Name, Category, Day..." onkeyup="filterReportTable()">
-        <button><a href = view.html> View Table </a></button>
     </div>
 
     <div id="statusNotification" class="status-msg"></div>
