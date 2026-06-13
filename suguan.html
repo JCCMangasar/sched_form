@@ -335,8 +335,8 @@ let CUSTOM_SCHEDULE_BLOCKS = [
     { id: 27, location: "PNK", name: "Sitio Laan: 12:00nn", day: "sunday", start: "12:00", end: "13:30", quota: 1 },
     { id: 28, location: "PNK", name: "Kapilya: Sun 8am", day: "sunday", start: "08:00", end: "09:30", quota: 1 },
     { id: 29, location: "PNK", name: "Landfill: Sun 8am", day: "sunday", start: "08:00", end: "09:30", quota: 1 },
-    { id: 30, location: "PNK", name: "Lajada 1: 8am", day: "sunday", start: "08:00", end: "09:30", quota: 1 },
-    { id: 31, location: "PNK", name: "Lajada 2: 10am", day: "sunday", start: "10:00", end: "11:30", quota: 1 },
+    { id: 30, location: "PNK", name: "Lajada 1: 8am", day: "sunday", start: "08:00", end: "09:30", quota: 1, linkedGroup: "lajada" },
+    { id: 31, location: "PNK", name: "Lajada 2: 10am", day: "sunday", start: "10:00", end: "11:30", quota: 1, linkedGroup: "lajada" },
     { id: 32, location: "PNK", name: "De Guzman 1: 8am", day: "sunday", start: "08:00", end: "09:30", quota: 1, linkedGroup: "deguzman" },
     { id: 33, location: "PNK", name: "De Guzman 2: 10am", day: "sunday", start: "10:00", end: "11:30", quota: 1, linkedGroup: "deguzman" },
     { id: 34, location: "PNK", name: "Abatex: 7am", day: "sunday", start: "07:00", end: "08:30", quota: 1 },
@@ -507,11 +507,18 @@ function generateAssignments(forceFreshRebuild = false) {
             p.assignedIntervals = [];
         });
 
+        // Track locking variables for both linked family groups separately
         let lockedDeGuzmanPerson = null;
+        let lockedLajadaPerson = null;
+
         CUSTOM_SCHEDULE_BLOCKS.forEach(slot => {
             let assignedDelegates = [];
+            
+            // Apply Group Locking Rules
             if (slot.linkedGroup === "deguzman" && lockedDeGuzmanPerson) {
                 assignedDelegates = [lockedDeGuzmanPerson];
+            } else if (slot.linkedGroup === "lajada" && lockedLajadaPerson) {
+                assignedDelegates = [lockedLajadaPerson];
             } else {
                 const slotStartMin = timeToMinutes(slot.start);
                 const slotEndMin = timeToMinutes(slot.end);
@@ -539,7 +546,9 @@ function generateAssignments(forceFreshRebuild = false) {
                 eligibleCandidates.sort((a, b) => a.currentAssignedCount - b.currentAssignedCount);
                 assignedDelegates = eligibleCandidates.slice(0, slot.quota);
 
+                // Save assignments into locking variables when the first link group block encounters a person
                 if (slot.linkedGroup === "deguzman" && assignedDelegates.length) lockedDeGuzmanPerson = assignedDelegates[0];
+                if (slot.linkedGroup === "lajada" && assignedDelegates.length) lockedLajadaPerson = assignedDelegates[0];
             }
 
             assignedDelegates.forEach(d => {
@@ -551,7 +560,6 @@ function generateAssignments(forceFreshRebuild = false) {
 
     renderMatrixGrid();
 }
-
 function renderMatrixGrid() {
     let htmlOutput = "";
     const groupedByLocation = CUSTOM_SCHEDULE_BLOCKS.reduce((acc, slot) => {
