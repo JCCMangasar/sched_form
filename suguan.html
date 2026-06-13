@@ -485,6 +485,7 @@ function isSameTimeDifferentDivision(slot1, slot2) {
 
 // Generate Assignments + Drag & Drop
 function generateAssignments() {
+    // Reset all assignments only when auto-generating
     Object.values(organizedProfiles).forEach(p => {
         p.currentAssignedCount = 0;
         p.assignedIntervals = [];
@@ -540,12 +541,12 @@ function generateAssignments() {
             d.assignedIntervals.push({ start: timeToMinutes(slot.start), end: timeToMinutes(slot.end), slotId: slot.id });
         });
 
-let delegatesHtml = assignedDelegates.map(d => `
-    <div class="delegate-pill" draggable="true" ondragstart="dragStart(event, '${d.name}', ${slot.id})">
-        👤 ${d.name} <span style="font-size:10px; opacity:0.6;">#${d.currentAssignedCount}</span>
-        <span class="remove-btn" onclick="removeDelegate('${d.name}', ${slot.id}); event.stopImmediatePropagation();">×</span>
-    </div>
-`).join('');
+        let delegatesHtml = assignedDelegates.map(d => `
+            <div class="delegate-pill" draggable="true" ondragstart="dragStart(event, '${d.name}', ${slot.id})">
+                👤 ${d.name} <span style="font-size:10px; opacity:0.6;">#${d.currentAssignedCount}</span>
+                <span class="remove-btn" onclick="removeDelegate('${d.name}', ${slot.id}); event.stopImmediatePropagation();">×</span>
+            </div>
+        `).join('');
 
         htmlOutput += `
             <div class="suguan-card" data-slot-id="${slot.id}" 
@@ -561,6 +562,8 @@ let delegatesHtml = assignedDelegates.map(d => `
 
     htmlOutput += `</div></div>`;
     document.getElementById('suguanContainer').innerHTML = htmlOutput;
+    
+    renderAvailableDelegates();   // Refresh available list
 }
 
 function dragStart(e, personName, fromSlotId) {
