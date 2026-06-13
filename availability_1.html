@@ -1,0 +1,360 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Availability Analyzer</title>
+    <style>
+        :root {
+            --primary: #1e293b;
+            --accent: #0284c7;
+            --success: #16a34a;
+            --danger: #dc2626;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --border: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 30px;
+            color: #334155;
+        }
+
+        .wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        h1 { margin: 0; color: var(--primary); font-size: 26px; }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        select {
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 15px;
+            min-width: 250px;
+            background: white;
+        }
+
+        .nav-btn {
+            display: inline-block;
+            background-color: #64748b; 
+            color: white;
+            text-decoration: none; 
+            padding: 10px 18px;
+            font-weight: 600;
+            font-size: 14px;
+            border-radius: 6px;
+            transition: opacity 0.2s;
+        }
+        .nav-btn:hover { opacity: 0.9; }
+
+        .analysis-container {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 25px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        }
+
+        h3 { margin-top: 0; color: var(--primary); border-bottom: 2px solid var(--border); padding-bottom: 8px; }
+
+        .busy-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .busy-list li {
+            padding: 8px 12px;
+            background: #f1f5f9;
+            margin-bottom: 6px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .grid-slots {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 12px;
+        }
+
+        .slot-status-card {
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .status-available {
+            background-color: #f0fdf4;
+            border-color: #bbf7d0;
+        }
+
+        .status-conflict {
+            background-color: #fef2f2;
+            border-color: #fecaca;
+        }
+
+        .badge-status {
+            font-size: 11px;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 4px;
+            display: inline-block;
+            text-transform: uppercase;
+            width: fit-content;
+        }
+
+        .badge-available { background: #d1fae5; color: var(--success); }
+        .badge-conflict { background: #fee2e2; color: var(--danger); }
+
+        .reason-text {
+            font-size: 12px;
+            color: #64748b;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+<div class="wrapper">
+    <div class="header-bar">
+        <h1>🔍 Availability Analyzer</h1>
+        <a href="view.html" class="nav-btn">📋 View Table</a>
+    </div>
+
+    <div class="controls">
+        <label for="memberSelect" style="font-weight:600;">Select Member to Analyze:</label>
+        <select id="memberSelect" onchange="analyzeSelectedMember()">
+            <option value="">-- Loading Registered Names --</option>
+        </select>
+        <span style="font-size:13px; color:#64748b;">(Automatically calculates a 1.5-hour travel buffer before & after Work/School)</span>
+    </div>
+
+    <div id="noSelectionMsg" style="text-align:center; padding:50px; color:#94a3b8; background:white; border-radius:8px; border:1px solid var(--border);">
+        Please select a member above to execute the predictive availability algorithms.
+    </div>
+
+    <div id="analysisDashboard" class="analysis-container" style="display:none;">
+        <div class="card">
+            <h3>Logged Base Schedule</h3>
+            <p style="font-size:13px; color:#64748b; margin-bottom:15px;">Fixed constraints provided by user:</p>
+            <ul id="baseBusyList" class="busy-list"></ul>
+        </div>
+
+        <div class="card">
+            <h3>Calculated Kagawaran Option Suitability</h3>
+            <div id="slotsGrid" class="grid-slots"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+// =============== ADMIN GATEKEEPER SECURITY ===============
+(function checkAdminAccess() {
+    const ADMIN_PASSWORD = "july27,1914"; 
+    if (sessionStorage.getItem("admin_authenticated") === "true") return; 
+
+    const userAttempt = prompt("🔒 Restricted Area: Enter password to access Analyzer:");
+    if (userAttempt === ADMIN_PASSWORD) {
+        sessionStorage.setItem("admin_authenticated", "true");
+    } else {
+        alert("❌ Access Denied.");
+        window.location.href = "index.html";
+    }
+})();
+
+const WORKER_URL = "https://schedule-api.jakemm04.workers.dev";
+let rawDatabaseRows = [];
+let organizedProfiles = {};
+
+// Exact mapping of your website's Kagawaran time slots normalized for code execution logic
+const CHURCH_DUTY_ROSTER = [
+    { name: "Wed 5am",  day: "wednesday", start: "05:00", end: "06:30" },
+    { name: "Wed 5pm",  day: "wednesday", start: "17:00", end: "18:30" },
+    { name: "Wed 8pm",  day: "wednesday", start: "20:00", end: "21:30" },
+    { name: "Thu 5am",  day: "thursday",  start: "05:00", end: "06:30" },
+    { name: "Thu 5pm",  day: "thursday",  start: "17:00", end: "18:30" },
+    { name: "Thu 8pm",  day: "thursday",  start: "20:00", end: "21:30" },
+    { name: "Sat 6am",  day: "saturday",  start: "06:00", end: "07:30" },
+    { name: "Sat 10am (Laan)", day: "saturday", start: "10:00", end: "12:00" },
+    { name: "Sat 2pm",  day: "saturday",  start: "14:00", end: "15:30" },
+    { name: "Sat 6pm",  day: "saturday",  start: "18:00", end: "19:30" },
+    { name: "Sun 6am",  day: "sunday",    start: "06:00", end: "07:30" },
+    { name: "Sun 10am", day: "sunday",    start: "10:00", end: "11:30" },
+    { name: "Sun 2pm",  day: "sunday",    start: "14:00", end: "15:30" }
+];
+
+window.addEventListener('DOMContentLoaded', fetchRawData);
+
+async function fetchRawData() {
+    try {
+        const response = await fetch(`${WORKER_URL}/api/reports`);
+        if (!response.ok) throw new Error();
+        rawDatabaseRows = await response.json();
+        
+        processProfiles();
+        populateDropdown();
+    } catch {
+        alert("Failed to initialize database calculation pipes.");
+    }
+}
+
+// Restructures data rows into clean objects holding structural time arrays
+function processProfiles() {
+    rawDatabaseRows.forEach(row => {
+        if (!organizedProfiles[row.name]) {
+            organizedProfiles[row.name] = { name: row.name, constraints: [] };
+        }
+        // Only map work and school for safety buffers calculations
+        if (row.schedule_type === 'work' || row.schedule_type === 'school') {
+            organizedProfiles[row.name].constraints.push({
+                type: row.schedule_type,
+                day: row.day_or_slot.toLowerCase(),
+                time_in: row.time_in,
+                time_out: row.time_out
+            });
+        }
+    });
+}
+
+function populateDropdown() {
+    const select = document.getElementById('memberSelect');
+    const names = Object.keys(organizedProfiles).sort();
+    
+    let html = '<option value="">-- Choose Member --</option>';
+    names.forEach(name => { html += `<option value="${name}">${name}</option>`; });
+    select.innerHTML = html;
+}
+
+// Converts standard HH:MM strings into raw minutes for comparative matching evaluation equations
+function timeToMinutes(timeStr) {
+    const [h, m] = timeStr.split(':').map(Number);
+    return h * 60 + m;
+}
+
+function convertTo12Hour(timeStr) {
+    let [h, m] = timeStr.split(':');
+    let hours = parseInt(h, 10);
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12 || 12;
+    return `${hours}:${m} ${ampm}`;
+}
+
+function analyzeSelectedMember() {
+    const selectedName = document.getElementById('memberSelect').value;
+    const dashboard = document.getElementById('analysisDashboard');
+    const fallback = document.getElementById('noSelectionMsg');
+
+    if (!selectedName) {
+        dashboard.style.display = 'none';
+        fallback.style.display = 'block';
+        return;
+    }
+
+    fallback.style.display = 'none';
+    dashboard.style.display = 'grid';
+
+    const profile = organizedProfiles[selectedName];
+    
+    // 1. Render Left Column (Base Items)
+    const baseBusyList = document.getElementById('baseBusyList');
+    if(profile.constraints.length === 0) {
+        baseBusyList.innerHTML = '<li><i>No active work or school limitations recorded. Totally free!</i></li>';
+    } else {
+        baseBusyList.innerHTML = profile.constraints.map(c => 
+            `<li><strong>${c.type.toUpperCase()}</strong> (${c.day.charAt(0).toUpperCase() + c.day.slice(1)}):<br>${convertTo12Hour(c.time_in)} - ${convertTo12Hour(c.time_out)}</li>`
+        ).join('');
+    }
+
+    // 2. Compute Conflicts on Right Column
+    const grid = document.getElementById('slotsGrid');
+    let gridHtml = '';
+
+    CHURCH_DUTY_ROSTER.forEach(slot => {
+        let hasConflict = false;
+        let conflictReason = "";
+
+        // Raw minutes calculation for Church event boundaries
+        const slotStartMin = timeToMinutes(slot.start);
+        const slotEndMin = timeToMinutes(slot.end);
+
+        // Scan every base constraint for matching day overlaps
+        for (let constraint of profile.constraints) {
+            if (constraint.day === slot.day) {
+                // Read base parameters
+                const busyStartReal = timeToMinutes(constraint.time_in);
+                const busyEndReal = timeToMinutes(constraint.time_out);
+
+                // APPLY TIME BUFFERS: Subtract 90 mins from start, add 90 mins to end
+                const busyStartWithBuffer = busyStartReal - 90; 
+                const busyEndWithBuffer = busyEndReal + 90;
+
+                // Evaluate overlap constraints: slot overlaps if slotStart < busyEnd AND slotEnd > busyStart
+                if (slotStartMin < busyEndWithBuffer && slotEndMin > busyStartWithBuffer) {
+                    hasConflict = true;
+                    conflictReason = `Conflicts with ${constraint.type.toUpperCase()} (${convertTo12Hour(constraint.time_in)} - ${convertTo12Hour(constraint.time_out)}) + 1.5hr Travel Buffer.`;
+                    break; 
+                }
+            }
+        }
+
+        // Render card layout based on the boolean result
+        if (hasConflict) {
+            gridHtml += `
+            <div class="slot-status-card status-conflict">
+                <strong>${slot.name}</strong>
+                <span class="badge-status badge-conflict">❌ Conflict</span>
+                <span class="reason-text">${conflictReason}</span>
+            </div>`;
+        } else {
+            gridHtml += `
+            <div class="slot-status-card status-available">
+                <strong>${slot.name}</strong>
+                <span class="badge-status badge-available">✅ Available</span>
+                <span class="reason-text" style="color:#16a34a;">Safe to assign. Complete clearance verified.</span>
+            </div>`;
+        }
+    });
+
+    grid.innerHTML = gridHtml;
+}
+</script>
+
+</body>
+</html>
+
+
