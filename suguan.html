@@ -5,158 +5,159 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Suguan (Delegate) Generator - Drag & Drop + Editable Slots</title>
     <style>
-        :root {
-            --primary: #1e293b;
-            --accent: #0284c7;
-            --success: #16a34a;
-            --danger: #dc2626;
-            --bg: #f8fafc;
-            --card-bg: #ffffff;
-            --border: #e2e8f0;
-        }
+    
+    :root {
+        --primary: #1e293b;
+        --accent: #0284c7;
+        --success: #16a34a;
+        --danger: #dc2626;
+        --bg: #f8fafc;
+        --card-bg: #ffffff;
+        --border: #e2e8f0;
+    }
 
-        body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            background-color: var(--bg);
-            margin: 0;
-            padding: 0;
-            color: #334155;
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-        }
+    body {
+        font-family: 'Segoe UI', system-ui, sans-serif;
+        background-color: var(--bg);
+        margin: 0;
+        padding: 0;
+        color: #334155;
+        display: flex;
+        height: 100vh;
+        overflow: hidden;
+    }
 
-        .sidebar {
-            width: 360px;
-            background: var(--primary);
-            color: white;
-            padding: 25px 20px;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            box-shadow: 4px 0 10px rgba(0,0,0,0.1);
-            overflow-y: auto;
-        }
+    .sidebar {
+        width: 320px;
+        background: var(--primary);
+        color: white;
+        padding: 25px 20px;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+        overflow-y: auto;
+        flex-shrink: 0;
+    }
 
-        .sidebar h2 { margin: 0; font-size: 20px; border-bottom: 1px solid #334155; padding-bottom: 10px; color: #f8fafc; }
-        .form-group { display: flex; flex-direction: column; gap: 5px; }
-        .sidebar label { font-size: 12px; font-weight: 600; color: #94a3b8; text-transform: uppercase; }
-        .sidebar input, .sidebar select { padding: 8px 12px; border: 1px solid #334155; border-radius: 6px; background: #0f172a; color: white; font-size: 14px; }
-        .sidebar button { background: var(--accent); color: white; border: none; padding: 10px; font-weight: bold; border-radius: 6px; cursor: pointer; transition: opacity 0.2s; }
-        .sidebar button:hover { opacity: 0.9; }
+    .sidebar h2 { margin: 0; font-size: 18px; border-bottom: 1px solid #334155; padding-bottom: 10px; color: #f8fafc; }
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
+    .sidebar label { font-size: 11px; font-weight: 600; color: #94a3b8; text-transform: uppercase; }
+    .sidebar input, .sidebar select { padding: 8px 12px; border: 1px solid #334155; border-radius: 6px; background: #0f172a; color: white; font-size: 14px; }
+    .sidebar button { background: var(--accent); color: white; border: none; padding: 10px; font-weight: bold; border-radius: 6px; cursor: pointer; transition: opacity 0.2s; }
+    .sidebar button:hover { opacity: 0.9; }
 
-        .managed-slots { margin-top: 15px; display: flex; flex-direction: column; gap: 8px; }
-        .slot-item { 
-            background: #1e293b; 
-            border: 1px solid #334155; 
-            padding: 10px; 
-            border-radius: 6px; 
-            font-size: 13px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-        }
-        .slot-actions button { background: none; border: none; color: #94a3b8; cursor: pointer; margin-left: 5px; font-size: 16px; }
-        .delete-slot-btn { color: #ef4444 !important; }
+    .managed-slots { margin-top: 15px; display: flex; flex-direction: column; gap: 8px; }
+    .slot-item { 
+        background: #1e293b; 
+        border: 1px solid #334155; 
+        padding: 10px; 
+        border-radius: 6px; 
+        font-size: 13px; 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+    }
+    .slot-actions button { background: none; border: none; color: #94a3b8; cursor: pointer; margin-left: 5px; font-size: 16px; }
+    .delete-slot-btn { color: #ef4444 !important; }
 
-        .main-content { flex: 1; padding: 30px; box-sizing: border-box; overflow-y: auto; }
-        .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
-        h1 { margin: 0; color: var(--primary); font-size: 26px; }
-        .action-btn { background-color: var(--success); color: white; border: none; padding: 12px 20px; font-weight: bold; font-size: 15px; border-radius: 6px; cursor: pointer; }
+    /* Main Grid View Area */
+    .main-content { 
+        flex: 1; 
+        padding: 30px; 
+        box-sizing: border-box; 
+        overflow-y: auto; 
+    }
+    .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
+    h1 { margin: 0; color: var(--primary); font-size: 24px; }
+    .action-btn { background-color: var(--success); color: white; border: none; padding: 12px 20px; font-weight: bold; font-size: 14px; border-radius: 6px; cursor: pointer; }
 
-        .location-section { margin-bottom: 35px; }
-        .location-title { font-size: 18px; color: var(--primary); border-left: 4px solid var(--accent); padding-left: 10px; margin-bottom: 15px; font-weight: bold; }
-        .suguan-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; }
+    /* Persistent Right Sidebar Panel */
+    .right-sidebar {
+        width: 340px;
+        background: #ffffff;
+        border-left: 1px solid var(--border);
+        box-shadow: -4px 0 10px rgba(0,0,0,0.03);
+        padding: 20px;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        overflow-y: auto;
+        flex-shrink: 0;
+    }
+    .right-sidebar h3 { margin: 0; font-size: 15px; color: var(--primary); border-bottom: 2px solid var(--border); padding-bottom: 6px; }
 
-        .suguan-card {
-            background: var(--card-bg);
-            border: 2px solid var(--border);
-            border-radius: 8px;
-            padding: 15px;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            min-height: 160px;
-            transition: all 0.2s;
-        }
-        .suguan-card.dragover { border-color: var(--success); background: #f0fdf4; }
-        .suguan-card.invalid { border-color: var(--danger); animation: shake 0.4s; }
-        @keyframes shake { 0%,100% { transform: translateX(0); } 25%,75% { transform: translateX(-6px); } }
+    .location-section { margin-bottom: 35px; }
+    .location-title { font-size: 18px; color: var(--primary); border-left: 4px solid var(--accent); padding-left: 10px; margin-bottom: 15px; font-weight: bold; }
+    .suguan-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
 
-        .delegate-pill {
-            background: #f1f5f9;
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 500;
-            color: #334155;
-            border-left: 4px solid var(--accent);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: grab;
-            user-select: none;
-            margin-bottom: 6px;
-        }
-        .delegate-pill:active { cursor: grabbing; }
+    .suguan-card {
+        background: var(--card-bg);
+        border: 2px solid var(--border);
+        border-radius: 8px;
+        padding: 15px;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        min-height: 140px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .suguan-card.active { border-color: var(--accent); background: #f0f9ff; box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.2); }
+    .suguan-card.dragover { border-color: var(--success); background: #f0fdf4; }
+    .suguan-card.invalid { border-color: var(--danger); animation: shake 0.4s; }
+    @keyframes shake { 0%,100% { transform: translateX(0); } 25%,75% { transform: translateX(-6px); } }
 
-        .no-delegates { color: var(--danger); font-size: 13px; font-style: italic; }
+    .delegate-pill {
+        background: #f1f5f9;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 500;
+        color: #334155;
+        border-left: 4px solid var(--accent);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: grab;
+        user-select: none;
+        margin-bottom: 6px;
+    }
+    .delegate-pill:active { cursor: grabbing; }
+    .delegate-pill .remove-btn { color: var(--danger); font-weight: bold; cursor: pointer; margin-left: 8px; padding: 0 4px; }
+    .no-delegates { color: var(--danger); font-size: 13px; font-style: italic; }
 
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-        .modal-content {
-            background: white;
-            padding: 25px;
-            border-radius: 8px;
-            width: 380px;
-            color: #334155;
-        }
-        .available-list { 
-    display: flex; 
-    flex-direction: column; 
-    gap: 6px; 
-    max-height: 280px; 
-    overflow-y: auto; 
-    padding: 5px 0;
-}
+    .available-list { 
+        display: flex; 
+        flex-direction: column; 
+        gap: 6px; 
+        max-height: 280px; 
+        overflow-y: auto; 
+        padding: 8px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: #f8fafc;
+        min-height: 80px;
+    }
+    .all-users-list {
+        max-height: 350px;
+    }
 
-.delegate-pill .remove-btn {
-    color: var(--danger);
-    font-weight: bold;
-    cursor: pointer;
-    margin-left: 8px;
-    padding: 0 4px;
-}
-        .available-list { 
-    display: flex; 
-    flex-direction: column; 
-    gap: 6px; 
-    max-height: 400px; 
-    overflow-y: auto; 
-    padding: 8px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-}
-        .suguan-card {
-    cursor: pointer;
-    transition: all 0.2s;
-}
-.suguan-card.active {
-    border-color: var(--accent);
-    background: #f0f9ff;
-    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.2);
-}
+    /* Modal Styling */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(0,0,0,0.7);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+    .modal-content { background: white; padding: 25px; border-radius: 8px; width: 380px; color: #334155; }
     </style>
 </head>
 <body>
@@ -208,26 +209,34 @@
     <div id="managedSlotsContainer" class="managed-slots"></div>
 </div>
 
-<div class="main-content">
-    <div class="header-bar">
-    <h1>📋 Suguan (Delegates Assignment) - Drag & Drop</h1>
-    <div style="display: flex; gap: 10px; align-items: center;">
-        <!-- New Manual Mode Freeze Toggle Switch -->
-        <label style="background: #e2e8f0; padding: 10px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px; color: var(--primary);">
-            <input type="checkbox" id="freezeToggle" style="transform: scale(1.2); cursor: pointer;"> 🔒 Freeze / Manual Mode
-        </label>
-        <button class="action-btn" onclick="generateAssignments(true)">⚡ Auto-Generate Assignment Matrix</button>
-    </div>
+    <div class="main-content">
+        <div class="header-bar">
+            <h1>📋 Suguan (Delegates Assignment) - Drag & Drop</h1>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <label style="background: #e2e8f0; padding: 10px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px; color: var(--primary);">
+                    <input type="checkbox" id="freezeToggle" style="transform: scale(1.2); cursor: pointer;"> 🔒 Freeze / Manual Mode
+                </label>
+                <button class="action-btn" onclick="generateAssignments(true)">⚡ Auto-Generate Assignment Matrix</button>
+            </div>
+        </div>
+        
+        <div id="suguanContainer"></div>
     </div>
     
-    <!-- Available Delegates on the RIGHT -->
-    <div style="margin-bottom: 20px;">
-        <h2 style="color: var(--primary); margin-bottom: 10px;">Available Delegates (Drag to any slot)</h2>
-        <div id="availableDelegates" class="available-list" style="background: #f1f5f9; padding: 10px; border-radius: 8px; min-height: 120px;"></div>
+    <!-- Persistent Right Sidebar Panel -->
+    <div class="right-sidebar">
+        <div>
+            <h3>🟢 Available for Selected Slot</h3>
+            <p style="font-size: 11px; color:#64748b; margin: 4px 0 8px 0;">Click on a schedule block card to filter candidates.</p>
+            <div id="availableDelegates" class="available-list"></div>
+        </div>
+        
+        <div>
+            <h3>👥 Master Directory (All Profiles)</h3>
+            <p style="font-size: 11px; color:#64748b; margin: 4px 0 8px 0;">Drag from here to execute manual overrides at any time.</p>
+            <div id="allDelegatesDirectory" class="available-list all-users-list"></div>
+        </div>
     </div>
-
-    <div id="suguanContainer"></div>
-</div>
 </div>
 
 <!-- Edit Modal -->
@@ -280,9 +289,7 @@
         </div>
     </div>
 </div>
-
 <script>
-// =============== ADMIN GATEKEEPER ===============
 // =============== ADMIN GATEKEEPER ===============
 (function checkAdminAccess() {
     const ADMIN_PASSWORD = "july27,1914"; 
@@ -396,6 +403,7 @@ function processProfiles() {
 
 function renderSidebarList() {
     const container = document.getElementById('managedSlotsContainer');
+    if (!container) return;
     container.innerHTML = CUSTOM_SCHEDULE_BLOCKS.map(s => `
         <div class="slot-item">
             <div>
@@ -507,7 +515,7 @@ function generateAssignments(forceFreshRebuild = false) {
             p.assignedIntervals = [];
         });
 
-        // Track locking variables for both linked family groups separately
+        // Track locking variables for both linked groups separately
         let lockedDeGuzmanPerson = null;
         let lockedLajadaPerson = null;
 
@@ -546,7 +554,7 @@ function generateAssignments(forceFreshRebuild = false) {
                 eligibleCandidates.sort((a, b) => a.currentAssignedCount - b.currentAssignedCount);
                 assignedDelegates = eligibleCandidates.slice(0, slot.quota);
 
-                // Save assignments into locking variables when the first link group block encounters a person
+                // Save assignments into locking variables when the first linked item encounters a person
                 if (slot.linkedGroup === "deguzman" && assignedDelegates.length) lockedDeGuzmanPerson = assignedDelegates[0];
                 if (slot.linkedGroup === "lajada" && assignedDelegates.length) lockedLajadaPerson = assignedDelegates[0];
             }
@@ -560,6 +568,7 @@ function generateAssignments(forceFreshRebuild = false) {
 
     renderMatrixGrid();
 }
+
 function renderMatrixGrid() {
     let htmlOutput = "";
     const groupedByLocation = CUSTOM_SCHEDULE_BLOCKS.reduce((acc, slot) => {
@@ -604,10 +613,39 @@ function renderMatrixGrid() {
 
     document.getElementById('suguanContainer').innerHTML = htmlOutput;
     
+    // Always keep the master directory list rendered
+    renderAllDelegatesDirectory();
+
+    // Dynamically manage filtering states for the context sidebar
     if (selectedSlotId) {
         filterAvailableForSlot(selectedSlotId);
     } else {
-        renderAvailableDelegates();
+        const availContainer = document.getElementById('availableDelegates');
+        if (availContainer) {
+            availContainer.innerHTML = '<span class="no-delegates" style="padding:10px; display:block;">Select a time slot card to view available personnel</span>';
+        }
+    }
+}
+
+// Renders global directory list for total overrides
+function renderAllDelegatesDirectory() {
+    const container = document.getElementById('allDelegatesDirectory');
+    if (!container) return;
+    
+    const sortedProfiles = Object.values(organizedProfiles).sort((a, b) => a.name.localeCompare(b.name));
+    
+    container.innerHTML = sortedProfiles.map(p => `
+        <div class="delegate-pill" style="border-left-color: #64748b;" draggable="true" ondragstart="dragStartFromSidebar(event, '${p.name}')">
+            👤 ${p.name} <span style="font-size:10px; opacity:0.6;">#${p.currentAssignedCount}</span>
+        </div>
+    `).join('');
+}
+
+function renderAvailableDelegates() {
+    if (selectedSlotId) {
+        filterAvailableForSlot(selectedSlotId);
+    } else {
+        renderAllDelegatesDirectory();
     }
 }
 
@@ -616,13 +654,21 @@ function dragStart(e, personName, fromSlotId) {
     e.dataTransfer.setData("fromSlotId", fromSlotId);
 }
 
+function dragStartFromSidebar(e, personName) {
+    e.dataTransfer.setData("personName", personName);
+    e.dataTransfer.setData("fromSidebar", "true");
+}
+
 function allowDrop(e) { 
     e.preventDefault(); 
     if (e.currentTarget.classList.contains('suguan-card')) {
         e.currentTarget.classList.add('dragover');
     }
 }
-function dragLeave(e) { e.currentTarget.classList.remove('dragover'); }
+
+function dragLeave(e) { 
+    e.currentTarget.classList.remove('dragover'); 
+}
 
 // Standard Drop Handler (Drop onto Slot Base Container)
 function dropOnCard(e, toSlotId) {
@@ -637,10 +683,10 @@ function dropOnCard(e, toSlotId) {
     executeAssignmentMove(personName, fromSlotId, toSlotId, false, null);
 }
 
-// Swapping Engine Drop Handler (Drop onto active Person Badge)
+// Swapping Engine Drop Handler (Drop directly onto active Person Badge)
 function dropOnPerson(e, targetPersonName, toSlotId) {
     e.preventDefault();
-    e.stopPropagation(); // Avoid double bubbling into container elements
+    e.stopPropagation(); 
     
     const movingPersonName = e.dataTransfer.getData("personName");
     const fromSidebar = e.dataTransfer.getData("fromSidebar") === "true";
@@ -649,15 +695,15 @@ function dropOnPerson(e, targetPersonName, toSlotId) {
     if (movingPersonName === targetPersonName) return;
 
     if (fromSidebar) {
-        // Replace current slot occupant entirely with new person selection
+        // Direct Ejection/Replacement Override
         executeAssignmentMove(movingPersonName, null, toSlotId, false, targetPersonName);
     } else {
-        // Execute structural shift exchange between two users
+        // Structural shift exchange swap between two users
         executeAssignmentMove(movingPersonName, fromSlotId, toSlotId, true, targetPersonName);
     }
 }
 
-// Global Validation and Assignment Updates Manager
+// Global Validation Engine and Assignment Updates Manager
 function executeAssignmentMove(movingPersonName, fromSlotId, toSlotId, isASwap = false, targetPersonName = null) {
     const person = organizedProfiles[movingPersonName];
     const targetSlot = CUSTOM_SCHEDULE_BLOCKS.find(s => s.id === toSlotId);
@@ -670,7 +716,7 @@ function executeAssignmentMove(movingPersonName, fromSlotId, toSlotId, isASwap =
 
     let warnings = [];
 
-    // Check Division Change Exceptions
+    // Division change exception checking
     let isSameTimeDivisionMove = false;
     if (sourceSlot) {
         isSameTimeDivisionMove = sourceSlot.day === targetSlot.day && 
@@ -679,7 +725,7 @@ function executeAssignmentMove(movingPersonName, fromSlotId, toSlotId, isASwap =
                                  sourceSlot.location !== targetSlot.location;
     }
 
-    // A: Profile External Schedule Checks
+    // A: External Schedule Checks (Work/School/Church limits)
     for (let c of person.constraints) {
         if (!c.isChurch && c.day === targetSlot.day) {
             const workStart = timeToMinutes(c.time_in);
@@ -693,7 +739,7 @@ function executeAssignmentMove(movingPersonName, fromSlotId, toSlotId, isASwap =
         }
     }
 
-    // B: Internal Time Conflict Checks
+    // B: Internal Timeline Checks
     let hasTimeOverlap = false;
     for (let iv of person.assignedIntervals) {
         if (iv.slotId !== fromSlotId && intervalsOverlap(newStart, newEnd, iv.start, iv.end)) {
@@ -704,7 +750,7 @@ function executeAssignmentMove(movingPersonName, fromSlotId, toSlotId, isASwap =
         warnings.push(`• Exact timeline intersection collision with another active assignment`);
     }
 
-    // C: Double Suguan / Straight Multi-duty Verification
+    // C: Double / Straight Duty Verification (Same Day Verification)
     let assignedOnSameDay = person.assignedIntervals.some(iv => {
         if (iv.slotId === fromSlotId) return false;
         const sBlock = CUSTOM_SCHEDULE_BLOCKS.find(s => s.id === iv.slotId);
@@ -715,7 +761,7 @@ function executeAssignmentMove(movingPersonName, fromSlotId, toSlotId, isASwap =
         warnings.push(`• Double/Straight consecutive assignment discovered for ${targetSlot.day.toUpperCase()}`);
     }
 
-    // Alert Handling Validation Gate
+    // Interactive Confirmation Alert Step
     if (warnings.length > 0) {
         const cardNode = document.querySelector(`[data-slot-id="${toSlotId}"]`);
         if (cardNode) {
@@ -724,17 +770,17 @@ function executeAssignmentMove(movingPersonName, fromSlotId, toSlotId, isASwap =
         }
 
         const msg = `⚠️ Schedule Alert for ${movingPersonName}:\n${warnings.join('\n')}\n\nDo you want to proceed anyway and update this person's assignment?`;
-        if (!confirm(msg)) return; // Discard updates securely
+        if (!confirm(msg)) return; 
     }
 
-    // Process Swaps
+    // Execute Swap or Replacement Handling Logic
     if (isASwap && targetPersonName && sourceSlot) {
         const targetPerson = organizedProfiles[targetPersonName];
         
         // Remove target person from destination slot
         targetPerson.assignedIntervals = targetPerson.assignedIntervals.filter(iv => iv.slotId !== toSlotId);
         
-        // Push target person to source slot
+        // Put target person into moving person's original slot
         targetPerson.assignedIntervals.push({
             start: timeToMinutes(sourceSlot.start),
             end: timeToMinutes(sourceSlot.end),
@@ -746,32 +792,18 @@ function executeAssignmentMove(movingPersonName, fromSlotId, toSlotId, isASwap =
         targetPerson.assignedIntervals = targetPerson.assignedIntervals.filter(iv => iv.slotId !== toSlotId);
     }
 
-    // Update Moving Person's Intervals
+    // Save changes for the moving person
     if (fromSlotId !== null) {
         person.assignedIntervals = person.assignedIntervals.filter(iv => iv.slotId !== fromSlotId);
     }
     person.assignedIntervals.push({ start: newStart, end: newEnd, slotId: toSlotId });
 
-    // Recalculate Assignment Counts Globally
+    // Global counts refresh sync step
     Object.values(organizedProfiles).forEach(p => {
         p.currentAssignedCount = p.assignedIntervals.length;
     });
 
     renderMatrixGrid();
-}
-
-function renderAvailableDelegates() {
-    const container = document.getElementById('availableDelegates');
-    container.innerHTML = Object.values(organizedProfiles).map(p => `
-        <div class="delegate-pill" draggable="true" ondragstart="dragStartFromSidebar(event, '${p.name}')">
-            👤 ${p.name} <span style="font-size:10px; opacity:0.6;">#${p.currentAssignedCount}</span>
-        </div>
-    `).join('');
-}
-
-function dragStartFromSidebar(e, personName) {
-    e.dataTransfer.setData("personName", personName);
-    e.dataTransfer.setData("fromSidebar", "true");
 }
 
 function removeDelegate(personName, slotId) {
@@ -799,6 +831,8 @@ function filterAvailableForSlot(slotId) {
     if (!slot) return;
 
     const container = document.getElementById('availableDelegates');
+    if (!container) return;
+    
     const slotStartMin = timeToMinutes(slot.start);
     const slotEndMin = timeToMinutes(slot.end);
 
@@ -821,11 +855,15 @@ function filterAvailableForSlot(slotId) {
         return true;
     });
 
-    container.innerHTML = eligible.map(p => `
-        <div class="delegate-pill" draggable="true" ondragstart="dragStartFromSidebar(event, '${p.name}')">
-            👤 ${p.name} <span style="font-size:10px; opacity:0.6;">#${p.currentAssignedCount}</span>
-        </div>
-    `).join('');
+    if (eligible.length === 0) {
+        container.innerHTML = '<span class="no-delegates" style="padding:10px; display:block;">No fully free profiles for this slot time frame</span>';
+    } else {
+        container.innerHTML = eligible.map(p => `
+            <div class="delegate-pill" draggable="true" ondragstart="dragStartFromSidebar(event, '${p.name}')">
+                👤 ${p.name} <span style="font-size:10px; opacity:0.6;">#${p.currentAssignedCount}</span>
+            </div>
+        `).join('');
+    }
 }
 </script>
 </body>
