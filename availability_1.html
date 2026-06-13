@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -152,7 +150,7 @@
 
 <div class="wrapper">
     <div class="header-bar">
-        <h1>🔍 Availability Analyzer</h1>
+        <h1>🔍 Availability Analyzer (With Church Duty)</h1>
         <a href="view.html" class="nav-btn">📋 View Table</a>
     </div>
 
@@ -161,7 +159,7 @@
         <select id="memberSelect" onchange="analyzeSelectedMember()">
             <option value="">-- Loading Registered Names --</option>
         </select>
-        <span style="font-size:13px; color:#64748b;">(Automatically calculates a 1.5-hour travel buffer before & after Work/School)</span>
+        <span style="font-size:13px; color:#64748b;">(Calculates 1.5-hour travel buffer for Work/School & flags direct Church Duty overlaps)</span>
     </div>
 
     <div id="noSelectionMsg" style="text-align:center; padding:50px; color:#94a3b8; background:white; border-radius:8px; border:1px solid var(--border);">
@@ -239,13 +237,29 @@ function processProfiles() {
         if (!organizedProfiles[row.name]) {
             organizedProfiles[row.name] = { name: row.name, constraints: [] };
         }
-        // Only map work and school for safety buffers calculations
+        
+        // 1. Process Work and School schedules
         if (row.schedule_type === 'work' || row.schedule_type === 'school') {
             organizedProfiles[row.name].constraints.push({
                 type: row.schedule_type,
                 day: row.day_or_slot.toLowerCase(),
                 time_in: row.time_in,
-                time_out: row.time_out
+                time_out: row.time_out,
+                isChurch: false
+            });
+        }
+        // 2. Process existing Church Duties
+        else if (row.schedule_type.startsWith('church:')) {
+            const deptName = row.schedule_type.replace('church: ', '');
+            const matchedSlot = CHURCH_DUTY_ROSTER.find(s => s.name.toLowerCase() === row.day_or_slot.toLowerCase());
+            
+            organizedProfiles[row.name].constraints.push({
+                type: `CHURCH (${deptName})`,
+                day: matchedSlot ? matchedSlot.day : "unknown",
+                time_in: matchedSlot ? matchedSlot.start : "00:00",
+                time_out: matchedSlot ? matchedSlot.end : "00:00",
+                isChurch: true,
+                slotName: row.day_or_slot
             });
         }
     });
@@ -267,6 +281,7 @@ function timeToMinutes(timeStr) {
 }
 
 function convertTo12Hour(timeStr) {
+    if (!timeStr || timeStr === "00:00") return "";
     let [h, m] = timeStr.split(':');
     let hours = parseInt(h, 10);
     const ampm = hours >= 12 ? 'PM' : 'AM';
@@ -292,12 +307,16 @@ function analyzeSelectedMember() {
     
     // 1. Render Left Column (Base Items)
     const baseBusyList = document.getElementById('baseBusyList');
-    if(profile.constraints.length === 0) {
-        baseBusyList.innerHTML = '<li><i>No active work or school limitations recorded. Totally free!</i></li>';
+    if (profile.constraints.length === 0) {
+        baseBusyList.innerHTML = '<li><i>No active work, school, or church commitments recorded. Totally free!</i></li>';
     } else {
-        baseBusyList.innerHTML = profile.constraints.map(c => 
-            `<li><strong>${c.type.toUpperCase()}</strong> (${c.day.charAt(0).toUpperCase() + c.day.slice(1)}):<br>${convertTo12Hour(c.time_in)} - ${convertTo12Hour(c.time_out)}</li>`
-        ).join('');
+        baseBusyList.innerHTML = profile.constraints.map(c => {
+            if (c.isChurch) {
+                return `<li><strong style="color: var(--accent);">${c.type}</strong>:<br>Assigned Slot: ${c.slotName}</li>`;
+            } else {
+                return `<li><strong>${c.type.toUpperCase()}</strong> (${c.day.charAt(0).toUpperCase() + c.day.slice(1)}):<br>${convertTo12Hour(c.time_in)} - ${convertTo12Hour(c.time_out)}</li>`;
+            }
+        }).join('');
     }
 
     // 2. Compute Conflicts on Right Column
@@ -315,18 +334,22 @@ function analyzeSelectedMember() {
         // Scan every base constraint for matching day overlaps
         for (let constraint of profile.constraints) {
             if (constraint.day === slot.day) {
-                // Read base parameters
                 const busyStartReal = timeToMinutes(constraint.time_in);
                 const busyEndReal = timeToMinutes(constraint.time_out);
 
-                // APPLY TIME BUFFERS: Subtract 90 mins from start, add 90 mins to end
-                const busyStartWithBuffer = busyStartReal - 90; 
-                const busyEndWithBuffer = busyEndReal + 90;
+                // Apply safety buffers based on category type
+                const buffer = constraint.isChurch ? 0 : 90;
+                const busyStartWithBuffer = busyStartReal - buffer; 
+                const busyEndWithBuffer = busyEndReal + buffer;
 
-                // Evaluate overlap constraints: slot overlaps if slotStart < busyEnd AND slotEnd > busyStart
+                // Evaluate overlap constraints
                 if (slotStartMin < busyEndWithBuffer && slotEndMin > busyStartWithBuffer) {
                     hasConflict = true;
-                    conflictReason = `Conflicts with ${constraint.type.toUpperCase()} (${convertTo12Hour(constraint.time_in)} - ${convertTo12Hour(constraint.time_out)}) + 1.5hr Travel Buffer.`;
+                    if (constraint.isChurch) {
+                        conflictReason = `Already assigned to ${constraint.type} on this specific slot (${constraint.slotName}).`;
+                    } else {
+                        conflictReason = `Conflicts with ${constraint.type.toUpperCase()} (${convertTo12Hour(constraint.time_in)} - ${convertTo12Hour(constraint.time_out)}) + 1.5hr Travel Buffer.`;
+                    }
                     break; 
                 }
             }
@@ -356,5 +379,3 @@ function analyzeSelectedMember() {
 
 </body>
 </html>
-
-
