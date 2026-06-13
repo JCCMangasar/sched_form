@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Suguan (Delegate) Generator</title>
+    <title>Suguan (Delegate) Generator - Drag & Drop</title>
     <style>
         :root {
             --primary: #1e293b;
@@ -26,7 +26,6 @@
             overflow: hidden;
         }
 
-        /* SIDEBAR CONFIG PANEL */
         .sidebar {
             width: 360px;
             background: var(--primary);
@@ -40,19 +39,9 @@
             overflow-y: auto;
         }
 
-        .sidebar h2 {
-            margin: 0;
-            font-size: 20px;
-            border-bottom: 1px solid #334155;
-            padding-bottom: 10px;
-            color: #f8fafc;
-        }
+        .sidebar h2 { margin: 0; font-size: 20px; border-bottom: 1px solid #334155; padding-bottom: 10px; color: #f8fafc; }
 
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
+        .form-group { display: flex; flex-direction: column; gap: 5px; }
 
         .sidebar label {
             font-size: 12px;
@@ -78,17 +67,10 @@
             font-weight: bold;
             border-radius: 6px;
             cursor: pointer;
-            transition: opacity 0.2s;
         }
         .sidebar button:hover { opacity: 0.9; }
 
-        /* TIME SLOTS LIST IN SIDEBAR */
-        .managed-slots {
-            margin-top: 15px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
+        .managed-slots { margin-top: 15px; display: flex; flex-direction: column; gap: 8px; }
 
         .slot-item {
             background: #1e293b;
@@ -107,17 +89,13 @@
             color: #ef4444;
             cursor: pointer;
             font-weight: bold;
-            font-size: 14px;
         }
 
-        /* MAIN CONTENT ROW */
         .main-content {
             flex: 1;
             padding: 30px;
             box-sizing: border-box;
             overflow-y: auto;
-            display: flex;
-            flex-direction: column;
         }
 
         .header-bar {
@@ -140,13 +118,9 @@
             font-size: 15px;
             border-radius: 6px;
             cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        /* GRID OUTPUT CARDS */
-        .location-section {
-            margin-bottom: 35px;
-        }
+        .location-section { margin-bottom: 35px; }
 
         .location-title {
             font-size: 18px;
@@ -165,13 +139,31 @@
 
         .suguan-card {
             background: var(--card-bg);
-            border: 1px solid var(--border);
+            border: 2px solid var(--border);
             border-radius: 8px;
             padding: 15px;
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
             display: flex;
             flex-direction: column;
             gap: 8px;
+            min-height: 160px;
+            transition: all 0.2s;
+        }
+
+        .suguan-card.dragover {
+            border-color: var(--success);
+            background: #f0fdf4;
+        }
+
+        .suguan-card.invalid {
+            border-color: var(--danger);
+            animation: shake 0.4s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-6px); }
+            75% { transform: translateX(6px); }
         }
 
         .suguan-card .time {
@@ -182,15 +174,20 @@
 
         .delegate-pill {
             background: #f1f5f9;
-            padding: 6px 12px;
+            padding: 8px 12px;
             border-radius: 6px;
             font-size: 14px;
             font-weight: 500;
             color: #334155;
-            border-left: 3px solid var(--accent);
+            border-left: 4px solid var(--accent);
             display: flex;
             justify-content: space-between;
+            align-items: center;
+            cursor: grab;
+            user-select: none;
         }
+
+        .delegate-pill:active { cursor: grabbing; }
 
         .no-delegates {
             color: var(--danger);
@@ -201,7 +198,6 @@
 </head>
 <body>
 
-<!-- SIDEBAR: DYNAMIC ROTATION AND TIME CONTROL PANEL -->
 <div class="sidebar">
     <h2>Manage Schedule Settings</h2>
     
@@ -231,8 +227,8 @@
     </div>
 
     <div class="form-group">
-        <label id="labelDisplay">Display Label (e.g. Wed 5am)</label>
-        <input type="text" id="newLabel" placeholder="Wed 5am or Sun 8am">
+        <label>Display Label</label>
+        <input type="text" id="newLabel" placeholder="Wed 5am">
     </div>
 
     <div class="form-group">
@@ -251,32 +247,31 @@
     <button onclick="addCustomSlot()">➕ Add Time Slot</button>
 
     <hr style="border: 0; border-top: 1px solid #334155; margin: 15px 0;">
-    
     <h2>Current Database Master Slots</h2>
     <div id="managedSlotsContainer" class="managed-slots"></div>
 </div>
 
-<!-- MAIN WORKSPACE VIEW PANEL -->
 <div class="main-content">
     <div class="header-bar">
-        <h1>📋 Auto-Generated Suguan (Delegates Assignment)</h1>
-        <button class="action-btn" onclick="generateAssignments()">⚡ Auto-Generate Assignment Matrix</button>
+        <h1>📋 Suguan (Delegates Assignment) - Drag & Drop</h1>
+        <button class="action-btn" onclick="generateAssignments()">⚡ Auto-Generate</button>
     </div>
 
     <div id="suguanContainer">
-        <div style="text-align:center; padding:100px; color:#94a3b8; font-size:16px;">
-            Click the "Auto-Generate Assignment Matrix" button to parse records and balance delegate distributions.
+        <div style="text-align:center; padding:120px; color:#94a3b8; font-size:16px;">
+            Click "Auto-Generate Assignment Matrix"<br>
+            Then <strong>drag names</strong> between slots.<br>
+            <strong>Time conflicts are blocked automatically.</strong>
         </div>
     </div>
 </div>
 
 <script>
-// =============== ADMIN GATEKEEPER SECURITY ===============
+// =============== ADMIN GATEKEEPER ===============
 (function checkAdminAccess() {
     const ADMIN_PASSWORD = "july27,1914"; 
     if (sessionStorage.getItem("admin_authenticated") === "true") return; 
-
-    const userAttempt = prompt("🔒 Restricted Area: Enter password to access Suguan Manager:");
+    const userAttempt = prompt("🔒 Restricted Area: Enter password:");
     if (userAttempt === ADMIN_PASSWORD) {
         sessionStorage.setItem("admin_authenticated", "true");
     } else {
@@ -289,43 +284,38 @@ const WORKER_URL = "https://schedule-api.jakemm04.workers.dev";
 let rawDatabaseRows = [];
 let organizedProfiles = {};
 
-// Default initialized timetable structure requested by user
+// Default slots (same as original)
 let CUSTOM_SCHEDULE_BLOCKS = [
-    // Kapilya Worship (3 Delegates requested)
     { id: 1, location: "Kapilya", name: "Wed 5am", day: "wednesday", start: "05:00", end: "06:30", quota: 3 },
     { id: 2, location: "Kapilya", name: "Wed 5pm", day: "wednesday", start: "17:00", end: "18:30", quota: 3 },
     { id: 3, location: "Kapilya", name: "Wed 8pm", day: "wednesday", start: "20:00", end: "21:30", quota: 3 },
-    { id: 4, location: "Kapilya", name: "Thu 5am", day: "thursday",  start: "05:00", end: "06:30", quota: 3 },
-    { id: 5, location: "Kapilya", name: "Thu 5pm", day: "thursday",  start: "17:00", end: "18:30", quota: 3 },
-    { id: 6, location: "Kapilya", name: "Thu 8pm", day: "thursday",  start: "20:00", end: "21:30", quota: 3 },
-    { id: 7, location: "Kapilya", name: "Sat 6am", day: "saturday",  start: "06:00", end: "07:30", quota: 3 },
-    { id: 8, location: "Kapilya", name: "Sat 2pm", day: "saturday",  start: "14:00", end: "15:30", quota: 3 },
-    { id: 9, location: "Kapilya", name: "Sat 6pm", day: "saturday",  start: "18:00", end: "19:30", quota: 3 },
-    { id: 10, location: "Kapilya", name: "Sun 6am", day: "sunday",    start: "06:00", end: "07:30", quota: 3 },
-    { id: 11, location: "Kapilya", name: "Sun 10am", day: "sunday",   start: "10:00", end: "11:30", quota: 3 },
-    { id: 12, location: "Kapilya", name: "Sun 2pm", day: "sunday",    start: "14:00", end: "15:30", quota: 3 },
+    { id: 4, location: "Kapilya", name: "Thu 5am", day: "thursday", start: "05:00", end: "06:30", quota: 3 },
+    { id: 5, location: "Kapilya", name: "Thu 5pm", day: "thursday", start: "17:00", end: "18:30", quota: 3 },
+    { id: 6, location: "Kapilya", name: "Thu 8pm", day: "thursday", start: "20:00", end: "21:30", quota: 3 },
+    { id: 7, location: "Kapilya", name: "Sat 6am", day: "saturday", start: "06:00", end: "07:30", quota: 3 },
+    { id: 8, location: "Kapilya", name: "Sat 2pm", day: "saturday", start: "14:00", end: "15:30", quota: 3 },
+    { id: 9, location: "Kapilya", name: "Sat 6pm", day: "saturday", start: "18:00", end: "19:30", quota: 3 },
+    { id: 10, location: "Kapilya", name: "Sun 6am", day: "sunday", start: "06:00", end: "07:30", quota: 3 },
+    { id: 11, location: "Kapilya", name: "Sun 10am", day: "sunday", start: "10:00", end: "11:30", quota: 3 },
+    { id: 12, location: "Kapilya", name: "Sun 2pm", day: "sunday", start: "14:00", end: "15:30", quota: 3 },
 
-    // Abatex Extension (3 Delegates requested)
     { id: 13, location: "Abatex Extension", name: "Wed 7pm", day: "wednesday", start: "19:00", end: "20:30", quota: 3 },
-    { id: 14, location: "Abatex Extension", name: "Thu 5pm", day: "thursday",  start: "17:00", end: "18:30", quota: 3 },
-    { id: 15, location: "Abatex Extension", name: "Thu 8pm", day: "thursday",  start: "20:00", end: "21:30", quota: 3 },
-    { id: 16, location: "Abatex Extension", name: "Sat 6pm", day: "saturday",  start: "18:00", end: "19:30", quota: 3 },
-    { id: 17, location: "Abatex Extension", name: "Sun 10am", day: "sunday",   start: "10:00", end: "11:30", quota: 3 },
-    { id: 18, location: "Abatex Extension", name: "Sun 2pm", day: "sunday",    start: "14:00", end: "15:30", quota: 3 },
+    { id: 14, location: "Abatex Extension", name: "Thu 5pm", day: "thursday", start: "17:00", end: "18:30", quota: 3 },
+    { id: 15, location: "Abatex Extension", name: "Thu 8pm", day: "thursday", start: "20:00", end: "21:30", quota: 3 },
+    { id: 16, location: "Abatex Extension", name: "Sat 6pm", day: "saturday", start: "18:00", end: "19:30", quota: 3 },
+    { id: 17, location: "Abatex Extension", name: "Sun 10am", day: "sunday", start: "10:00", end: "11:30", quota: 3 },
+    { id: 18, location: "Abatex Extension", name: "Sun 2pm", day: "sunday", start: "14:00", end: "15:30", quota: 3 },
 
-    // Sitio Laan Extension
     { id: 19, location: "Sitio Laan Extension", name: "Wed 6pm", day: "wednesday", start: "18:00", end: "19:30", quota: 3 },
-    { id: 20, location: "Sitio Laan Extension", name: "Thu 6am", day: "thursday",  start: "06:00", end: "07:30", quota: 3 },
-    { id: 21, location: "Sitio Laan Extension", name: "Sat 6am", day: "saturday",  start: "06:00", end: "07:30", quota: 3 },
+    { id: 20, location: "Sitio Laan Extension", name: "Thu 6am", day: "thursday", start: "06:00", end: "07:30", quota: 3 },
+    { id: 21, location: "Sitio Laan Extension", name: "Sat 6am", day: "saturday", start: "06:00", end: "07:30", quota: 3 },
     { id: 22, location: "Sitio Laan Extension", name: "Sat 10am", day: "saturday", start: "10:00", end: "12:00", quota: 3 },
 
-    // Landfill GWS
     { id: 23, location: "Landfill GWS", name: "Thu 4:30pm", day: "thursday", start: "16:30", end: "18:00", quota: 3 },
     { id: 24, location: "Landfill GWS", name: "Thu 7pm", day: "thursday", start: "19:00", end: "20:30", quota: 3 },
     { id: 25, location: "Landfill GWS", name: "Sun 6am", day: "sunday", start: "06:00", end: "07:30", quota: 3 },
     { id: 26, location: "Landfill GWS", name: "Sun 10am", day: "sunday", start: "10:00", end: "11:30", quota: 3 },
 
-    // PNK (Children's Worship)
     { id: 27, location: "PNK", name: "Sitio Laan: 12:00nn", day: "sunday", start: "12:00", end: "13:30", quota: 1 },
     { id: 28, location: "PNK", name: "Kapilya: Sun 8am", day: "sunday", start: "08:00", end: "09:30", quota: 1 },
     { id: 29, location: "PNK", name: "Landfill: Sun 8am", day: "sunday", start: "08:00", end: "09:30", quota: 1 },
@@ -335,7 +325,6 @@ let CUSTOM_SCHEDULE_BLOCKS = [
     { id: 33, location: "PNK", name: "De Guzman 2: 10am", day: "sunday", start: "10:00", end: "11:30", quota: 1, linkedGroup: "deguzman" },
     { id: 34, location: "PNK", name: "Abatex: 7am", day: "sunday", start: "07:00", end: "08:30", quota: 1 },
 
-    // Other Activities
     { id: 35, location: "Other Activities", name: "Pulong ng Lokal: Sat 8:30 pm", day: "saturday", start: "20:30", end: "22:00", quota: 2 },
     { id: 36, location: "Other Activities", name: "Klase Min/Mwa: Mon 5:30 am", day: "monday", start: "05:30", end: "07:00", quota: 2 },
     { id: 37, location: "Other Activities", name: "Pulong Min/ Mwa: Fri 8am", day: "friday", start: "08:00", end: "09:30", quota: 2 },
@@ -358,7 +347,7 @@ async function fetchRawData() {
         rawDatabaseRows = await response.json();
         processProfiles();
     } catch {
-        alert("Unable to interface with edge worker data pipelines.");
+        alert("Unable to fetch data from worker.");
     }
 }
 
@@ -366,7 +355,13 @@ function processProfiles() {
     organizedProfiles = {};
     rawDatabaseRows.forEach(row => {
         if (!organizedProfiles[row.name]) {
-            organizedProfiles[row.name] = { name: row.name, constraints: [], currentAssignedCount: 0 };
+            organizedProfiles[row.name] = { 
+                name: row.name, 
+                constraints: [], 
+                currentAssignedCount: 0,
+                assignedIntervals: [],
+                assignments: {}
+            };
         }
         if (row.schedule_type === 'work' || row.schedule_type === 'school') {
             organizedProfiles[row.name].constraints.push({
@@ -377,10 +372,9 @@ function processProfiles() {
                 isChurch: false
             });
         } else if (row.schedule_type.startsWith('church:')) {
-            const deptName = row.schedule_type.replace('church: ', '');
             organizedProfiles[row.name].constraints.push({
-                type: `CHURCH_DUTY (${deptName})`,
-                day: "unknown", 
+                type: `CHURCH_DUTY`,
+                day: "unknown",
                 time_in: "00:00",
                 time_out: "00:00",
                 isChurch: true,
@@ -394,10 +388,8 @@ function renderSidebarList() {
     const container = document.getElementById('managedSlotsContainer');
     container.innerHTML = CUSTOM_SCHEDULE_BLOCKS.map(s => `
         <div class="slot-item">
-            <div>
-                <strong>[${s.location}]</strong> ${s.name}<br>
-                <small style="color:#94a3b8;">${s.day.toUpperCase()} | ${s.start}-${s.end} (${s.quota} pax)</small>
-            </div>
+            <div><strong>[${s.location}]</strong> ${s.name}<br>
+            <small>${s.day.toUpperCase()} | ${s.start}-${s.end} (${s.quota})</small></div>
             <button class="delete-slot-btn" onclick="deleteCustomSlot(${s.id})">×</button>
         </div>
     `).join('');
@@ -411,15 +403,10 @@ function addCustomSlot() {
     const end = document.getElementById('newEnd').value;
     const quota = parseInt(document.getElementById('newQuota').value) || 1;
 
-    if (!name) {
-        alert("Please enter an identification label!");
-        return;
-    }
+    if (!name) return alert("Please enter label!");
 
-    const newSlot = { id: Date.now(), location, name, day, start, end, quota };
-    CUSTOM_SCHEDULE_BLOCKS.push(newSlot);
+    CUSTOM_SCHEDULE_BLOCKS.push({ id: Date.now(), location, name, day, start, end, quota });
     localStorage.setItem('custom_suguan_schedule', JSON.stringify(CUSTOM_SCHEDULE_BLOCKS));
-    
     renderSidebarList();
     document.getElementById('newLabel').value = "";
 }
@@ -435,7 +422,6 @@ function timeToMinutes(timeStr) {
     return h * 60 + m;
 }
 
-// Array Shuffle Helper Function (Fisher-Yates)
 function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -444,132 +430,171 @@ function shuffleArray(array) {
     return array;
 }
 
-// NEW: Check if two time intervals overlap
 function intervalsOverlap(start1, end1, start2, end2) {
     return start1 < end2 && end2 > start1;
 }
 
-// GENERATION AUTOMATION MATRIX ENGINE - UPDATED WITH CROSS-DIVISION TIME CONFLICT PREVENTION
+// ==================== MAIN GENERATION + DRAG & DROP ====================
 function generateAssignments() {
-    // Reset counters and add interval tracking
     Object.values(organizedProfiles).forEach(p => {
         p.currentAssignedCount = 0;
-        p.assignedIntervals = []; 
+        p.assignedIntervals = [];
+        p.assignments = {};
     });
 
-    const locations = [...new Set(CUSTOM_SCHEDULE_BLOCKS.map(s => s.location))];
     let htmlOutput = "";
-    
-    // Persistent placeholder tracking variable for locking continuous De Guzman slots
     let lockedDeGuzmanPerson = null;
+    let currentLocation = "";
 
-    locations.forEach(loc => {
-        htmlOutput += `<div class="location-section"><div class="location-title">${loc} Division</div><div class="suguan-grid">`;
-        
-        const locSlots = CUSTOM_SCHEDULE_BLOCKS.filter(s => s.location === loc);
+    CUSTOM_SCHEDULE_BLOCKS.forEach(slot => {
+        if (slot.location !== currentLocation) {
+            if (currentLocation) htmlOutput += `</div></div>`;
+            currentLocation = slot.location;
+            htmlOutput += `<div class="location-section"><div class="location-title">${slot.location} Division</div><div class="suguan-grid">`;
+        }
 
-        locSlots.forEach(slot => {
-            let assignedDelegates = [];
+        let assignedDelegates = [];
 
-            // SPECIAL LOGIC: De Guzman continuous duty
-            if (slot.linkedGroup === "deguzman" && lockedDeGuzmanPerson !== null) {
-                assignedDelegates = [lockedDeGuzmanPerson];
-            } else {
-                const slotStartMin = timeToMinutes(slot.start);
-                const slotEndMin = timeToMinutes(slot.end);
-                const slotStartWithPrepBuffer = slotStartMin - 105;
+        if (slot.linkedGroup === "deguzman" && lockedDeGuzmanPerson) {
+            assignedDelegates = [lockedDeGuzmanPerson];
+        } else {
+            const slotStart = timeToMinutes(slot.start);
+            const slotEnd = timeToMinutes(slot.end);
+            const slotStartBuffer = slotStart - 105;
 
-                let eligibleCandidates = [];
+            let eligible = Object.values(organizedProfiles).filter(p => {
+                let conflict = false;
 
-                Object.values(organizedProfiles).forEach(p => {
-                    let hasConflict = false;
-
-                    // Check existing constraints (work, school, prior church duties)
-                    for (let c of p.constraints) {
-                        if (!c.isChurch && c.day === slot.day) {
-                            const workStart = timeToMinutes(c.time_in);
-                            const workEndWithTravelBuffer = timeToMinutes(c.time_out) + 90;
-
-                            if (slotStartWithPrepBuffer < workEndWithTravelBuffer && slotEndMin > workStart) {
-                                hasConflict = true;
-                                break;
-                            }
-                        }
-                        if (c.isChurch && c.rawSlot === slot.name.toLowerCase()) {
-                            hasConflict = true;
-                            break;
-                        }
+                // Existing constraints
+                for (let c of p.constraints) {
+                    if (!c.isChurch && c.day === slot.day) {
+                        const workStart = timeToMinutes(c.time_in);
+                        const workEnd = timeToMinutes(c.time_out) + 90;
+                        if (slotStartBuffer < workEnd && slotEnd > workStart) conflict = true;
                     }
-                    if (hasConflict) return;
-
-                    // NEW: Check for time conflicts with previously assigned slots (cross-division)
-                    for (let existing of (p.assignedIntervals || [])) {
-                        if (intervalsOverlap(slotStartMin, slotEndMin, existing.start, existing.end)) {
-                            hasConflict = true;
-                            break;
-                        }
-                    }
-                    if (hasConflict) return;
-
-                    eligibleCandidates.push(p);
-                });
-
-                // Shuffle + balance by current load
-                eligibleCandidates = shuffleArray(eligibleCandidates);
-                eligibleCandidates.sort((a, b) => a.currentAssignedCount - b.currentAssignedCount);
-
-                assignedDelegates = eligibleCandidates.slice(0, slot.quota);
-
-                // Lock De Guzman person for continuous duty
-                if (slot.linkedGroup === "deguzman" && assignedDelegates.length > 0) {
-                    lockedDeGuzmanPerson = assignedDelegates[0];
+                    if (c.isChurch && c.rawSlot === slot.name.toLowerCase()) conflict = true;
                 }
-            }
-            
-            // Record assignments and occupied time intervals
-            assignedDelegates.forEach(d => {
-                d.currentAssignedCount++;
-                d.assignedIntervals = d.assignedIntervals || [];
-                d.assignedIntervals.push({
-                    start: timeToMinutes(slot.start),
-                    end: timeToMinutes(slot.end),
-                    slotName: slot.name,
-                    location: slot.location
-                });
+                if (conflict) return false;
+
+                // Time overlap with current assignments
+                for (let iv of p.assignedIntervals) {
+                    if (intervalsOverlap(slotStart, slotEnd, iv.start, iv.end)) {
+                        conflict = true;
+                        break;
+                    }
+                }
+                return !conflict;
             });
 
-            // Render the card
-            let delegatesHtml = "";
-            if (assignedDelegates.length === 0) {
-                delegatesHtml = `<span class="no-delegates">⚠ No available delegates found</span>`;
-            } else {
-                delegatesHtml = assignedDelegates.map(d => `
-                    <div class="delegate-pill">
-                        <span>👤 ${d.name}</span>
-                        <span style="font-size:10px; opacity:0.5; font-weight:normal;">Load Index: #${d.currentAssignedCount}</span>
-                    </div>
-                `).join('');
-                
-                if (assignedDelegates.length < slot.quota) {
-                    delegatesHtml += `<span class="no-delegates" style="color:#d97706; display:block; margin-top:4px;">⚠ Short-staffed</span>`;
-                }
-            }
+            eligible = shuffleArray(eligible);
+            eligible.sort((a, b) => a.currentAssignedCount - b.currentAssignedCount);
+            assignedDelegates = eligible.slice(0, slot.quota);
 
-            htmlOutput += `
-                <div class="suguan-card">
-                    <div class="time">📍 ${slot.name}</div>
-                    <div style="font-size:11px; color:#64748b; margin-bottom:5px;">
-                        Target Quota Range: ${slot.quota} Pax ${slot.linkedGroup === 'deguzman' ? '<b style="color:var(--accent);">(Continuous Duty)</b>' : ''}
-                    </div>
-                    ${delegatesHtml}
-                </div>
-            `;
+            if (slot.linkedGroup === "deguzman" && assignedDelegates.length) {
+                lockedDeGuzmanPerson = assignedDelegates[0];
+            }
+        }
+
+        // Record assignments
+        assignedDelegates.forEach(d => {
+            d.currentAssignedCount++;
+            d.assignedIntervals.push({
+                start: timeToMinutes(slot.start),
+                end: timeToMinutes(slot.end),
+                slotId: slot.id
+            });
+            d.assignments[slot.id] = true;
         });
 
-        htmlOutput += `</div></div>`;
+        // Render draggable pills
+        let pills = assignedDelegates.map(d => `
+            <div class="delegate-pill" draggable="true" ondragstart="dragStart(event, '${d.name}', ${slot.id})">
+                👤 ${d.name}
+                <span style="font-size:11px; opacity:0.6;">#${d.currentAssignedCount}</span>
+            </div>
+        `).join('');
+
+        htmlOutput += `
+            <div class="suguan-card" data-slot-id="${slot.id}" 
+                 ondrop="drop(event, ${slot.id})" 
+                 ondragover="allowDrop(event)" 
+                 ondragleave="dragLeave(event)">
+                <div class="time">📍 ${slot.name}</div>
+                <div style="font-size:11px;color:#64748b;">Quota: ${slot.quota} Pax</div>
+                ${pills || '<span class="no-delegates">No delegates assigned</span>'}
+            </div>
+        `;
     });
 
+    if (currentLocation) htmlOutput += `</div></div>`;
     document.getElementById('suguanContainer').innerHTML = htmlOutput;
+}
+
+// Drag & Drop Functions
+let draggedPerson = null;
+
+function dragStart(e, personName, fromSlotId) {
+    draggedPerson = { name: personName, fromSlotId };
+    e.dataTransfer.setData("text/plain", personName);
+    e.dataTransfer.setData("fromSlot", fromSlotId);
+}
+
+function allowDrop(e) {
+    e.preventDefault();
+    e.currentTarget.classList.add('dragover');
+}
+
+function dragLeave(e) {
+    e.currentTarget.classList.remove('dragover');
+}
+
+function drop(e, toSlotId) {
+    e.preventDefault();
+    const card = e.currentTarget;
+    card.classList.remove('dragover');
+
+    const personName = e.dataTransfer.getData("text/plain");
+    const fromSlotId = parseInt(e.dataTransfer.getData("fromSlot"));
+    const person = organizedProfiles[personName];
+    const targetSlot = CUSTOM_SCHEDULE_BLOCKS.find(s => s.id === toSlotId);
+
+    if (!person || !targetSlot || fromSlotId === toSlotId) return;
+
+    // Check time conflict
+    const newStart = timeToMinutes(targetSlot.start);
+    const newEnd = timeToMinutes(targetSlot.end);
+    let hasConflict = false;
+
+    for (let iv of person.assignedIntervals) {
+        if (iv.slotId !== fromSlotId && intervalsOverlap(newStart, newEnd, iv.start, iv.end)) {
+            hasConflict = true;
+            break;
+        }
+    }
+
+    if (hasConflict) {
+        card.classList.add('invalid');
+        setTimeout(() => card.classList.remove('invalid'), 800);
+        alert(`❌ Time conflict! ${personName} is already assigned during this time.`);
+        return;
+    }
+
+    // Remove from old slot
+    person.assignedIntervals = person.assignedIntervals.filter(iv => iv.slotId !== fromSlotId);
+    delete person.assignments[fromSlotId];
+    person.currentAssignedCount = Math.max(0, person.currentAssignedCount - 1);
+
+    // Add to new slot
+    person.assignedIntervals.push({
+        start: newStart,
+        end: newEnd,
+        slotId: toSlotId
+    });
+    person.assignments[toSlotId] = true;
+    person.currentAssignedCount++;
+
+    // Re-render everything
+    generateAssignments();
 }
 </script>
 
