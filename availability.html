@@ -165,7 +165,6 @@
 </head>
 <body>
 
-<!-- SIDEBAR FILTER MATRIX -->
 <div class="sidebar">
     <h2>Control Filters</h2>
     
@@ -173,7 +172,7 @@
         <label for="analysisMode">Analysis Mode</label>
         <select id="analysisMode" onchange="switchMode()">
             <option value="slot">Filter by Church Slot</option>
-            <option value="day">Filter by Whole Day (Mon/Tue/Fri)</option>
+            <option value="day">Filter by Whole Day (Mon-Sun)</option>
             <option value="member">Analyze Individual Member</option>
         </select>
     </div>
@@ -186,7 +185,7 @@
         </select>
     </div>
 
-    <!-- Mode B: Whole Weekday Picker (Addresses Monday, Tuesday, Friday) -->
+    <!-- Mode B: Whole Weekday Picker -->
     <div id="dayModeControls" class="sidebar-group" style="display: none;">
         <label for="daySelect">Select Day of Week</label>
         <select id="daySelect" onchange="runAnalysis()">
@@ -210,11 +209,12 @@
     </div>
     
     <div style="font-size: 12px; color: #64748b; margin-top: auto; line-height: 1.4;">
-        💡 <strong>Travel Buffer:</strong> The system automatically blocks out 1.5 hours before/after scheduled obligations.
+        💡 <strong>System Rules:</strong><br>
+        • Travel buffer (1.5 hrs) applied to Work & School.<br>
+        • Active church duty locks out matching slot assignments.
     </div>
 </div>
 
-<!-- CONTAINER RENDERING CANVAS -->
 <div class="main-content">
     <div class="header-bar">
         <h1 id="dashboardTitle">Predictive Group Availability</h1>
@@ -231,7 +231,7 @@
 <script>
 // =============== ADMIN GATEKEEPER SECURITY ===============
 (function checkAdminAccess() {
-    const ADMIN_PASSWORD = "SuperSecretAdminPIN123"; 
+    const ADMIN_PASSWORD = "july27,1914"; 
     if (sessionStorage.getItem("admin_authenticated") === "true") return; 
 
     const userAttempt = prompt("🔒 Restricted Area: Enter password to access Analyzer:");
@@ -247,6 +247,7 @@ const WORKER_URL = "https://schedule-api.jakemm04.workers.dev";
 let rawDatabaseRows = [];
 let organizedProfiles = {};
 
+// Hardcoded master details for standard church service blocks
 const CHURCH_DUTY_ROSTER = [
     { name: "Wed 5am",  day: "wednesday", start: "05:00", end: "06:30" },
     { name: "Wed 5pm",  day: "wednesday", start: "17:00", end: "18:30" },
@@ -283,12 +284,28 @@ function processProfiles() {
         if (!organizedProfiles[row.name]) {
             organizedProfiles[row.name] = { name: row.name, constraints: [] };
         }
+        
         if (row.schedule_type === 'work' || row.schedule_type === 'school') {
             organizedProfiles[row.name].constraints.push({
                 type: row.schedule_type,
                 day: row.day_or_slot.toLowerCase(),
                 time_in: row.time_in,
                 time_out: row.time_out
+            });
+        } 
+        // SMART FIX: Map church assignments into active blocks!
+        else if (row.schedule_type.startsWith('church:')) {
+            const deptName = row.schedule_type.replace('church: ', '');
+            // Find standard time configuration matching the slot name entered
+            const matchedSlot = CHURCH_DUTY_ROSTER.find(s => s.name.toLowerCase() === row.day_or_slot.toLowerCase());
+            
+            organizedProfiles[row.name].constraints.push({
+                type: `CHURCH (${deptName})`,
+                day: matchedSlot ? matchedSlot.day : "unknown",
+                time_in: matchedSlot ? matchedSlot.start : "00:00",
+                time_out: matchedSlot ? matchedSlot.end : "00:00",
+                isChurch: true,
+                slotName: row.day_or_slot
             });
         }
     });
@@ -321,7 +338,14 @@ function switchMode() {
     document.getElementById('dynamicOutput').innerHTML = '<div class="placeholder-text">Select parameters inside the sidebar to process data filters.</div>';
 }
 
+function convertMin(t) { 
+    if(!t) return 0;
+    const [h,m] = t.split(':').map(Number); 
+    return h * 60 + m; 
+}
+
 function convertTo12Hour(timeStr) {
+    if(!timeStr || timeStr === "00:00") return "";
     let [h, m] = timeStr.split(':');
     let hours = parseInt(h, 10);
     const ampm = hours >= 12 ? 'PM' : 'AM';
@@ -336,7 +360,7 @@ function runAnalysis() {
     else analyzeByMember();
 }
 
-// 1. FILTER BY FIXED CHURCH SLOT (Original logic)
+// 1. FILTER BY FIXED CHURCH SLOT
 function analyzeBySlot() {
     const slotIdx = document.getElementById('churchSlotSelect').value;
     const container = document.getElementById('dynamicOutput');
@@ -345,7 +369,6 @@ function analyzeBySlot() {
     const slot = CHURCH_DUTY_ROSTER[slotIdx];
     document.getElementById('dashboardTitle').innerText = `Slot Availability: ${slot.name}`;
 
-    const convertMin = (t) => { const [h,m] = t.split(':').map(Number); return h*60+m; };
     const slotStartMin = convertMin(slot.start);
     const slotEndMin = convertMin(slot.end);
 
@@ -357,11 +380,16 @@ function analyzeBySlot() {
         let conflict = false, reason = "";
         for (let c of p.constraints) {
             if (c.day === slot.day) {
-                const bStart = convertMin(c.time_in) - 90;
-                const bEnd = convertMin(c.time_out) + 90;
+                // If it is work/school, apply the 1.5-hour buffer. If it's a church duty, check exact overlap.
+                const buffer = c.isChurch ? 0 : 90;
+                const bStart = convertMin(c.time_in) - buffer;
+                const bEnd = convertMin(c.time_out) + buffer;
+                
                 if (slotStartMin < bEnd && slotEndMin > bStart) {
                     conflict = true;
-                    reason = `Occupied with ${c.type.toUpperCase()} (${convertTo12Hour(c.time_in)} - ${convertTo12Hour(c.time_out)})`;
+                    reason = c.isChurch 
+                        ? `Already assigned to ${c.type} during this specific slot (${c.slotName})`
+                        : `Occupied with ${c.type.toUpperCase()} (${convertTo12Hour(c.time_in)} - ${convertTo12Hour(c.time_out)})`;
                     break;
                 }
             }
@@ -378,7 +406,7 @@ function analyzeBySlot() {
     container.innerHTML = freeHtml + '</div>' + blockedHtml + '</div>';
 }
 
-// 2. NEW LOGIC: FILTER BY WHOLE DAY (Handles Monday, Tuesday, Friday, etc.)
+// 2. FILTER BY WHOLE DAY
 function analyzeByWholeDay() {
     const targetDay = document.getElementById('daySelect').value;
     const container = document.getElementById('dynamicOutput');
@@ -392,7 +420,6 @@ function analyzeByWholeDay() {
     let freeCount = 0, busyCount = 0;
 
     Object.values(organizedProfiles).forEach(p => {
-        // Collect constraints specifically matching selected day
         const dayConstraints = p.constraints.filter(c => c.day === targetDay);
 
         if (dayConstraints.length === 0) {
@@ -401,13 +428,14 @@ function analyzeByWholeDay() {
             <div class="person-card" style="border-top: 3px solid var(--success); background:#f0fdf4;">
                 <strong>${p.name}</strong>
                 <span class="status-badge avail">✅ Available All Day</span>
-                <span class="conflict-reason" style="color:var(--success);">No school or work entries recorded.</span>
+                <span class="conflict-reason" style="color:var(--success);">No school, work, or church entries.</span>
             </div>`;
         } else {
             busyCount++;
-            let scheduleLines = dayConstraints.map(c => 
-                `• <strong>${c.type.toUpperCase()}:</strong> ${convertTo12Hour(c.time_in)} - ${convertTo12Hour(c.time_out)}`
-            ).join('<br>');
+            let scheduleLines = dayConstraints.map(c => {
+                const timeString = c.isChurch ? `[${c.slotName}]` : `(${convertTo12Hour(c.time_in)} - ${convertTo12Hour(c.time_out)})`;
+                return `• <strong>${c.type}:</strong> ${timeString}`;
+            }).join('<br>');
 
             busyHtml += `
             <div class="person-card" style="border-top: 3px solid #d97706;">
@@ -426,7 +454,7 @@ function analyzeByWholeDay() {
     container.innerHTML = fullyFreeHtml + '</div>' + busyHtml + '</div>';
 }
 
-// 3. ANALYZE INDIVIDUAL MEMBER (Original member logic)
+// 3. ANALYZE INDIVIDUAL MEMBER
 function analyzeByMember() {
     const selectedName = document.getElementById('memberSelect').value;
     const container = document.getElementById('dynamicOutput');
@@ -434,7 +462,6 @@ function analyzeByMember() {
 
     document.getElementById('dashboardTitle').innerText = `Individual Evaluation: ${selectedName}`;
     const p = organizedProfiles[selectedName];
-    const convertMin = (t) => { const [h,m] = t.split(':').map(Number); return h*60+m; };
     
     let gridHtml = '<div class="roster-grid">';
     CHURCH_DUTY_ROSTER.forEach(slot => {
@@ -444,18 +471,20 @@ function analyzeByMember() {
 
         for (let c of p.constraints) {
             if (c.day === slot.day) {
-                const bStart = convertMin(c.time_in) - 90;
-                const bEnd = convertMin(c.time_out) + 90;
+                const buffer = c.isChurch ? 0 : 90;
+                const bStart = convertMin(c.time_in) - buffer;
+                const bEnd = convertMin(c.time_out) + buffer;
+                
                 if (slotStartMin < bEnd && slotEndMin > bStart) {
                     conflict = true;
-                    reason = `${c.type.toUpperCase()} (${convertTo12Hour(c.time_in)} - ${convertTo12Hour(c.time_out)})`;
+                    reason = c.isChurch ? `Assigned to ${c.type}` : `${c.type.toUpperCase()} (${convertTo12Hour(c.time_in)} - ${convertTo12Hour(c.time_out)})`;
                     break; 
                 }
             }
         }
 
         if (conflict) {
-            gridHtml += `<div class="person-card" style="border-left:4px solid var(--danger); background:#fef2f2;"><strong>${slot.name}</strong><span class="status-badge confl">❌ Conflict</span><span class="conflict-reason">Overlap with ${reason}</span></div>`;
+            gridHtml += `<div class="person-card" style="border-left:4px solid var(--danger); background:#fef2f2;"><strong>${slot.name}</strong><span class="status-badge confl">❌ Conflict</span><span class="conflict-reason">${reason}</span></div>`;
         } else {
             gridHtml += `<div class="person-card" style="border-left:4px solid var(--success); background:#f0fdf4;"><strong>${slot.name}</strong><span class="status-badge avail">✅ Available</span></div>`;
         }
