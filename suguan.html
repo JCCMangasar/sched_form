@@ -39,9 +39,19 @@
             overflow-y: auto;
         }
 
-        .sidebar h2 { margin: 0; font-size: 20px; border-bottom: 1px solid #334155; padding-bottom: 10px; color: #f8fafc; }
+        .sidebar h2 {
+            margin: 0;
+            font-size: 20px;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 10px;
+            color: #f8fafc;
+        }
 
-        .form-group { display: flex; flex-direction: column; gap: 5px; }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
 
         .sidebar label {
             font-size: 12px;
@@ -67,10 +77,16 @@
             font-weight: bold;
             border-radius: 6px;
             cursor: pointer;
+            transition: opacity 0.2s;
         }
         .sidebar button:hover { opacity: 0.9; }
 
-        .managed-slots { margin-top: 15px; display: flex; flex-direction: column; gap: 8px; }
+        .managed-slots {
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
 
         .slot-item {
             background: #1e293b;
@@ -89,6 +105,7 @@
             color: #ef4444;
             cursor: pointer;
             font-weight: bold;
+            font-size: 14px;
         }
 
         .main-content {
@@ -96,6 +113,8 @@
             padding: 30px;
             box-sizing: border-box;
             overflow-y: auto;
+            display: flex;
+            flex-direction: column;
         }
 
         .header-bar {
@@ -118,9 +137,12 @@
             font-size: 15px;
             border-radius: 6px;
             cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        .location-section { margin-bottom: 35px; }
+        .location-section {
+            margin-bottom: 35px;
+        }
 
         .location-title {
             font-size: 18px;
@@ -185,6 +207,7 @@
             align-items: center;
             cursor: grab;
             user-select: none;
+            margin-bottom: 6px;
         }
 
         .delegate-pill:active { cursor: grabbing; }
@@ -198,6 +221,7 @@
 </head>
 <body>
 
+<!-- SIDEBAR -->
 <div class="sidebar">
     <h2>Manage Schedule Settings</h2>
     
@@ -227,8 +251,8 @@
     </div>
 
     <div class="form-group">
-        <label>Display Label</label>
-        <input type="text" id="newLabel" placeholder="Wed 5am">
+        <label>Display Label (e.g. Wed 5am)</label>
+        <input type="text" id="newLabel" placeholder="Wed 5am or Sun 8am">
     </div>
 
     <div class="form-group">
@@ -247,21 +271,22 @@
     <button onclick="addCustomSlot()">➕ Add Time Slot</button>
 
     <hr style="border: 0; border-top: 1px solid #334155; margin: 15px 0;">
+    
     <h2>Current Database Master Slots</h2>
     <div id="managedSlotsContainer" class="managed-slots"></div>
 </div>
 
+<!-- MAIN CONTENT -->
 <div class="main-content">
     <div class="header-bar">
         <h1>📋 Suguan (Delegates Assignment) - Drag & Drop</h1>
-        <button class="action-btn" onclick="generateAssignments()">⚡ Auto-Generate</button>
+        <button class="action-btn" onclick="generateAssignments()">⚡ Auto-Generate Assignment Matrix</button>
     </div>
 
     <div id="suguanContainer">
         <div style="text-align:center; padding:120px; color:#94a3b8; font-size:16px;">
-            Click "Auto-Generate Assignment Matrix"<br>
-            Then <strong>drag names</strong> between slots.<br>
-            <strong>Time conflicts are blocked automatically.</strong>
+            Click "Auto-Generate" then drag names between slots.<br>
+            <strong>Time conflicts are automatically blocked.</strong>
         </div>
     </div>
 </div>
@@ -347,7 +372,7 @@ async function fetchRawData() {
         rawDatabaseRows = await response.json();
         processProfiles();
     } catch {
-        alert("Unable to fetch data from worker.");
+        alert("Unable to interface with edge worker data pipelines.");
     }
 }
 
@@ -359,8 +384,7 @@ function processProfiles() {
                 name: row.name, 
                 constraints: [], 
                 currentAssignedCount: 0,
-                assignedIntervals: [],
-                assignments: {}
+                assignedIntervals: []
             };
         }
         if (row.schedule_type === 'work' || row.schedule_type === 'school') {
@@ -372,9 +396,10 @@ function processProfiles() {
                 isChurch: false
             });
         } else if (row.schedule_type.startsWith('church:')) {
+            const deptName = row.schedule_type.replace('church: ', '');
             organizedProfiles[row.name].constraints.push({
-                type: `CHURCH_DUTY`,
-                day: "unknown",
+                type: `CHURCH_DUTY (${deptName})`,
+                day: "unknown", 
                 time_in: "00:00",
                 time_out: "00:00",
                 isChurch: true,
@@ -388,8 +413,10 @@ function renderSidebarList() {
     const container = document.getElementById('managedSlotsContainer');
     container.innerHTML = CUSTOM_SCHEDULE_BLOCKS.map(s => `
         <div class="slot-item">
-            <div><strong>[${s.location}]</strong> ${s.name}<br>
-            <small>${s.day.toUpperCase()} | ${s.start}-${s.end} (${s.quota})</small></div>
+            <div>
+                <strong>[${s.location}]</strong> ${s.name}<br>
+                <small style="color:#94a3b8;">${s.day.toUpperCase()} | ${s.start}-${s.end} (${s.quota} pax)</small>
+            </div>
             <button class="delete-slot-btn" onclick="deleteCustomSlot(${s.id})">×</button>
         </div>
     `).join('');
@@ -403,10 +430,15 @@ function addCustomSlot() {
     const end = document.getElementById('newEnd').value;
     const quota = parseInt(document.getElementById('newQuota').value) || 1;
 
-    if (!name) return alert("Please enter label!");
+    if (!name) {
+        alert("Please enter an identification label!");
+        return;
+    }
 
-    CUSTOM_SCHEDULE_BLOCKS.push({ id: Date.now(), location, name, day, start, end, quota });
+    const newSlot = { id: Date.now(), location, name, day, start, end, quota };
+    CUSTOM_SCHEDULE_BLOCKS.push(newSlot);
     localStorage.setItem('custom_suguan_schedule', JSON.stringify(CUSTOM_SCHEDULE_BLOCKS));
+    
     renderSidebarList();
     document.getElementById('newLabel').value = "";
 }
@@ -434,12 +466,11 @@ function intervalsOverlap(start1, end1, start2, end2) {
     return start1 < end2 && end2 > start1;
 }
 
-// ==================== MAIN GENERATION + DRAG & DROP ====================
+// ================== GENERATE ASSIGNMENTS WITH DRAG & DROP ==================
 function generateAssignments() {
     Object.values(organizedProfiles).forEach(p => {
         p.currentAssignedCount = 0;
         p.assignedIntervals = [];
-        p.assignments = {};
     });
 
     let htmlOutput = "";
@@ -455,47 +486,52 @@ function generateAssignments() {
 
         let assignedDelegates = [];
 
-        if (slot.linkedGroup === "deguzman" && lockedDeGuzmanPerson) {
+        if (slot.linkedGroup === "deguzman" && lockedDeGuzmanPerson !== null) {
             assignedDelegates = [lockedDeGuzmanPerson];
         } else {
-            const slotStart = timeToMinutes(slot.start);
-            const slotEnd = timeToMinutes(slot.end);
-            const slotStartBuffer = slotStart - 105;
+            const slotStartMin = timeToMinutes(slot.start);
+            const slotEndMin = timeToMinutes(slot.end);
+            const slotStartWithPrepBuffer = slotStartMin - 105;
 
-            let eligible = Object.values(organizedProfiles).filter(p => {
-                let conflict = false;
+            let eligibleCandidates = [];
 
-                // Existing constraints
+            Object.values(organizedProfiles).forEach(p => {
+                let hasConflict = false;
+
                 for (let c of p.constraints) {
                     if (!c.isChurch && c.day === slot.day) {
                         const workStart = timeToMinutes(c.time_in);
-                        const workEnd = timeToMinutes(c.time_out) + 90;
-                        if (slotStartBuffer < workEnd && slotEnd > workStart) conflict = true;
+                        const workEndWithTravelBuffer = timeToMinutes(c.time_out) + 90;
+                        if (slotStartWithPrepBuffer < workEndWithTravelBuffer && slotEndMin > workStart) {
+                            hasConflict = true;
+                            break;
+                        }
                     }
-                    if (c.isChurch && c.rawSlot === slot.name.toLowerCase()) conflict = true;
-                }
-                if (conflict) return false;
-
-                // Time overlap with current assignments
-                for (let iv of p.assignedIntervals) {
-                    if (intervalsOverlap(slotStart, slotEnd, iv.start, iv.end)) {
-                        conflict = true;
+                    if (c.isChurch && c.rawSlot === slot.name.toLowerCase()) {
+                        hasConflict = true;
                         break;
                     }
                 }
-                return !conflict;
+                if (hasConflict) return;
+
+                for (let existing of (p.assignedIntervals || [])) {
+                    if (intervalsOverlap(slotStartMin, slotEndMin, existing.start, existing.end)) {
+                        hasConflict = true;
+                        break;
+                    }
+                }
+                if (!hasConflict) eligibleCandidates.push(p);
             });
 
-            eligible = shuffleArray(eligible);
-            eligible.sort((a, b) => a.currentAssignedCount - b.currentAssignedCount);
-            assignedDelegates = eligible.slice(0, slot.quota);
+            eligibleCandidates = shuffleArray(eligibleCandidates);
+            eligibleCandidates.sort((a, b) => a.currentAssignedCount - b.currentAssignedCount);
+            assignedDelegates = eligibleCandidates.slice(0, slot.quota);
 
-            if (slot.linkedGroup === "deguzman" && assignedDelegates.length) {
+            if (slot.linkedGroup === "deguzman" && assignedDelegates.length > 0) {
                 lockedDeGuzmanPerson = assignedDelegates[0];
             }
         }
 
-        // Record assignments
         assignedDelegates.forEach(d => {
             d.currentAssignedCount++;
             d.assignedIntervals.push({
@@ -503,14 +539,12 @@ function generateAssignments() {
                 end: timeToMinutes(slot.end),
                 slotId: slot.id
             });
-            d.assignments[slot.id] = true;
         });
 
-        // Render draggable pills
-        let pills = assignedDelegates.map(d => `
+        let delegatesHtml = assignedDelegates.map(d => `
             <div class="delegate-pill" draggable="true" ondragstart="dragStart(event, '${d.name}', ${slot.id})">
                 👤 ${d.name}
-                <span style="font-size:11px; opacity:0.6;">#${d.currentAssignedCount}</span>
+                <span style="font-size:10px; opacity:0.5; font-weight:normal;">Load #${d.currentAssignedCount}</span>
             </div>
         `).join('');
 
@@ -520,23 +554,22 @@ function generateAssignments() {
                  ondragover="allowDrop(event)" 
                  ondragleave="dragLeave(event)">
                 <div class="time">📍 ${slot.name}</div>
-                <div style="font-size:11px;color:#64748b;">Quota: ${slot.quota} Pax</div>
-                ${pills || '<span class="no-delegates">No delegates assigned</span>'}
+                <div style="font-size:11px; color:#64748b; margin-bottom:5px;">
+                    Target Quota Range: ${slot.quota} Pax ${slot.linkedGroup === 'deguzman' ? '<b>(Continuous Duty)</b>' : ''}
+                </div>
+                ${delegatesHtml || '<span class="no-delegates">⚠ No delegates assigned</span>'}
             </div>
         `;
     });
 
-    if (currentLocation) htmlOutput += `</div></div>`;
+    htmlOutput += `</div></div>`;
     document.getElementById('suguanContainer').innerHTML = htmlOutput;
 }
 
-// Drag & Drop Functions
-let draggedPerson = null;
-
+// ================== DRAG & DROP FUNCTIONS ==================
 function dragStart(e, personName, fromSlotId) {
-    draggedPerson = { name: personName, fromSlotId };
-    e.dataTransfer.setData("text/plain", personName);
-    e.dataTransfer.setData("fromSlot", fromSlotId);
+    e.dataTransfer.setData("personName", personName);
+    e.dataTransfer.setData("fromSlotId", fromSlotId.toString());
 }
 
 function allowDrop(e) {
@@ -553,18 +586,17 @@ function drop(e, toSlotId) {
     const card = e.currentTarget;
     card.classList.remove('dragover');
 
-    const personName = e.dataTransfer.getData("text/plain");
-    const fromSlotId = parseInt(e.dataTransfer.getData("fromSlot"));
+    const personName = e.dataTransfer.getData("personName");
+    const fromSlotId = parseInt(e.dataTransfer.getData("fromSlotId"));
     const person = organizedProfiles[personName];
     const targetSlot = CUSTOM_SCHEDULE_BLOCKS.find(s => s.id === toSlotId);
 
     if (!person || !targetSlot || fromSlotId === toSlotId) return;
 
-    // Check time conflict
     const newStart = timeToMinutes(targetSlot.start);
     const newEnd = timeToMinutes(targetSlot.end);
-    let hasConflict = false;
 
+    let hasConflict = false;
     for (let iv of person.assignedIntervals) {
         if (iv.slotId !== fromSlotId && intervalsOverlap(newStart, newEnd, iv.start, iv.end)) {
             hasConflict = true;
@@ -575,25 +607,19 @@ function drop(e, toSlotId) {
     if (hasConflict) {
         card.classList.add('invalid');
         setTimeout(() => card.classList.remove('invalid'), 800);
-        alert(`❌ Time conflict! ${personName} is already assigned during this time.`);
+        alert(`❌ Time conflict! ${personName} cannot be assigned here.`);
         return;
     }
 
     // Remove from old slot
     person.assignedIntervals = person.assignedIntervals.filter(iv => iv.slotId !== fromSlotId);
-    delete person.assignments[fromSlotId];
     person.currentAssignedCount = Math.max(0, person.currentAssignedCount - 1);
 
     // Add to new slot
-    person.assignedIntervals.push({
-        start: newStart,
-        end: newEnd,
-        slotId: toSlotId
-    });
-    person.assignments[toSlotId] = true;
+    person.assignedIntervals.push({ start: newStart, end: newEnd, slotId: toSlotId });
     person.currentAssignedCount++;
 
-    // Re-render everything
+    // Refresh display
     generateAssignments();
 }
 </script>
