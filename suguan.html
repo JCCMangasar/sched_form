@@ -138,6 +138,16 @@
     margin-left: 8px;
     padding: 0 4px;
 }
+        .available-list { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 6px; 
+    max-height: 400px; 
+    overflow-y: auto; 
+    padding: 8px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
     </style>
 </head>
 <body>
@@ -185,11 +195,7 @@
     </div>
     <button onclick="addCustomSlot()">➕ Add Time Slot</button>
 
-    <hr style="border: 0; border-top: 1px solid #334155; margin: 15px 0;">
     <h2>Current Database Master Slots</h2>
-        <hr style="border: 0; border-top: 1px solid #334155; margin: 15px 0;">
-    <h2>Available Delegates</h2>
-    <div id="availableDelegates" class="available-list"></div>
     <div id="managedSlotsContainer" class="managed-slots"></div>
 </div>
 
@@ -198,12 +204,15 @@
         <h1>📋 Suguan (Delegates Assignment) - Drag & Drop</h1>
         <button class="action-btn" onclick="generateAssignments()">⚡ Auto-Generate Assignment Matrix</button>
     </div>
-    <div id="suguanContainer">
-        <div style="text-align:center; padding:120px; color:#94a3b8; font-size:16px;">
-            Click "Auto-Generate" then drag names freely.<br>
-            <strong>Strict Validation: Same time different division = Allowed</strong>
-        </div>
+    
+    <!-- Available Delegates on the RIGHT -->
+    <div style="margin-bottom: 20px;">
+        <h2 style="color: var(--primary); margin-bottom: 10px;">Available Delegates (Drag to any slot)</h2>
+        <div id="availableDelegates" class="available-list" style="background: #f1f5f9; padding: 10px; border-radius: 8px; min-height: 120px;"></div>
     </div>
+
+    <div id="suguanContainer"></div>
+</div>
 </div>
 
 <!-- Edit Modal -->
