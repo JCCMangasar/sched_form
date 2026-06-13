@@ -148,6 +148,15 @@
     border: 1px solid var(--border);
     border-radius: 8px;
 }
+        .suguan-card {
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.suguan-card.active {
+    border-color: var(--accent);
+    background: #f0f9ff;
+    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.2);
+}
     </style>
 </head>
 <body>
@@ -548,22 +557,28 @@ function generateAssignments() {
             </div>
         `).join('');
 
-        htmlOutput += `
-            <div class="suguan-card" data-slot-id="${slot.id}" 
-                 ondrop="drop(event, ${slot.id})" 
-                 ondragover="allowDrop(event)" 
-                 ondragleave="dragLeave(event)">
-                <div class="time">📍 ${slot.name}</div>
-                <div style="font-size:11px; color:#64748b;">Quota: ${slot.quota}</div>
-                ${delegatesHtml || '<span class="no-delegates">No delegates assigned</span>'}
-            </div>
-        `;
+htmlOutput += `
+    <div class="suguan-card" data-slot-id="${slot.id}" 
+         ondrop="drop(event, ${slot.id})" 
+         ondragover="allowDrop(event)" 
+         ondragleave="dragLeave(event)"
+         onclick="selectSlot(${slot.id})">
+        <div class="time">📍 ${slot.name}</div>
+        <div style="font-size:11px; color:#64748b;">Quota: ${slot.quota}</div>
+        ${delegatesHtml || '<span class="no-delegates">No delegates assigned</span>'}
+    </div>
+`;
     });
 
     htmlOutput += `</div></div>`;
     document.getElementById('suguanContainer').innerHTML = htmlOutput;
     
-    renderAvailableDelegates();   // Refresh available list
+    renderAvailableDelegates();  
+    
+    // Auto filter available delegates for the first slot by default
+if (!selectedSlotId && CUSTOM_SCHEDULE_BLOCKS.length > 0) {
+    selectSlot(CUSTOM_SCHEDULE_BLOCKS[0].id);
+}// Refresh available list
 }
 
 function dragStart(e, personName, fromSlotId) {
@@ -650,6 +665,58 @@ function isSameTimeDifferentDivision(slot1, slot2) {
            slot1.start === slot2.start && 
            slot1.end === slot2.end && 
            slot1.location !== slot2.location;
+}
+    let selectedSlotId = null;
+
+function selectSlot(slotId) {
+    selectedSlotId = slotId;
+    
+    // Remove active class from all cards
+    document.querySelectorAll('.suguan-card').forEach(card => {
+        card.classList.remove('active');
+    });
+    
+    // Add active class to selected card
+    const activeCard = document.querySelector(`.suguan-card[data-slot-id="${slotId}"]`);
+    if (activeCard) activeCard.classList.add('active');
+
+    filterAvailableForSlot(slotId);
+}
+
+function filterAvailableForSlot(slotId) {
+    const slot = CUSTOM_SCHEDULE_BLOCKS.find(s => s.id === slotId);
+    if (!slot) return;
+
+    const container = document.getElementById('availableDelegates');
+    const slotStartMin = timeToMinutes(slot.start);
+    const slotEndMin = timeToMinutes(slot.end);
+
+    const eligible = Object.values(organizedProfiles).filter(p => {
+        let hasConflict = false;
+
+        // Check work/school and church constraints
+        for (let c of p.constraints) {
+            if (!c.isChurch && c.day === slot.day) {
+                const workStart = timeToMinutes(c.time_in);
+                const workEnd = timeToMinutes(c.time_out) + 90;
+                if (slotStartMin - 105 < workEnd && slotEndMin > workStart) hasConflict = true;
+            }
+            if (c.isChurch && c.rawSlot === slot.name.toLowerCase()) hasConflict = true;
+        }
+        if (hasConflict) return false;
+
+        // Check existing assignments
+        for (let iv of p.assignedIntervals) {
+            if (intervalsOverlap(slotStartMin, slotEndMin, iv.start, iv.end)) return false;
+        }
+        return true;
+    });
+
+    container.innerHTML = eligible.map(p => `
+        <div class="delegate-pill" draggable="true" ondragstart="dragStartFromSidebar(event, '${p.name}')">
+            👤 ${p.name} <span style="font-size:10px; opacity:0.6;">#${p.currentAssignedCount}</span>
+        </div>
+    `).join('');
 }
 </script>
 </body>
