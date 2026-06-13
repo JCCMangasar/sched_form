@@ -26,13 +26,6 @@
             margin: 0 auto;
         }
 
-        .header-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-        }
-
         h1 { margin: 0; color: var(--primary); font-size: 26px; }
 
         .search-box {
@@ -81,7 +74,6 @@
 
         tr:hover { background-color: #f8fafc; }
 
-        /* Schedule column sub-styling */
         .schedule-list {
             margin: 0;
             padding-left: 18px;
@@ -107,42 +99,43 @@
             color: #0f766e;
             font-weight: 500;
         }
-        /* Update the header layout to stack elements cleanly */
+        
         .header-bar {
             display: flex;
             justify-content: space-between;
-            align-items: flex-end; /* Aligns search bar perfectly with buttons */
+            align-items: flex-end; 
             margin-bottom: 30px;
             gap: 20px;
         }
         
-        /* Container for title and action buttons */
-        .header-bar > div {
+        .header-left-group {
             display: flex;
             flex-direction: column;
             gap: 12px;
         }
+
+        .button-container {
+            display: flex;
+            gap: 8px;
+        }
         
-        /* The redesigned navigation button */
         .nav-btn {
             display: inline-block;
-            align-self: flex-start;
-            background-color: var(--accent); /* Uses your dashboard's bright blue */
+            background-color: var(--accent); 
             color: white;
-            text-decoration: none; /* Removes the ugly default underline */
+            text-decoration: none; 
             padding: 10px 18px;
             font-weight: 600;
             font-size: 14px;
             border-radius: 6px;
-            box-shadow: 0 2px 4px rgba(52, 152, 219, 0.2);
+            box-shadow: 0 2px 4px rgba(15, 118, 110, 0.2);
             transition: all 0.2s ease-in-out;
         }
         
-        /* Smooth pop effect when hovering */
         .nav-btn:hover {
             opacity: 0.9;
             transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+            box-shadow: 0 4px 8px rgba(15, 118, 110, 0.3);
         }
         
         .nav-btn:active {
@@ -154,12 +147,14 @@
 
 <div class="wrapper">
     <div class="header-bar">
-        <h1>Overall View of Schedules</h1>
-        <input type="text" id="viewSearch" class="search-box" placeholder="🔎 Search members..." onkeyup="filterViewTable()">
-        <div>
-        <a href="index.html" class="nav-btn"> Back to Form</a>
-        <a href="admin.html" class="nav-btn" style="background-color: #64748b;">⚙️ Manage Records</a>
+        <div class="header-left-group">
+            <h1>Overall View of Schedules</h1>
+            <div class="button-container">
+                <a href="index.html" class="nav-btn">Back to Form</a>
+                <a href="admin.html" class="nav-btn" style="background-color: #64748b; box-shadow: 0 2px 4px rgba(100,116,139,0.2);">⚙️ Manage Records</a>
             </div>
+        </div>
+        <input type="text" id="viewSearch" class="search-box" placeholder="🔎 Search members..." onkeyup="filterViewTable()">
     </div>
 
     <div class="table-card">
@@ -180,8 +175,7 @@
 </div>
 
 <script>
-
-// Change this to your live Cloudflare Worker URL
+    
 const WORKER_URL = "https://schedule-api.jakemm04.workers.dev"; 
 let groupedData = [];
 
@@ -200,7 +194,22 @@ async function loadMasterView() {
     }
 }
 
-// Smart logic that merges individual database entries into single profiles
+// Helper Function: Turns "13:00" into "1:00 PM"
+function convertToStandardTime(timeString) {
+    if (!timeString || timeString.trim() === "" || timeString === "--") return "--";
+    
+    // Split hour and minutes
+    const parts = timeString.split(':');
+    let hours = parseInt(parts[0], 10);
+    const minutes = parts[1];
+    
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12; // The hour '0' should be '12'
+    
+    return `${hours}:${minutes} ${ampm}`;
+}
+
 function groupRecordsByName(records) {
     const groups = {};
     
@@ -211,11 +220,15 @@ function groupRecordsByName(records) {
         
         const capDay = row.day_or_slot.charAt(0).toUpperCase() + row.day_or_slot.slice(1);
         
+        // Convert times through our helper function
+        const formattedIn = convertToStandardTime(row.time_in);
+        const formattedOut = convertToStandardTime(row.time_out);
+        
         if (row.schedule_type === 'work') {
-            groups[row.name].work.push(`<li><strong>${capDay}:</strong> <span class="time-text">${row.time_in || '--'} - ${row.time_out || '--'}</span></li>`);
+            groups[row.name].work.push(`<li><strong>${capDay}:</strong> <span class="time-text">${formattedIn} - ${formattedOut}</span></li>`);
         } 
         else if (row.schedule_type === 'school') {
-            groups[row.name].school.push(`<li><strong>${capDay}:</strong> <span class="time-text">${row.time_in || '--'} - ${row.time_out || '--'}</span></li>`);
+            groups[row.name].school.push(`<li><strong>${capDay}:</strong> <span class="time-text">${formattedIn} - ${formattedOut}</span></li>`);
         } 
         else if (row.schedule_type.startsWith('church:')) {
             const deptName = row.schedule_type.replace('church: ', '');
@@ -238,7 +251,6 @@ function renderViewTable(profiles) {
 
     let html = '';
     profiles.forEach(user => {
-        // Compile church blocks beautifully 
         let churchHtml = '';
         for (const [dept, slots] of Object.entries(user.church)) {
             churchHtml += `<div><span class="dept-tag">${dept}</span>: ${slots.join(', ')}</div>`;
