@@ -201,6 +201,7 @@
 </head>
 <body>
 
+<!-- SIDEBAR: DYNAMIC ROTATION AND TIME CONTROL PANEL -->
 <div class="sidebar">
     <h2>Manage Schedule Settings</h2>
     
@@ -255,6 +256,7 @@
     <div id="managedSlotsContainer" class="managed-slots"></div>
 </div>
 
+<!-- MAIN WORKSPACE VIEW PANEL -->
 <div class="main-content">
     <div class="header-bar">
         <h1>📋 Auto-Generated Suguan (Delegates Assignment)</h1>
@@ -435,7 +437,7 @@ function timeToMinutes(timeStr) {
     return h * 60 + m;
 }
 
-// GENERATION AUTOMATION MATRIX ENGINE
+// GENERATION AUTOMATION MATRIX ENGINE WITH 1HR 45MIN PRE-WORKSHIP BUFFER
 function generateAssignments() {
     // Reset individual fatigue counters before calculating
     Object.values(organizedProfiles).forEach(p => p.currentAssignedCount = 0);
@@ -450,8 +452,11 @@ function generateAssignments() {
         const locSlots = CUSTOM_SCHEDULE_BLOCKS.filter(s => s.location === loc);
 
         locSlots.forEach(slot => {
-            const slotStartMin = timeToMinutes(slot.start);
+            const slotStartReal = timeToMinutes(slot.start);
             const slotEndMin = timeToMinutes(slot.end);
+            
+            // Apply 1 hour and 45 minutes preparation/assembly buffer (105 minutes)
+            const slotStartWithPrepBuffer = slotStartReal - 105;
 
             // Step 1: Find all non-conflicting candidates
             let eligibleCandidates = [];
@@ -462,7 +467,11 @@ function generateAssignments() {
                 for (let c of p.constraints) {
                     // Check standard Work & School day boundary parameters (+ 1.5 Hour safety travel buffers)
                     if (!c.isChurch && c.day === slot.day) {
-                        if (slotStartMin < (timeToMinutes(c.time_out) + 90) && slotEndMin > (timeToMinutes(c.time_in) - 90)) {
+                        const workStart = timeToMinutes(c.time_in);
+                        const workEndWithTravelBuffer = timeToMinutes(c.time_out) + 90;
+
+                        // Check intersection between [WorkStart, WorkEnd + 90min Buffer] AND [WorshipStart - 105min Prep, WorshipEnd]
+                        if (slotStartWithPrepBuffer < workEndWithTravelBuffer && slotEndMin > workStart) {
                             hasConflict = true;
                             break;
                         }
@@ -479,7 +488,7 @@ function generateAssignments() {
                 }
             });
 
-            // Step 2: Dynamic Load Balancing Distribution (Prioritize matching those with least duties assigned)
+            // Step 2: Dynamic Load Balancing Distribution (Prioritize those with least duties assigned)
             eligibleCandidates.sort((a, b) => a.currentAssignedCount - b.currentAssignedCount);
 
             // Step 3: Extract based on Quota limits configurations
@@ -508,7 +517,7 @@ function generateAssignments() {
             htmlOutput += `
                 <div class="suguan-card">
                     <div class="time">📍 ${slot.name}</div>
-                    <div style="font-size:11px; color:#64748b; margin-bottom:5px;">Target Quota Range: ${slot.quota} Pax</div>
+                    <div style="font-size:11px; color:#64748b; margin-bottom:5px;">Target Quota Range: ${slot.quota} Pax <br><span style="color:var(--accent);">Req. Arrival: 1h 45m before</span></div>
                     ${delegatesHtml}
                 </div>
             `;
