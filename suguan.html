@@ -309,7 +309,7 @@ const WORKER_URL = "https://schedule-api.jakemm04.workers.dev";
 let rawDatabaseRows = [];
 let organizedProfiles = {};
 
-// Default slots (same as original)
+// Default slots
 let CUSTOM_SCHEDULE_BLOCKS = [
     { id: 1, location: "Kapilya", name: "Wed 5am", day: "wednesday", start: "05:00", end: "06:30", quota: 3 },
     { id: 2, location: "Kapilya", name: "Wed 5pm", day: "wednesday", start: "17:00", end: "18:30", quota: 3 },
@@ -615,7 +615,7 @@ function drop(e, toSlotId) {
     person.assignedIntervals = person.assignedIntervals.filter(iv => iv.slotId !== fromSlotId);
     person.currentAssignedCount = Math.max(0, person.currentAssignedCount - 1);
 
-    // Add to new slot
+    // Add to new slot (works across divisions at same time)
     person.assignedIntervals.push({ start: newStart, end: newEnd, slotId: toSlotId });
     person.currentAssignedCount++;
 
