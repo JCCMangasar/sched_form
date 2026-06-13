@@ -151,8 +151,8 @@
     </div>
     <div id="suguanContainer">
         <div style="text-align:center; padding:120px; color:#94a3b8; font-size:16px;">
-            Click "Auto-Generate" then drag names freely between any slots/divisions.<br>
-            <strong>Same-time moves across divisions are allowed.</strong>
+            Click "Auto-Generate" then drag names freely.<br>
+            <strong>Strict Validation: Same time different division = Allowed</strong>
         </div>
     </div>
 </div>
@@ -175,7 +175,6 @@ const WORKER_URL = "https://schedule-api.jakemm04.workers.dev";
 let rawDatabaseRows = [];
 let organizedProfiles = {};
 
-// Full default slots
 let CUSTOM_SCHEDULE_BLOCKS = [
     { id: 1, location: "Kapilya", name: "Wed 5am", day: "wednesday", start: "05:00", end: "06:30", quota: 3 },
     { id: 2, location: "Kapilya", name: "Wed 5pm", day: "wednesday", start: "17:00", end: "18:30", quota: 3 },
@@ -318,7 +317,15 @@ function intervalsOverlap(start1, end1, start2, end2) {
     return start1 < end2 && end2 > start1;
 }
 
-// ================== MAIN GENERATION + DRAG & DROP ==================
+// Strict Validation Helper
+function isSameTimeDifferentDivision(slot1, slot2) {
+    return slot1.day === slot2.day && 
+           slot1.start === slot2.start && 
+           slot1.end === slot2.end && 
+           slot1.location !== slot2.location;
+}
+
+// ================== GENERATE ASSIGNMENTS ==================
 function generateAssignments() {
     Object.values(organizedProfiles).forEach(p => {
         p.currentAssignedCount = 0;
@@ -397,7 +404,7 @@ function generateAssignments() {
     document.getElementById('suguanContainer').innerHTML = htmlOutput;
 }
 
-// Drag & Drop
+// ================== DRAG & DROP WITH STRICT VALIDATION ==================
 function dragStart(e, personName, fromSlotId) {
     e.dataTransfer.setData("personName", personName);
     e.dataTransfer.setData("fromSlotId", fromSlotId);
@@ -414,30 +421,33 @@ function drop(e, toSlotId) {
     const personName = e.dataTransfer.getData("personName");
     const fromSlotId = parseInt(e.dataTransfer.getData("fromSlotId"));
     const person = organizedProfiles[personName];
+    const fromSlot = CUSTOM_SCHEDULE_BLOCKS.find(s => s.id === fromSlotId);
     const targetSlot = CUSTOM_SCHEDULE_BLOCKS.find(s => s.id === toSlotId);
 
-    if (!person || !targetSlot || fromSlotId === toSlotId) return;
+    if (!person || !fromSlot || !targetSlot || fromSlotId === toSlotId) return;
 
     const newStart = timeToMinutes(targetSlot.start);
     const newEnd = timeToMinutes(targetSlot.end);
 
-    // Check conflict (allow same-time different slot)
-    let hasConflict = false;
-    for (let iv of person.assignedIntervals) {
-        if (iv.slotId !== fromSlotId && intervalsOverlap(newStart, newEnd, iv.start, iv.end)) {
-            hasConflict = true;
-            break;
+    // STRICT VALIDATION
+    if (!isSameTimeDifferentDivision(fromSlot, targetSlot)) {
+        // Check for any time conflict
+        let hasConflict = false;
+        for (let iv of person.assignedIntervals) {
+            if (iv.slotId !== fromSlotId && intervalsOverlap(newStart, newEnd, iv.start, iv.end)) {
+                hasConflict = true;
+                break;
+            }
+        }
+        if (hasConflict) {
+            card.classList.add('invalid');
+            setTimeout(() => card.classList.remove('invalid'), 800);
+            alert(`❌ Time conflict! ${personName} cannot be assigned here.`);
+            return;
         }
     }
 
-    if (hasConflict) {
-        card.classList.add('invalid');
-        setTimeout(() => card.classList.remove('invalid'), 800);
-        alert(`❌ Time conflict! ${personName} cannot be assigned here.`);
-        return;
-    }
-
-    // Move
+    // Execute move
     person.assignedIntervals = person.assignedIntervals.filter(iv => iv.slotId !== fromSlotId);
     person.currentAssignedCount = Math.max(0, person.currentAssignedCount - 1);
 
@@ -445,6 +455,13 @@ function drop(e, toSlotId) {
     person.currentAssignedCount++;
 
     generateAssignments();
+}
+
+function isSameTimeDifferentDivision(slot1, slot2) {
+    return slot1.day === slot2.day && 
+           slot1.start === slot2.start && 
+           slot1.end === slot2.end && 
+           slot1.location !== slot2.location;
 }
 </script>
 </body>
