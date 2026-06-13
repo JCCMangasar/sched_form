@@ -325,24 +325,23 @@ let CUSTOM_SCHEDULE_BLOCKS = [
     { id: 25, location: "Landfill GWS", name: "Sun 6am", day: "sunday", start: "06:00", end: "07:30", quota: 3 },
     { id: 26, location: "Landfill GWS", name: "Sun 10am", day: "sunday", start: "10:00", end: "11:30", quota: 3 },
 
-    // PNK (Children's Worship - 1 Delegate rule restriction constraint verified)
+    // PNK (Children's Worship)
     { id: 27, location: "PNK", name: "Sitio Laan: 12:00nn", day: "sunday", start: "12:00", end: "13:30", quota: 1 },
     { id: 28, location: "PNK", name: "Kapilya: Sun 8am", day: "sunday", start: "08:00", end: "09:30", quota: 1 },
     { id: 29, location: "PNK", name: "Landfill: Sun 8am", day: "sunday", start: "08:00", end: "09:30", quota: 1 },
     { id: 30, location: "PNK", name: "Lajada 1: 8am", day: "sunday", start: "08:00", end: "09:30", quota: 1 },
     { id: 31, location: "PNK", name: "Lajada 2: 10am", day: "sunday", start: "10:00", end: "11:30", quota: 1 },
-    { id: 32, location: "PNK", name: "De Guzman 1: 8am", day: "sunday", start: "08:00", end: "09:30", quota: 1 },
-    { id: 33, location: "PNK", name: "De Guzman 2: 10am", day: "sunday", start: "10:00", end: "11:30", quota: 1 },
+    { id: 32, location: "PNK", name: "De Guzman 1: 8am", day: "sunday", start: "08:00", end: "09:30", quota: 1, linkedGroup: "deguzman" },
+    { id: 33, location: "PNK", name: "De Guzman 2: 10am", day: "sunday", start: "10:00", end: "11:30", quota: 1, linkedGroup: "deguzman" },
     { id: 34, location: "PNK", name: "Abatex: 7am", day: "sunday", start: "07:00", end: "08:30", quota: 1 },
 
-    // Other Activities (Minimum 2 personnel parameters verified)
+    // Other Activities
     { id: 35, location: "Other Activities", name: "Pulong ng Lokal: Sat 8:30 pm", day: "saturday", start: "20:30", end: "22:00", quota: 2 },
     { id: 36, location: "Other Activities", name: "Klase Min/Mwa: Mon 5:30 am", day: "monday", start: "05:30", end: "07:00", quota: 2 },
     { id: 37, location: "Other Activities", name: "Pulong Min/ Mwa: Fri 8am", day: "friday", start: "08:00", end: "09:30", quota: 2 },
     { id: 38, location: "Other Activities", name: "Monthly Meet Up: Sun 5pm", day: "sunday", start: "17:00", end: "18:30", quota: 2 }
 ];
 
-// Load local edits if previously saved to preserve state configuration
 if (localStorage.getItem('custom_suguan_schedule')) {
     CUSTOM_SCHEDULE_BLOCKS = JSON.parse(localStorage.getItem('custom_suguan_schedule'));
 }
@@ -391,7 +390,6 @@ function processProfiles() {
     });
 }
 
-// SIDEBAR UTILITIES: Add and Delete Schedules Dynamically
 function renderSidebarList() {
     const container = document.getElementById('managedSlotsContainer');
     container.innerHTML = CUSTOM_SCHEDULE_BLOCKS.map(s => `
@@ -437,14 +435,24 @@ function timeToMinutes(timeStr) {
     return h * 60 + m;
 }
 
-// GENERATION AUTOMATION MATRIX ENGINE WITH 1HR 45MIN PRE-WORKSHIP BUFFER
+// Array Shuffle Helper Function (Fisher-Yates)
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+// GENERATION AUTOMATION MATRIX ENGINE
 function generateAssignments() {
-    // Reset individual fatigue counters before calculating
     Object.values(organizedProfiles).forEach(p => p.currentAssignedCount = 0);
 
-    // Group items by Location context parameters
     const locations = [...new Set(CUSTOM_SCHEDULE_BLOCKS.map(s => s.location))];
     let htmlOutput = "";
+    
+    // Persistent placeholder tracking variable for locking continuous De Guzman slots straight
+    let lockedDeGuzmanPerson = null;
 
     locations.forEach(loc => {
         htmlOutput += `<div class="location-section"><div class="location-title">${loc} Division</div><div class="suguan-grid">`;
@@ -452,57 +460,62 @@ function generateAssignments() {
         const locSlots = CUSTOM_SCHEDULE_BLOCKS.filter(s => s.location === loc);
 
         locSlots.forEach(slot => {
-            const slotStartReal = timeToMinutes(slot.start);
-            const slotEndMin = timeToMinutes(slot.end);
-            
-            // Apply 1 hour and 45 minutes preparation/assembly buffer (105 minutes)
-            const slotStartWithPrepBuffer = slotStartReal - 105;
+            let assignedDelegates = [];
 
-            // Step 1: Find all non-conflicting candidates
-            let eligibleCandidates = [];
+            // SPECIAL LOGIC WINDOW: Check if we are running the linked continuous De Guzman workflow
+            if (slot.linkedGroup === "deguzman" && lockedDeGuzmanPerson !== null) {
+                assignedDelegates = [lockedDeGuzmanPerson];
+            } else {
+                const slotStartReal = timeToMinutes(slot.start);
+                const slotEndMin = timeToMinutes(slot.end);
+                const slotStartWithPrepBuffer = slotStartReal - 105;
 
-            Object.values(organizedProfiles).forEach(p => {
-                let hasConflict = false;
+                let eligibleCandidates = [];
 
-                for (let c of p.constraints) {
-                    // Check standard Work & School day boundary parameters (+ 1.5 Hour safety travel buffers)
-                    if (!c.isChurch && c.day === slot.day) {
-                        const workStart = timeToMinutes(c.time_in);
-                        const workEndWithTravelBuffer = timeToMinutes(c.time_out) + 90;
+                Object.values(organizedProfiles).forEach(p => {
+                    let hasConflict = false;
 
-                        // Check intersection between [WorkStart, WorkEnd + 90min Buffer] AND [WorshipStart - 105min Prep, WorshipEnd]
-                        if (slotStartWithPrepBuffer < workEndWithTravelBuffer && slotEndMin > workStart) {
+                    for (let c of p.constraints) {
+                        if (!c.isChurch && c.day === slot.day) {
+                            const workStart = timeToMinutes(c.time_in);
+                            const workEndWithTravelBuffer = timeToMinutes(c.time_out) + 90;
+
+                            if (slotStartWithPrepBuffer < workEndWithTravelBuffer && slotEndMin > workStart) {
+                                hasConflict = true;
+                                break;
+                            }
+                        }
+                        if (c.isChurch && c.rawSlot === slot.name.toLowerCase()) {
                             hasConflict = true;
                             break;
                         }
                     }
-                    // Check direct matching active assignment clashes
-                    if (c.isChurch && c.rawSlot === slot.name.toLowerCase()) {
-                        hasConflict = true;
-                        break;
-                    }
+
+                    if (!hasConflict) eligibleCandidates.push(p);
+                });
+
+                // STEP 1: Shuffle the array to completely mix candidate distribution pools every run
+                eligibleCandidates = shuffleArray(eligibleCandidates);
+
+                // STEP 2: Sort by least workloads to prevent deployment fatigue
+                eligibleCandidates.sort((a, b) => a.currentAssignedCount - b.currentAssignedCount);
+
+                assignedDelegates = eligibleCandidates.slice(0, slot.quota);
+
+                // Record the assignment to hold the person straight if it's the beginning block of De Guzman
+                if (slot.linkedGroup === "deguzman" && assignedDelegates.length > 0) {
+                    lockedDeGuzmanPerson = assignedDelegates[0];
                 }
-
-                if (!hasConflict) {
-                    eligibleCandidates.push(p);
-                }
-            });
-
-            // Step 2: Dynamic Load Balancing Distribution (Prioritize those with least duties assigned)
-            eligibleCandidates.sort((a, b) => a.currentAssignedCount - b.currentAssignedCount);
-
-            // Step 3: Extract based on Quota limits configurations
-            let assignedDelegates = eligibleCandidates.slice(0, slot.quota);
+            }
             
-            // Increment duty counters to balance work loads on future slots loops
             assignedDelegates.forEach(d => d.currentAssignedCount++);
 
-            // Step 4: Map presentation output cards layout
+            // Map Presentation Cards Layout
             let delegatesHtml = "";
             if (assignedDelegates.length === 0) {
-                delegatesHtml = `<span class="no-delegates">⚠ No available delegates found (Severe Overlap Conflict)</span>`;
+                delegatesHtml = `<span class="no-delegates">⚠ No available delegates found</span>`;
             } else {
-                delegatesHtml = assignedDelegates.map((d, idx) => `
+                delegatesHtml = assignedDelegates.map(d => `
                     <div class="delegate-pill">
                         <span>👤 ${d.name}</span>
                         <span style="font-size:10px; opacity:0.5; font-weight:normal;">Load Index: #${d.currentAssignedCount}</span>
@@ -510,14 +523,16 @@ function generateAssignments() {
                 `).join('');
                 
                 if (assignedDelegates.length < slot.quota) {
-                    delegatesHtml += `<span class="no-delegates" style="color:#d97706; display:block; margin-top:4px;">⚠ Short-staffed (Needed ${slot.quota}, only found ${assignedDelegates.length})</span>`;
+                    delegatesHtml += `<span class="no-delegates" style="color:#d97706; display:block; margin-top:4px;">⚠ Short-staffed</span>`;
                 }
             }
 
             htmlOutput += `
                 <div class="suguan-card">
                     <div class="time">📍 ${slot.name}</div>
-                    <div style="font-size:11px; color:#64748b; margin-bottom:5px;">Target Quota Range: ${slot.quota} Pax <br><span style="color:var(--accent);">Req. Arrival: 1h 45m before</span></div>
+                    <div style="font-size:11px; color:#64748b; margin-bottom:5px;">
+                        Target Quota Range: ${slot.quota} Pax ${slot.linkedGroup === 'deguzman' ? '<b style="color:var(--accent);">(Continuous Duty)</b>' : ''}
+                    </div>
                     ${delegatesHtml}
                 </div>
             `;
