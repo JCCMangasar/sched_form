@@ -444,14 +444,23 @@ function shuffleArray(array) {
     return array;
 }
 
-// GENERATION AUTOMATION MATRIX ENGINE
+// NEW: Check if two time intervals overlap
+function intervalsOverlap(start1, end1, start2, end2) {
+    return start1 < end2 && end2 > start1;
+}
+
+// GENERATION AUTOMATION MATRIX ENGINE - UPDATED WITH CROSS-DIVISION TIME CONFLICT PREVENTION
 function generateAssignments() {
-    Object.values(organizedProfiles).forEach(p => p.currentAssignedCount = 0);
+    // Reset counters and add interval tracking
+    Object.values(organizedProfiles).forEach(p => {
+        p.currentAssignedCount = 0;
+        p.assignedIntervals = []; 
+    });
 
     const locations = [...new Set(CUSTOM_SCHEDULE_BLOCKS.map(s => s.location))];
     let htmlOutput = "";
     
-    // Persistent placeholder tracking variable for locking continuous De Guzman slots straight
+    // Persistent placeholder tracking variable for locking continuous De Guzman slots
     let lockedDeGuzmanPerson = null;
 
     locations.forEach(loc => {
@@ -462,19 +471,20 @@ function generateAssignments() {
         locSlots.forEach(slot => {
             let assignedDelegates = [];
 
-            // SPECIAL LOGIC WINDOW: Check if we are running the linked continuous De Guzman workflow
+            // SPECIAL LOGIC: De Guzman continuous duty
             if (slot.linkedGroup === "deguzman" && lockedDeGuzmanPerson !== null) {
                 assignedDelegates = [lockedDeGuzmanPerson];
             } else {
-                const slotStartReal = timeToMinutes(slot.start);
+                const slotStartMin = timeToMinutes(slot.start);
                 const slotEndMin = timeToMinutes(slot.end);
-                const slotStartWithPrepBuffer = slotStartReal - 105;
+                const slotStartWithPrepBuffer = slotStartMin - 105;
 
                 let eligibleCandidates = [];
 
                 Object.values(organizedProfiles).forEach(p => {
                     let hasConflict = false;
 
+                    // Check existing constraints (work, school, prior church duties)
                     for (let c of p.constraints) {
                         if (!c.isChurch && c.day === slot.day) {
                             const workStart = timeToMinutes(c.time_in);
@@ -490,27 +500,45 @@ function generateAssignments() {
                             break;
                         }
                     }
+                    if (hasConflict) return;
 
-                    if (!hasConflict) eligibleCandidates.push(p);
+                    // NEW: Check for time conflicts with previously assigned slots (cross-division)
+                    for (let existing of (p.assignedIntervals || [])) {
+                        if (intervalsOverlap(slotStartMin, slotEndMin, existing.start, existing.end)) {
+                            hasConflict = true;
+                            break;
+                        }
+                    }
+                    if (hasConflict) return;
+
+                    eligibleCandidates.push(p);
                 });
 
-                // STEP 1: Shuffle the array to completely mix candidate distribution pools every run
+                // Shuffle + balance by current load
                 eligibleCandidates = shuffleArray(eligibleCandidates);
-
-                // STEP 2: Sort by least workloads to prevent deployment fatigue
                 eligibleCandidates.sort((a, b) => a.currentAssignedCount - b.currentAssignedCount);
 
                 assignedDelegates = eligibleCandidates.slice(0, slot.quota);
 
-                // Record the assignment to hold the person straight if it's the beginning block of De Guzman
+                // Lock De Guzman person for continuous duty
                 if (slot.linkedGroup === "deguzman" && assignedDelegates.length > 0) {
                     lockedDeGuzmanPerson = assignedDelegates[0];
                 }
             }
             
-            assignedDelegates.forEach(d => d.currentAssignedCount++);
+            // Record assignments and occupied time intervals
+            assignedDelegates.forEach(d => {
+                d.currentAssignedCount++;
+                d.assignedIntervals = d.assignedIntervals || [];
+                d.assignedIntervals.push({
+                    start: timeToMinutes(slot.start),
+                    end: timeToMinutes(slot.end),
+                    slotName: slot.name,
+                    location: slot.location
+                });
+            });
 
-            // Map Presentation Cards Layout
+            // Render the card
             let delegatesHtml = "";
             if (assignedDelegates.length === 0) {
                 delegatesHtml = `<span class="no-delegates">⚠ No available delegates found</span>`;
