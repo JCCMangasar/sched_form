@@ -292,6 +292,7 @@
 const WORKER_URL = "https://schedule-api.jakemm04.workers.dev";
 let rawDatabaseRows = [];
 let organizedProfiles = {};
+let selectedSlotId = null;
 
 let CUSTOM_SCHEDULE_BLOCKS = [
     { id: 1, location: "Kapilya", name: "Wed 5am", day: "wednesday", start: "05:00", end: "06:30", quota: 3 },
@@ -426,7 +427,6 @@ function deleteCustomSlot(id) {
     generateAssignments();
 }
 
-// Edit Modal
 let currentEditId = null;
 
 function editSlot(id) {
@@ -467,7 +467,6 @@ function closeModal() {
     document.getElementById('editModal').style.display = 'none';
 }
 
-// Time functions
 function timeToMinutes(timeStr) {
     const [h, m] = timeStr.split(':').map(Number);
     return h * 60 + m;
@@ -482,19 +481,10 @@ function shuffleArray(array) {
 }
 
 function intervalsOverlap(start1, end1, start2, end2) {
-    return start1 < end2 && end2 > start1;
+    return start1 < end2 && start2 < end1;
 }
 
-function isSameTimeDifferentDivision(slot1, slot2) {
-    return slot1.day === slot2.day && 
-           slot1.start === slot2.start && 
-           slot1.end === slot2.end && 
-           slot1.location !== slot2.location;
-}
-
-// Generate Assignments + Drag & Drop
 function generateAssignments() {
-    // Reset all assignments only when auto-generating
     Object.values(organizedProfiles).forEach(p => {
         p.currentAssignedCount = 0;
         p.assignedIntervals = [];
@@ -502,83 +492,87 @@ function generateAssignments() {
 
     let htmlOutput = "";
     let lockedDeGuzmanPerson = null;
-    let currentLocation = "";
 
-    CUSTOM_SCHEDULE_BLOCKS.forEach(slot => {
-        if (slot.location !== currentLocation) {
-            if (currentLocation) htmlOutput += `</div></div>`;
-            currentLocation = slot.location;
-            htmlOutput += `<div class="location-section"><div class="location-title">${slot.location} Division</div><div class="suguan-grid">`;
-        }
+    // Grouping block entries cleanly by location
+    const groupedByLocation = CUSTOM_SCHEDULE_BLOCKS.reduce((acc, slot) => {
+        if (!acc[slot.location]) acc[slot.location] = [];
+        acc[slot.location].push(slot);
+        return acc;
+    }, {});
 
-        let assignedDelegates = [];
+    for (const [location, slots] of Object.entries(groupedByLocation)) {
+        htmlOutput += `<div class="location-section"><div class="location-title">${location} Division</div><div class="suguan-grid">`;
 
-        if (slot.linkedGroup === "deguzman" && lockedDeGuzmanPerson) {
-            assignedDelegates = [lockedDeGuzmanPerson];
-        } else {
-            const slotStartMin = timeToMinutes(slot.start);
-            const slotEndMin = timeToMinutes(slot.end);
-            const slotStartWithPrepBuffer = slotStartMin - 105;
+        slots.forEach(slot => {
+            let assignedDelegates = [];
 
-            let eligibleCandidates = Object.values(organizedProfiles).filter(p => {
-                let hasConflict = false;
-                for (let c of p.constraints) {
-                    if (!c.isChurch && c.day === slot.day) {
-                        const workStart = timeToMinutes(c.time_in);
-                        const workEnd = timeToMinutes(c.time_out) + 90;
-                        if (slotStartWithPrepBuffer < workEnd && slotEndMin > workStart) hasConflict = true;
+            if (slot.linkedGroup === "deguzman" && lockedDeGuzmanPerson) {
+                assignedDelegates = [lockedDeGuzmanPerson];
+            } else {
+                const slotStartMin = timeToMinutes(slot.start);
+                const slotEndMin = timeToMinutes(slot.end);
+                const slotStartWithPrepBuffer = slotStartMin - 105;
+
+                let eligibleCandidates = Object.values(organizedProfiles).filter(p => {
+                    let hasConflict = false;
+                    for (let c of p.constraints) {
+                        if (!c.isChurch && c.day === slot.day) {
+                            const workStart = timeToMinutes(c.time_in);
+                            const workEnd = timeToMinutes(c.time_out) + 90;
+                            if (slotStartWithPrepBuffer < workEnd && slotEndMin > workStart) hasConflict = true;
+                        }
+                        if (c.isChurch && c.rawSlot === slot.name.toLowerCase()) hasConflict = true;
                     }
-                    if (c.isChurch && c.rawSlot === slot.name.toLowerCase()) hasConflict = true;
-                }
-                if (hasConflict) return false;
+                    if (hasConflict) return false;
 
-                for (let iv of p.assignedIntervals) {
-                    if (intervalsOverlap(slotStartMin, slotEndMin, iv.start, iv.end)) return false;
-                }
-                return true;
+                    for (let iv of p.assignedIntervals) {
+                        if (intervalsOverlap(slotStartMin, slotEndMin, iv.start, iv.end)) return false;
+                    }
+                    return true;
+                });
+
+                eligibleCandidates = shuffleArray(eligibleCandidates);
+                eligibleCandidates.sort((a, b) => a.currentAssignedCount - b.currentAssignedCount);
+                assignedDelegates = eligibleCandidates.slice(0, slot.quota);
+
+                if (slot.linkedGroup === "deguzman" && assignedDelegates.length) lockedDeGuzmanPerson = assignedDelegates[0];
+            }
+
+            assignedDelegates.forEach(d => {
+                d.currentAssignedCount++;
+                d.assignedIntervals.push({ start: timeToMinutes(slot.start), end: timeToMinutes(slot.end), slotId: slot.id });
             });
 
-            eligibleCandidates = shuffleArray(eligibleCandidates);
-            eligibleCandidates.sort((a, b) => a.currentAssignedCount - b.currentAssignedCount);
-            assignedDelegates = eligibleCandidates.slice(0, slot.quota);
+            let delegatesHtml = assignedDelegates.map(d => `
+                <div class="delegate-pill" draggable="true" ondragstart="dragStart(event, '${d.name}', ${slot.id})">
+                    👤 ${d.name} <span style="font-size:10px; opacity:0.6;">#${d.currentAssignedCount}</span>
+                    <span class="remove-btn" onclick="removeDelegate('${d.name}', ${slot.id}); event.stopImmediatePropagation();">×</span>
+                </div>
+            `).join('');
 
-            if (slot.linkedGroup === "deguzman" && assignedDelegates.length) lockedDeGuzmanPerson = assignedDelegates[0];
-        }
-
-        assignedDelegates.forEach(d => {
-            d.currentAssignedCount++;
-            d.assignedIntervals.push({ start: timeToMinutes(slot.start), end: timeToMinutes(slot.end), slotId: slot.id });
+            htmlOutput += `
+                <div class="suguan-card ${selectedSlotId === slot.id ? 'active' : ''}" data-slot-id="${slot.id}" 
+                     ondrop="drop(event, ${slot.id})" 
+                     ondragover="allowDrop(event)" 
+                     ondragleave="dragLeave(event)"
+                     onclick="selectSlot(${slot.id})">
+                    <div class="time">📍 ${slot.name}</div>
+                    <div style="font-size:11px; color:#64748b;">Quota: ${slot.quota}</div>
+                    ${delegatesHtml || '<span class="no-delegates">No delegates assigned</span>'}
+                </div>
+            `;
         });
 
-        let delegatesHtml = assignedDelegates.map(d => `
-            <div class="delegate-pill" draggable="true" ondragstart="dragStart(event, '${d.name}', ${slot.id})">
-                👤 ${d.name} <span style="font-size:10px; opacity:0.6;">#${d.currentAssignedCount}</span>
-                <span class="remove-btn" onclick="removeDelegate('${d.name}', ${slot.id}); event.stopImmediatePropagation();">×</span>
-            </div>
-        `).join('');
+        htmlOutput += `</div></div>`;
+    }
 
-htmlOutput += `
-    <div class="suguan-card" data-slot-id="${slot.id}" 
-         ondrop="drop(event, ${slot.id})" 
-         ondragover="allowDrop(event)" 
-         ondragleave="dragLeave(event)"
-         onclick="selectSlot(${slot.id})">
-        <div class="time">📍 ${slot.name}</div>
-        <div style="font-size:11px; color:#64748b;">Quota: ${slot.quota}</div>
-        ${delegatesHtml || '<span class="no-delegates">No delegates assigned</span>'}
-    </div>
-`;
-    });
-
-    htmlOutput += `</div></div>`;
     document.getElementById('suguanContainer').innerHTML = htmlOutput;
     
-    renderAvailableDelegates();  
-    
-    // Auto filter available delegates for the first slot by default
-if (!selectedSlotId && CUSTOM_SCHEDULE_BLOCKS.length > 0) {
-    selectSlot(CUSTOM_SCHEDULE_BLOCKS[0].id);
-}// Refresh available list
+    if (selectedSlotId) {
+        filterAvailableForSlot(selectedSlotId);
+    } else {
+        renderAvailableDelegates();
+    }
 }
 
 function dragStart(e, personName, fromSlotId) {
@@ -594,47 +588,56 @@ function drop(e, toSlotId) {
     const card = e.currentTarget;
     card.classList.remove('dragover');
 
-    const personName = e.dataTransfer.getData("personName");
+    const personName = e.dataTransfer.setData("personName");
     const fromSidebar = e.dataTransfer.getData("fromSidebar") === "true";
     const fromSlotId = fromSidebar ? null : parseInt(e.dataTransfer.getData("fromSlotId"));
 
     const person = organizedProfiles[personName];
     const targetSlot = CUSTOM_SCHEDULE_BLOCKS.find(s => s.id === toSlotId);
+    const sourceSlot = fromSlotId ? CUSTOM_SCHEDULE_BLOCKS.find(s => s.id === fromSlotId) : null;
 
     if (!person || !targetSlot) return;
 
     const newStart = timeToMinutes(targetSlot.start);
     const newEnd = timeToMinutes(targetSlot.end);
 
-    // Conflict check
+    // Dynamic Move Evaluation Check
+    let isAMove = false;
+    if (sourceSlot) {
+        isAMove = sourceSlot.day === targetSlot.day && 
+                  sourceSlot.start === targetSlot.start && 
+                  sourceSlot.end === targetSlot.end && 
+                  sourceSlot.location !== targetSlot.location;
+    }
+
     let hasConflict = false;
     for (let iv of person.assignedIntervals) {
-        if ((fromSlotId === null || iv.slotId !== fromSlotId) && intervalsOverlap(newStart, newEnd, iv.start, iv.end)) {
+        if (iv.slotId !== fromSlotId && intervalsOverlap(newStart, newEnd, iv.start, iv.end)) {
             hasConflict = true;
             break;
         }
     }
 
-    if (hasConflict) {
+    // Overlapping blocks on different elements are rejected
+    if (hasConflict && !isAMove) {
         card.classList.add('invalid');
         setTimeout(() => card.classList.remove('invalid'), 800);
         alert(`❌ Time conflict! ${personName} cannot be assigned here.`);
         return;
     }
 
-    // Remove from old slot if dragging from existing slot
+    // Drop tracking clear
     if (!fromSidebar && fromSlotId !== null) {
         person.assignedIntervals = person.assignedIntervals.filter(iv => iv.slotId !== fromSlotId);
         person.currentAssignedCount = Math.max(0, person.currentAssignedCount - 1);
     }
 
-    // Add to new slot
     person.assignedIntervals.push({ start: newStart, end: newEnd, slotId: toSlotId });
     person.currentAssignedCount++;
 
     generateAssignments();
-    renderAvailableDelegates();
 }
+
 function renderAvailableDelegates() {
     const container = document.getElementById('availableDelegates');
     container.innerHTML = Object.values(organizedProfiles).map(p => `
@@ -649,7 +652,6 @@ function dragStartFromSidebar(e, personName) {
     e.dataTransfer.setData("fromSidebar", "true");
 }
 
-// Remove delegate from a slot
 function removeDelegate(personName, slotId) {
     const person = organizedProfiles[personName];
     if (!person) return;
@@ -658,25 +660,12 @@ function removeDelegate(personName, slotId) {
     person.currentAssignedCount = Math.max(0, person.currentAssignedCount - 1);
 
     generateAssignments();
-    renderAvailableDelegates();
 }
-function isSameTimeDifferentDivision(slot1, slot2) {
-    return slot1.day === slot2.day && 
-           slot1.start === slot2.start && 
-           slot1.end === slot2.end && 
-           slot1.location !== slot2.location;
-}
-    let selectedSlotId = null;
 
 function selectSlot(slotId) {
     selectedSlotId = slotId;
+    document.querySelectorAll('.suguan-card').forEach(card => card.classList.remove('active'));
     
-    // Remove active class from all cards
-    document.querySelectorAll('.suguan-card').forEach(card => {
-        card.classList.remove('active');
-    });
-    
-    // Add active class to selected card
     const activeCard = document.querySelector(`.suguan-card[data-slot-id="${slotId}"]`);
     if (activeCard) activeCard.classList.add('active');
 
@@ -694,7 +683,6 @@ function filterAvailableForSlot(slotId) {
     const eligible = Object.values(organizedProfiles).filter(p => {
         let hasConflict = false;
 
-        // Check work/school and church constraints
         for (let c of p.constraints) {
             if (!c.isChurch && c.day === slot.day) {
                 const workStart = timeToMinutes(c.time_in);
@@ -705,9 +693,8 @@ function filterAvailableForSlot(slotId) {
         }
         if (hasConflict) return false;
 
-        // Check existing assignments
         for (let iv of p.assignedIntervals) {
-            if (intervalsOverlap(slotStartMin, slotEndMin, iv.start, iv.end)) return false;
+            if (iv.slotId !== slotId && intervalsOverlap(slotStartMin, slotEndMin, iv.start, iv.end)) return false;
         }
         return true;
     });
