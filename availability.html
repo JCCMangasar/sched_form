@@ -19,13 +19,67 @@
             font-family: 'Segoe UI', system-ui, sans-serif;
             background-color: var(--bg);
             margin: 0;
-            padding: 30px;
+            padding: 0;
             color: #334155;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
         }
 
-        .wrapper {
-            max-width: 1200px;
-            margin: 0 auto;
+        /* NEW SIDEBAR PANEL STYLING */
+        .sidebar {
+            width: 320px;
+            background: var(--primary);
+            color: white;
+            padding: 25px 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+            overflow-y: auto;
+        }
+
+        .sidebar h2 {
+            margin: 0;
+            font-size: 20px;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 12px;
+            color: #f8fafc;
+        }
+
+        .sidebar-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .sidebar label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            background: #0f172a;
+            color: white;
+            font-size: 14px;
+        }
+
+        /* MAIN DASHBOARD CONTENT AREA */
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            box-sizing: border-box;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
         }
 
         .header-bar {
@@ -33,30 +87,11 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 25px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 15px;
         }
 
         h1 { margin: 0; color: var(--primary); font-size: 26px; }
-
-        .controls {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 25px;
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            align-items: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-        }
-
-        select {
-            padding: 10px 14px;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            font-size: 15px;
-            min-width: 250px;
-            background: white;
-        }
 
         .nav-btn {
             display: inline-block;
@@ -71,111 +106,108 @@
         }
         .nav-btn:hover { opacity: 0.9; }
 
-        .analysis-container {
-            display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 25px;
-        }
-
-        .card {
+        /* VIEW CONTAINER STATES */
+        .results-wrapper {
             background: var(--card-bg);
             border-radius: 8px;
-            padding: 20px;
+            padding: 25px;
             border: 1px solid var(--border);
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            flex: 1;
         }
 
-        h3 { margin-top: 0; color: var(--primary); border-bottom: 2px solid var(--border); padding-bottom: 8px; }
-
-        .busy-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .busy-list li {
-            padding: 8px 12px;
-            background: #f1f5f9;
-            margin-bottom: 6px;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-
-        .grid-slots {
+        .roster-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-            gap: 12px;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
         }
 
-        .slot-status-card {
+        .person-card {
             padding: 15px;
             border-radius: 6px;
             border: 1px solid var(--border);
+            background: #f8fafc;
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 4px;
         }
 
-        .status-available {
-            background-color: #f0fdf4;
-            border-color: #bbf7d0;
+        .person-card strong {
+            font-size: 16px;
+            color: var(--primary);
         }
 
-        .status-conflict {
-            background-color: #fef2f2;
-            border-color: #fecaca;
-        }
-
-        .badge-status {
+        .status-badge {
             font-size: 11px;
             font-weight: bold;
             padding: 2px 6px;
             border-radius: 4px;
-            display: inline-block;
-            text-transform: uppercase;
             width: fit-content;
+            text-transform: uppercase;
         }
 
-        .badge-available { background: #d1fae5; color: var(--success); }
-        .badge-conflict { background: #fee2e2; color: var(--danger); }
+        .status-badge.avail { background-color: #d1fae5; color: var(--success); }
+        .status-badge.confl { background-color: #fee2e2; color: var(--danger); }
 
-        .reason-text {
+        .conflict-reason {
             font-size: 12px;
             color: #64748b;
             font-style: italic;
+            margin-top: 4px;
+        }
+
+        .placeholder-text {
+            text-align: center;
+            padding: 80px 20px;
+            color: #94a3b8;
+            font-size: 15px;
         }
     </style>
 </head>
 <body>
 
-<div class="wrapper">
-    <div class="header-bar">
-        <h1>🔍 Availability Analyzer</h1>
-        <a href="view.html" class="nav-btn">📋 View Table</a>
-    </div>
-
-    <div class="controls">
-        <label for="memberSelect" style="font-weight:600;">Select Member to Analyze:</label>
-        <select id="memberSelect" onchange="analyzeSelectedMember()">
-            <option value="">-- Loading Registered Names --</option>
+<div class="sidebar">
+    <h2>Control Filters</h2>
+    
+    <div class="sidebar-group">
+        <label for="analysisMode">Analysis Mode</label>
+        <select id="analysisMode" onchange="switchMode()">
+            <option value="slot">Filter by Church Slot</option>
+            <option value="member">Analyze Individual Member</option>
         </select>
-        <span style="font-size:13px; color:#64748b;">(Automatically calculates a 1.5-hour travel buffer before & after Work/School)</span>
     </div>
 
-    <div id="noSelectionMsg" style="text-align:center; padding:50px; color:#94a3b8; background:white; border-radius:8px; border:1px solid var(--border);">
-        Please select a member above to execute the predictive availability algorithms.
+    <div id="slotModeControls" class="sidebar-group">
+        <label for="churchSlotSelect">Target Church Duty Slot</label>
+        <select id="churchSlotSelect" onchange="runAnalysis()">
+            <option value="">-- Choose Time Slot --</option>
+        </select>
     </div>
 
-    <div id="analysisDashboard" class="analysis-container" style="display:none;">
-        <div class="card">
-            <h3>Logged Base Schedule</h3>
-            <p style="font-size:13px; color:#64748b; margin-bottom:15px;">Fixed constraints provided by user:</p>
-            <ul id="baseBusyList" class="busy-list"></ul>
+    <div id="memberModeControls" class="sidebar-group" style="display: none;">
+        <label for="memberSelect">Target Member Profile</label>
+        <select id="memberSelect" onchange="runAnalysis()">
+            <option value="">-- Loading Names --</option>
+        </select>
+    </div>
+    
+    <div style="font-size: 12px; color: #64748b; margin-top: auto; line-height: 1.4;">
+        💡 <strong>System Rule:</strong> Travel windows are dynamically locked 1.5 hours before and after work/school profiles.
+    </div>
+</div>
+
+<div class="main-content">
+    <div class="header-bar">
+        <h1 id="dashboardTitle">Predictive Group Availability</h1>
+        <div style="display:flex; gap:8px;">
+            <a href="view.html" class="nav-btn">📋 View Table</a>
         </div>
+    </div>
 
-        <div class="card">
-            <h3>Calculated Kagawaran Option Suitability</h3>
-            <div id="slotsGrid" class="grid-slots"></div>
+    <div class="results-wrapper">
+        <div id="dynamicOutput">
+            <div class="placeholder-text">Please utilize the left control panel to execute database lookup matrices.</div>
         </div>
     </div>
 </div>
@@ -199,7 +231,6 @@ const WORKER_URL = "https://schedule-api.jakemm04.workers.dev";
 let rawDatabaseRows = [];
 let organizedProfiles = {};
 
-// Exact mapping of your website's Kagawaran time slots normalized for code execution logic
 const CHURCH_DUTY_ROSTER = [
     { name: "Wed 5am",  day: "wednesday", start: "05:00", end: "06:30" },
     { name: "Wed 5pm",  day: "wednesday", start: "17:00", end: "18:30" },
@@ -225,19 +256,17 @@ async function fetchRawData() {
         rawDatabaseRows = await response.json();
         
         processProfiles();
-        populateDropdown();
+        populateControlMenus();
     } catch {
-        alert("Failed to initialize database calculation pipes.");
+        document.getElementById('dynamicOutput').innerHTML = '<div class="placeholder-text" style="color:red;">Failed to hook network streams.</div>';
     }
 }
 
-// Restructures data rows into clean objects holding structural time arrays
 function processProfiles() {
     rawDatabaseRows.forEach(row => {
         if (!organizedProfiles[row.name]) {
             organizedProfiles[row.name] = { name: row.name, constraints: [] };
         }
-        // Only map work and school for safety buffers calculations
         if (row.schedule_type === 'work' || row.schedule_type === 'school') {
             organizedProfiles[row.name].constraints.push({
                 type: row.schedule_type,
@@ -249,16 +278,34 @@ function processProfiles() {
     });
 }
 
-function populateDropdown() {
-    const select = document.getElementById('memberSelect');
+function populateControlMenus() {
+    // Populate Church Slots Menu
+    const slotSelect = document.getElementById('churchSlotSelect');
+    let slotHtml = '<option value="">-- Choose Time Slot --</option>';
+    CHURCH_DUTY_ROSTER.forEach((slot, index) => {
+        slotHtml += `<option value="${index}">${slot.name}</option>`;
+    });
+    slotSelect.innerHTML = slotHtml;
+
+    // Populate Member Menu
+    const memberSelect = document.getElementById('memberSelect');
     const names = Object.keys(organizedProfiles).sort();
-    
-    let html = '<option value="">-- Choose Member --</option>';
-    names.forEach(name => { html += `<option value="${name}">${name}</option>`; });
-    select.innerHTML = html;
+    let memberHtml = '<option value="">-- Choose Member --</option>';
+    names.forEach(name => { memberHtml += `<option value="${name}">${name}</option>`; });
+    memberSelect.innerHTML = memberHtml;
 }
 
-// Converts standard HH:MM strings into raw minutes for comparative matching evaluation equations
+function switchMode() {
+    const mode = document.getElementById('analysisMode').value;
+    document.getElementById('slotModeControls').style.display = mode === 'slot' ? 'flex' : 'none';
+    document.getElementById('memberModeControls').style.display = mode === 'member' ? 'flex' : 'none';
+    
+    // Clear outputs on conversion loop
+    document.getElementById('churchSlotSelect').value = "";
+    document.getElementById('memberSelect').value = "";
+    document.getElementById('dynamicOutput').innerHTML = '<div class="placeholder-text">Select parameters inside the sidebar to process data filters.</div>';
+}
+
 function timeToMinutes(timeStr) {
     const [h, m] = timeStr.split(':').map(Number);
     return h * 60 + m;
@@ -272,83 +319,134 @@ function convertTo12Hour(timeStr) {
     return `${hours}:${m} ${ampm}`;
 }
 
-function analyzeSelectedMember() {
-    const selectedName = document.getElementById('memberSelect').value;
-    const dashboard = document.getElementById('analysisDashboard');
-    const fallback = document.getElementById('noSelectionMsg');
+function runAnalysis() {
+    const mode = document.getElementById('analysisMode').value;
+    if (mode === 'slot') {
+        analyzeBySlot();
+    } else {
+        analyzeByMember();
+    }
+}
 
-    if (!selectedName) {
-        dashboard.style.display = 'none';
-        fallback.style.display = 'block';
+// SIDEBAR TRIGGER A: Find who can work a specific time slot
+function analyzeBySlot() {
+    const slotIdx = document.getElementById('churchSlotSelect').value;
+    const container = document.getElementById('dynamicOutput');
+    
+    if (!slotIdx) {
+        container.innerHTML = '<div class="placeholder-text">Select a church time slot to map group availability arrays.</div>';
         return;
     }
 
-    fallback.style.display = 'none';
-    dashboard.style.display = 'grid';
+    const slot = CHURCH_DUTY_ROSTER[slotIdx];
+    document.getElementById('dashboardTitle').innerText = `Roster Ranks: ${slot.name}`;
 
-    const profile = organizedProfiles[selectedName];
+    const slotStartMin = timeToMinutes(slot.start);
+    const slotEndMin = timeToMinutes(slot.end);
+
+    let availableHTML = '<h3>Available Personnel</h3><div class="roster-grid">';
+    let conflictHTML = '<h3 style="margin-top:30px;">Unavailable Personnel (Conflicts)</h3><div class="roster-grid">';
     
-    // 1. Render Left Column (Base Items)
-    const baseBusyList = document.getElementById('baseBusyList');
-    if(profile.constraints.length === 0) {
-        baseBusyList.innerHTML = '<li><i>No active work or school limitations recorded. Totally free!</i></li>';
-    } else {
-        baseBusyList.innerHTML = profile.constraints.map(c => 
-            `<li><strong>${c.type.toUpperCase()}</strong> (${c.day.charAt(0).toUpperCase() + c.day.slice(1)}):<br>${convertTo12Hour(c.time_in)} - ${convertTo12Hour(c.time_out)}</li>`
-        ).join('');
+    let availCount = 0, conflictCount = 0;
+
+    Object.values(organizedProfiles).forEach(profile => {
+        let hasConflict = false;
+        let reason = "";
+
+        for (let constraint of profile.constraints) {
+            if (constraint.day === slot.day) {
+                const busyStart = timeToMinutes(constraint.time_in);
+                const busyEnd = timeToMinutes(constraint.time_out);
+                
+                // 1.5 Hour safety thresholds parameters evaluation
+                const bufferedStart = busyStart - 90;
+                const bufferedEnd = busyEnd + 90;
+
+                if (slotStartMin < bufferedEnd && slotEndMin > bufferedStart) {
+                    hasConflict = true;
+                    reason = `Busy with ${constraint.type.toUpperCase()} (${convertTo12Hour(constraint.time_in)} - ${convertTo12Hour(constraint.time_out)})`;
+                    break;
+                }
+            }
+        }
+
+        if (!hasConflict) {
+            availCount++;
+            availableHTML += `
+            <div class="person-card" style="border-top: 3px solid var(--success);">
+                <strong>${profile.name}</strong>
+                <span class="status-badge avail">✅ Free</span>
+            </div>`;
+        } else {
+            conflictCount++;
+            conflictHTML += `
+            <div class="person-card" style="border-top: 3px solid var(--danger); opacity: 0.75;">
+                <strong>${profile.name}</strong>
+                <span class="status-badge confl">❌ Blocked</span>
+                <span class="conflict-reason">${reason}</span>
+            </div>`;
+        }
+    });
+
+    availableHTML += availCount === 0 ? '<p style="color:#94a3b8; font-style:italic; padding-left:10px;">No members available.</p>' : '';
+    conflictHTML += conflictCount === 0 ? '<p style="color:#94a3b8; font-style:italic; padding-left:10px;">No scheduling conflicts identified.</p>' : '';
+    
+    container.innerHTML = availableHTML + '</div>' + conflictHTML + '</div>';
+}
+
+// SIDEBAR TRIGGER B: Show everything for a single member (Original View)
+function analyzeByMember() {
+    const selectedName = document.getElementById('memberSelect').value;
+    const container = document.getElementById('dynamicOutput');
+
+    if (!selectedName) {
+        container.innerHTML = '<div class="placeholder-text">Select a member to track target parameters.</div>';
+        return;
     }
 
-    // 2. Compute Conflicts on Right Column
-    const grid = document.getElementById('slotsGrid');
-    let gridHtml = '';
+    document.getElementById('dashboardTitle').innerText = `Individual Evaluation: ${selectedName}`;
+    const profile = organizedProfiles[selectedName];
+    
+    let gridHtml = '<div class="roster-grid">';
 
     CHURCH_DUTY_ROSTER.forEach(slot => {
         let hasConflict = false;
         let conflictReason = "";
-
-        // Raw minutes calculation for Church event boundaries
         const slotStartMin = timeToMinutes(slot.start);
         const slotEndMin = timeToMinutes(slot.end);
 
-        // Scan every base constraint for matching day overlaps
         for (let constraint of profile.constraints) {
             if (constraint.day === slot.day) {
-                // Read base parameters
-                const busyStartReal = timeToMinutes(constraint.time_in);
-                const busyEndReal = timeToMinutes(constraint.time_out);
+                const busyStart = timeToMinutes(constraint.time_in);
+                const busyEnd = timeToMinutes(constraint.time_out);
+                const bufferedStart = busyStart - 90; 
+                const bufferedEnd = busyEnd + 90;
 
-                // APPLY TIME BUFFERS: Subtract 90 mins from start, add 90 mins to end
-                const busyStartWithBuffer = busyStartReal - 90; 
-                const busyEndWithBuffer = busyEndReal + 90;
-
-                // Evaluate overlap constraints: slot overlaps if slotStart < busyEnd AND slotEnd > busyStart
-                if (slotStartMin < busyEndWithBuffer && slotEndMin > busyStartWithBuffer) {
+                if (slotStartMin < bufferedEnd && slotEndMin > bufferedStart) {
                     hasConflict = true;
-                    conflictReason = `Conflicts with ${constraint.type.toUpperCase()} (${convertTo12Hour(constraint.time_in)} - ${convertTo12Hour(constraint.time_out)}) + 1.5hr Travel Buffer.`;
+                    conflictReason = `${constraint.type.toUpperCase()} (${convertTo12Hour(constraint.time_in)} - ${convertTo12Hour(constraint.time_out)})`;
                     break; 
                 }
             }
         }
 
-        // Render card layout based on the boolean result
         if (hasConflict) {
             gridHtml += `
-            <div class="slot-status-card status-conflict">
+            <div class="person-card" style="border-left: 4px solid var(--danger); background:#fef2f2;">
                 <strong>${slot.name}</strong>
-                <span class="badge-status badge-conflict">❌ Conflict</span>
-                <span class="reason-text">${conflictReason}</span>
+                <span class="status-badge confl">❌ Conflict</span>
+                <span class="conflict-reason">Overlap with ${conflictReason} (+1.5hr buffer)</span>
             </div>`;
         } else {
             gridHtml += `
-            <div class="slot-status-card status-available">
+            <div class="person-card" style="border-left: 4px solid var(--success); background:#f0fdf4;">
                 <strong>${slot.name}</strong>
-                <span class="badge-status badge-available">✅ Available</span>
-                <span class="reason-text" style="color:#16a34a;">Safe to assign. Complete clearance verified.</span>
+                <span class="status-badge avail">✅ Available</span>
             </div>`;
         }
     });
 
-    grid.innerHTML = gridHtml;
+    container.innerHTML = '<h3>Kagawaran Suitability Matrix</h3>' + gridHtml + '</div>';
 }
 </script>
 
