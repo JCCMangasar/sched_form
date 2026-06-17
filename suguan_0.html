@@ -865,6 +865,38 @@ function filterAvailableForSlot(slotId) {
         `).join('');
     }
 }
+    // Run this function as soon as suguan_0.html finishes loading in the browser
+window.addEventListener('DOMContentLoaded', () => {
+    populateNameDropdownSelection();
+});
+
+async function populateNameDropdownSelection() {
+    const WORKER_URL = "https://schedule-api.jakemm04.workers.dev";
+    const dropdownElement = document.getElementById('nameInput'); // Match this ID with your form's name input element
+    
+    if (!dropdownElement) return;
+
+    try {
+        // Fetch the official list of registered profiles from the server
+        const response = await fetch(`${WORKER_URL}/api/profiles`);
+        if (!response.ok) return;
+        
+        const registeredMembers = await response.json();
+        
+        // Convert the input box into a clean, selectable list of names
+        let optionsHtml = `<option value="" disabled selected>-- Piliin ang Iyong Pangalan --</option>`;
+        
+        registeredMembers.forEach(member => {
+            if (member.status === 'Active') {
+                optionsHtml += `<option value="${member.name}">${member.name} (${member.gampanin})</option>`;
+            }
+        });
+        
+        dropdownElement.innerHTML = optionsHtml;
+    } catch (err) {
+        console.error("Could not load names into dropdown menu selection:", err);
+    }
+}
 </script>
 </body>
 </html>
