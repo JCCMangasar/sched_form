@@ -21,327 +21,129 @@
         body {
             font-family: 'Segoe UI', system-ui, sans-serif;
             background-color: var(--bg);
-            margin: 0;
-            padding: 0;
-            color: var(--text);
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
+            margin: 0; padding: 0; color: var(--text);
+            display: flex; height: 100vh; overflow: hidden;
         }
 
-        /* NAVIGATION SIDEBAR */
         .sidebar {
-            width: 280px;
-            background: var(--sidebar-bg);
-            color: white;
-            padding: 25px 15px;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
+            width: 280px; background: var(--sidebar-bg); color: white;
+            padding: 25px 15px; box-sizing: border-box;
+            display: flex; flex-direction: column; gap: 20px;
             box-shadow: 4px 0 10px rgba(0,0,0,0.1);
         }
 
         .sidebar h2 {
-            margin: 0;
-            font-size: 18px;
-            text-align: center;
-            border-bottom: 1px solid #334155;
-            padding-bottom: 15px;
-            color: #f8fafc;
-            letter-spacing: 0.5px;
+            margin: 0; font-size: 18px; text-align: center;
+            border-bottom: 1px solid #334155; padding-bottom: 15px;
+            color: #f8fafc; letter-spacing: 0.5px;
         }
 
-        .nav-menu {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            flex: 1;
-        }
-
+        .nav-menu { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+        
         .nav-btn {
-            background: transparent;
-            color: #94a3b8;
-            border: none;
-            padding: 12px 15px;
-            text-align: left;
-            font-size: 14px;
-            font-weight: 600;
-            border-radius: 6px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: all 0.2s;
-            text-decoration: none;
+            background: transparent; color: #94a3b8; border: none;
+            padding: 12px 15px; text-align: left; font-size: 14px; font-weight: 600;
+            border-radius: 6px; cursor: pointer; display: flex; align-items: center;
+            gap: 10px; transition: all 0.2s; text-decoration: none;
         }
 
-        .nav-btn:hover, .nav-btn.active {
-            background: var(--accent);
-            color: white;
-        }
+        .nav-btn:hover, .nav-btn.active { background: var(--accent); color: white; }
 
-        /* MAIN CONTENT AREA */
-        .main-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
+        .main-container { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        
         .top-header {
-            background: white;
-            padding: 15px 30px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            background: white; padding: 15px 30px; border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
         }
 
-        .top-header h1 {
-            margin: 0;
-            font-size: 22px;
-            color: var(--primary);
-        }
+        .top-header h1 { margin: 0; font-size: 22px; color: var(--primary); }
 
-        .view-panel {
-            flex: 1;
-            padding: 30px;
-            box-sizing: border-box;
-            overflow-y: auto;
-        }
+        .view-panel { flex: 1; padding: 30px; box-sizing: border-box; overflow-y: auto; }
 
-        /* QUICK STATS */
-        .stats-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 15px;
-            margin-bottom: 25px;
-        }
-
+        .stats-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        
         .stat-card {
-            background: white;
-            border: 1px solid var(--border);
-            padding: 15px 20px;
-            border-radius: 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
+            background: white; border: 1px solid var(--border); padding: 15px 20px;
+            border-radius: 10px; display: flex; flex-direction: column; gap: 5px;
         }
 
         .stat-card .label { font-size: 12px; color: #64748b; font-weight: 600; text-transform: uppercase; }
         .stat-card .value { font-size: 24px; font-weight: 700; color: var(--primary); }
 
-        /* SEARCH BAR */
-        .search-bar-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-            gap: 15px;
-        }
-
-        .search-input {
-            flex: 1;
-            padding: 12px 18px;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            font-size: 14px;
-        }
+        .search-bar-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; gap: 15px; }
+        .search-input { flex: 1; padding: 12px 18px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; }
 
         .action-btn {
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            font-weight: bold;
-            font-size: 14px;
-            border-radius: 8px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            color: white; border: none; padding: 12px 20px; font-weight: bold;
+            font-size: 14px; border-radius: 8px; cursor: pointer; display: flex;
+            align-items: center; gap: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
         .btn-success { background-color: var(--success); }
         .btn-primary { background-color: var(--accent); }
 
-        /* TSV PROFILE GRID LAYOUT */
-        .profile-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-            gap: 20px;
-        }
-
+        .profile-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 20px; }
+        
         .profile-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            position: relative;
-            transition: transform 0.2s, box-shadow 0.2s;
+            background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px;
+            padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); display: flex;
+            flex-direction: column; gap: 15px; position: relative; transition: transform 0.2s, box-shadow 0.2s;
         }
 
-        .profile-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
-        }
+        .profile-card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); }
 
-        .profile-card-header {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 12px;
-        }
-
+        .profile-card-header { display: flex; align-items: center; gap: 15px; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
+        
         .profile-avatar {
-            width: 55px;
-            height: 55px;
-            border-radius: 50%;
-            background: #f1f5f9;
-            color: var(--accent);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            font-weight: bold;
-            border: 2px solid var(--border);
-            flex-shrink: 0;
+            width: 55px; height: 55px; border-radius: 50%; background: #f1f5f9; color: var(--accent);
+            display: flex; align-items: center; justify-content: center; font-size: 20px;
+            font-weight: bold; border: 2px solid var(--border); flex-shrink: 0;
         }
 
-        .profile-title-area {
-            flex: 1;
-            overflow: hidden;
-        }
+        .profile-title-area { flex: 1; overflow: hidden; }
+        .profile-name { font-size: 16px; font-weight: 700; color: var(--primary); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        .profile-name {
-            font-size: 16px;
-            font-weight: 700;
-            color: var(--primary);
-            margin: 0;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .gampanin-badge {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            margin-top: 4px;
-        }
+        .gampanin-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; margin-top: 4px; }
         .role-lead { background: #fee2e2; color: #ef4444; }
         .role-asst { background: #ffedd5; color: #f97316; }
         .role-sec { background: #e0e7ff; color: #4f46e5; }
         .role-officer { background: #e0f2fe; color: #0369a1; }
 
-        .status-indicator {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            font-size: 11px;
-            font-weight: 600;
-            padding: 2px 6px;
-            border-radius: 4px;
-        }
+        .status-indicator { position: absolute; top: 20px; right: 20px; font-size: 11px; font-weight: 600; padding: 2px 6px; border-radius: 4px; }
         .status-active { background: #dcfce7; color: #16a34a; }
         .status-inactive { background: #f1f5f9; color: #64748b; }
 
-        /* DATA SPECIFICATION ROWS */
-        .profile-details-list {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            font-size: 13px;
-        }
+        .profile-details-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 13px; }
+        .detail-item { display: flex; flex-direction: column; gap: 2px; }
+        .detail-item span.label { font-size: 11px; color: #94a3b8; font-weight: 600; text-transform: uppercase; }
+        .detail-item span.value { color: var(--text); font-weight: 500; }
+        .full-width-detail { grid-column: 1 / -1; }
 
-        .detail-item {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-        .detail-item span.label {
-            font-size: 11px;
-            color: #94a3b8;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-        .detail-item span.value {
-            color: var(--text);
-            font-weight: 500;
-        }
-
-        .full-width-detail {
-            grid-column: 1 / -1;
-        }
-
-        .profile-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 8px;
-            border-top: 1px solid var(--border);
-            padding-top: 12px;
-            margin-top: 5px;
-        }
-
+        .profile-actions { display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid var(--border); padding-top: 12px; margin-top: 5px; }
+        
         .btn-icon-txt {
-            background: transparent;
-            border: 1px solid var(--border);
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 600;
-            padding: 6px 12px;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            transition: all 0.2s;
+            background: transparent; border: 1px solid var(--border); cursor: pointer;
+            font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 6px;
+            display: flex; align-items: center; gap: 4px; transition: all 0.2s;
         }
         .btn-icon-txt:hover { background: #f1f5f9; }
 
-        /* MODAL RESPONSIVE FORM SYSTEM */
+        /* MODAL STYLING */
         .modal-backdrop {
-            position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(15, 23, 42, 0.6);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            opacity: 0; pointer-events: none;
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(15, 23, 42, 0.6); display: flex; align-items: center;
+            justify-content: center; z-index: 1000; opacity: 0; pointer-events: none;
             transition: opacity 0.2s ease-in-out;
         }
         .modal-backdrop.show { opacity: 1; pointer-events: auto; }
         
         .modal-box {
-            background: white;
-            width: 550px;
-            max-height: 90vh;
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
+            background: white; width: 550px; max-height: 90vh; border-radius: 12px;
+            padding: 25px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+            display: flex; flex-direction: column; overflow: hidden;
         }
         .modal-box h3 { margin: 0 0 15px 0; font-size: 18px; color: var(--primary); }
         
-        .modal-scroll-content {
-            flex: 1;
-            overflow-y: auto;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            padding-right: 5px;
-        }
-
+        .modal-scroll-content { flex: 1; overflow-y: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding-right: 5px; }
         .modal-form-group { display: flex; flex-direction: column; gap: 5px; }
         .modal-form-group.full-width { grid-column: 1 / -1; }
         .modal-form-group label { font-size: 12px; font-weight: 600; color: #64748b; }
@@ -353,7 +155,6 @@
 </head>
 <body>
 
-<!-- SIDEBAR NAVIGATION MENU -->
 <div class="sidebar">
     <h2>Suguan Controller</h2>
     <div class="nav-menu">
@@ -365,17 +166,13 @@
     </div>
 </div>
 
-<!-- MAIN WORKSPACE BOX -->
 <div class="main-container">
     <div class="top-header">
         <h1>TSV Personnel Hub</h1>
         <button class="action-btn btn-success" onclick="openCrudModal('create')">➕ Magdagdag ng Profile</button>
     </div>
 
-    <!-- MAIN INTERACTIVE MANAGEMENT VIEW -->
     <div class="view-panel">
-        
-        <!-- COUNTER METRIC BOXES -->
         <div class="stats-row">
             <div class="stat-card">
                 <span class="label">Kabuuan ng TSV</span>
@@ -386,22 +183,20 @@
                 <span class="value" style="color: var(--success);" id="statActive">0</span>
             </div>
             <div class="stat-card">
-                <span class="label">Mga Trainee / Hindi pa nanunumpa</span>
+                <span class="label">Mga Trainee / Di Nanumpa</span>
                 <span class="value" style="color: var(--warning);" id="statTrainees">0</span>
             </div>
         </div>
 
         <div class="search-bar-row">
-            <input type="text" id="profileSearch" class="search-input" placeholder="🔍 Maghanap gamit ang Pangalan, Gampanin, Purok, o Kapisanan..." oninput="filterProfiles()">
+            <input type="text" id="profileSearch" class="search-input" placeholder="🔍 Maghanap gamit ang Pangalan, Gampanin, Purok..." oninput="filterProfiles()">
         </div>
         
-        <div class="profile-grid" id="profileContainer">
-            <!-- Dynamic TSV Cards render here -->
-        </div>
+        <div class="profile-grid" id="profileContainer"></div>
     </div>
 </div>
 
-<!-- MUTABLE CRUD ENTRY FORM MODAL -->
+<!-- FORM MODAL -->
 <div id="crudModal" class="modal-backdrop">
     <div class="modal-box">
         <h3 id="modalHeading">Profile Information Sheet</h3>
@@ -412,17 +207,14 @@
                 <label for="formName">Pangalan</label>
                 <input type="text" id="formName" placeholder="Kumpletong Pangalan">
             </div>
-
             <div class="modal-form-group">
                 <label for="formBirthday">Birthday</label>
                 <input type="date" id="formBirthday">
             </div>
-
             <div class="modal-form-group">
                 <label for="formPurok">Purok-Grupo</label>
-                <input type="text" id="formPurok" placeholder="e.g. Purok 1 - Grupo 2">
+                <input type="text" id="formPurok" placeholder="e.g. Purok 1">
             </div>
-
             <div class="modal-form-group">
                 <label for="formKapisanan">Kapisanan</label>
                 <select id="formKapisanan">
@@ -431,7 +223,6 @@
                     <option value="Binhi">Binhi</option>
                 </select>
             </div>
-
             <div class="modal-form-group">
                 <label for="formGampanin">Gampanin sa TSV</label>
                 <select id="formGampanin">
@@ -442,12 +233,10 @@
                     <option value="TSV Officer">TSV Officer</option>
                 </select>
             </div>
-
             <div class="modal-form-group">
                 <label for="formContact">Contact Number</label>
                 <input type="text" id="formContact" placeholder="09XXXXXXXXX">
             </div>
-
             <div class="modal-form-group">
                 <label for="formStatus">Status ng Pagtupad</label>
                 <select id="formStatus">
@@ -455,19 +244,16 @@
                     <option value="Inactive">Inactive</option>
                 </select>
             </div>
-
             <div class="modal-form-group full-width">
-                <label for="formIbangTungkulin">Iba pang Tungkulin (Ilagay ang N/A kung wala)</label>
-                <input type="text" id="formIbangTungkulin" placeholder="Finance, Kalihim, Mang-aawit, PNK MT, SCAN, atbp.">
+                <label for="formIbangTungkulin">Iba pang Tungkulin</label>
+                <input type="text" id="formIbangTungkulin" placeholder="N/A kung wala">
             </div>
-
             <div class="modal-form-group">
-                <label for="formSumpaTSV">Petsa ng Panunumpa sa TSV (N/A kung Trainee)</label>
+                <label for="formSumpaTSV">Sumpa sa TSV</label>
                 <input type="text" id="formSumpaTSV" placeholder="YYYY-MM-DD o N/A">
             </div>
-
             <div class="modal-form-group">
-                <label for="formSumpaNDA">Petsa ng Panunumpa sa NDA (N/A kung Trainee)</label>
+                <label for="formSumpaNDA">Sumpa sa NDA</label>
                 <input type="text" id="formSumpaNDA" placeholder="YYYY-MM-DD o N/A">
             </div>
         </div>
@@ -480,7 +266,7 @@
 </div>
 
 <script>
-// =============== ADMIN GATEKEEPER SECURITY ===============
+// Authentication check
 (function checkAdminAccess() {
     const ADMIN_PASSWORD = "july27,1914"; 
     if (sessionStorage.getItem("admin_authenticated") === "true") return; 
@@ -501,47 +287,45 @@ window.addEventListener('DOMContentLoaded', () => {
     fetchRawData();
 });
 
-// REST LOGIC: PIPELINE SYNC & MAPPING OVERRIDE
+// Advanced Sync Pipeline: Safely reads records and preserves historical schedules
 async function fetchRawData() {
     try {
-        const response = await fetch(`${WORKER_URL}/api/reports`);
-        if (!response.ok) throw new Error();
-        const apiData = await response.json();
-        
-        const tempDistinctMap = {};
-        apiData.forEach(item => {
-            if (!tempDistinctMap[item.name]) {
-                // Populate realistic defaults satisfying your custom schema mapping
-                tempDistinctMap[item.name] = {
-                    name: item.name,
-                    birthday: "1998-01-01",
-                    purok: "Purok 1",
-                    kapisanan: "Kadiwa",
-                    gampanin: "TSV Officer",
-                    contact: "09123456789",
-                    ibangTungkulin: "N/A",
-                    sumpaTSV: "N/A",
-                    sumpaNDA: "N/A",
-                    status: "Active"
+        const [profilesRes, schedulesRes] = await Promise.all([
+            fetch(`${WORKER_URL}/api/profiles`),
+            fetch(`${WORKER_URL}/api/reports`)
+        ]);
+
+        const registeredProfiles = profilesRes.ok ? await profilesRes.json() : [];
+        const existingSchedules = schedulesRes.ok ? await schedulesRes.json() : [];
+
+        const profileMap = {};
+        registeredProfiles.forEach(p => {
+            profileMap[p.name] = {
+                name: p.name, birthday: p.birthday, purok: p.purok, kapisanan: p.kapisanan,
+                gampanin: p.gampanin, contact: p.contact, ibangTungkulin: p.ibang_tungkulin,
+                sumpaTSV: p.sumpa_tsv, sumpaNDA: p.sumpa_nda, status: p.status
+            };
+        });
+
+        // Auto-merge names found in old schedule database
+        existingSchedules.forEach(sched => {
+            if (!profileMap[sched.name] && sched.name) {
+                profileMap[sched.name] = {
+                    name: sched.name, birthday: "N/A", purok: "N/A", kapisanan: "Kadiwa",
+                    gampanin: "TSV Officer", contact: "N/A", ibangTungkulin: "N/A",
+                    sumpaTSV: "N/A", sumpaNDA: "N/A", status: "Active"
                 };
             }
         });
-        
-        globalTsvProfiles = Object.values(tempDistinctMap);
+
+        globalTsvProfiles = Object.values(profileMap);
         calculateStatsAndRender();
     } catch {
-        // Fallback demo row matching structure if fetch endpoint sandbox fails
-        globalTsvProfiles = [{
-            name: "Juan Dela Cruz", birthday: "2001-05-14", purok: "Purok 3 - Grupo 1",
-            kapisanan: "Kadiwa", gampanin: "TSV Lead", contact: "09998887766",
-            ibangTungkulin: "Mang-aawit", sumpaTSV: "2023-08-12", sumpaNDA: "2023-08-15", status: "Active"
-        }];
-        calculateStatsAndRender();
+        alert("Hindi makuha ang live profiles sa network pipeline.");
     }
 }
 
 function calculateStatsAndRender() {
-    // Quick Metrics Calculations
     const total = globalTsvProfiles.length;
     const active = globalTsvProfiles.filter(p => p.status === 'Active').length;
     const trainees = globalTsvProfiles.filter(p => p.sumpaTSV === 'N/A' || p.sumpaTSV.toLowerCase() === 'n/a').length;
@@ -553,11 +337,10 @@ function calculateStatsAndRender() {
     renderProfileGrid(globalTsvProfiles);
 }
 
-// GENERATE DYNAMIC CARD ARRAYS
 function renderProfileGrid(profilesArray) {
     const container = document.getElementById('profileContainer');
     if (profilesArray.length === 0) {
-        container.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding:60px; color:#94a3b8;">Walang tumugmang TSV profile records.</div>`;
+        container.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding:60px; color:#94a3b8;">Walang tumugmang records.</div>`;
         return;
     }
 
@@ -573,7 +356,6 @@ function renderProfileGrid(profilesArray) {
         return `
             <div class="profile-card">
                 <span class="status-indicator ${statusClass}">${profile.status}</span>
-                
                 <div class="profile-card-header">
                     <div class="profile-avatar">${initials}</div>
                     <div class="profile-title-area">
@@ -581,38 +363,15 @@ function renderProfileGrid(profilesArray) {
                         <span class="gampanin-badge ${roleBadgeClass}">${profile.gampanin}</span>
                     </div>
                 </div>
-
                 <div class="profile-details-list">
-                    <div class="detail-item">
-                        <span class="label">Birthday</span>
-                        <span class="value">${profile.birthday}</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="label">Purok-Grupo</span>
-                        <span class="value">${profile.purok}</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="label">Kapisanan</span>
-                        <span class="value">${profile.kapisanan}</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="label">Contact No.</span>
-                        <span class="value">${profile.contact}</span>
-                    </div>
-                    <div class="detail-item full-width-detail">
-                        <span class="label">Iba pang Tungkulin</span>
-                        <span class="value">${profile.ibangTungkulin}</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="label">Sumpa (TSV)</span>
-                        <span class="value">${profile.sumpaTSV}</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="label">Sumpa (NDA)</span>
-                        <span class="value">${profile.sumpaNDA}</span>
-                    </div>
+                    <div class="detail-item"><span class="label">Birthday</span><span class="value">${profile.birthday}</span></div>
+                    <div class="detail-item"><span class="label">Purok-Grupo</span><span class="value">${profile.purok}</span></div>
+                    <div class="detail-item"><span class="label">Kapisanan</span><span class="value">${profile.kapisanan}</span></div>
+                    <div class="detail-item"><span class="label">Contact No.</span><span class="value">${profile.contact}</span></div>
+                    <div class="detail-item full-width-detail"><span class="label">Iba pang Tungkulin</span><span class="value">${profile.ibangTungkulin}</span></div>
+                    <div class="detail-item"><span class="label">Sumpa (TSV)</span><span class="value">${profile.sumpaTSV}</span></div>
+                    <div class="detail-item"><span class="label">Sumpa (NDA)</span><span class="value">${profile.sumpaNDA}</span></div>
                 </div>
-
                 <div class="profile-actions">
                     <button class="btn-icon-txt" style="color:var(--accent);" onclick="openCrudModal('update', ${index})">✏️ Baguhin</button>
                     <button class="btn-icon-txt" style="color:var(--danger);" onclick="deleteProfileCard(${index})">🗑️ Burahin</button>
@@ -625,61 +384,40 @@ function renderProfileGrid(profilesArray) {
 function filterProfiles() {
     const query = document.getElementById('profileSearch').value.toLowerCase();
     const filtered = globalTsvProfiles.filter(p => 
-        p.name.toLowerCase().includes(query) || 
-        p.gampanin.toLowerCase().includes(query) || 
-        p.purok.toLowerCase().includes(query) || 
-        p.kapisanan.toLowerCase().includes(query)
+        p.name.toLowerCase().includes(query) || p.gampanin.toLowerCase().includes(query) || p.purok.toLowerCase().includes(query)
     );
     renderProfileGrid(filtered);
 }
 
-// FORM ACTIONS MODULES
 function openCrudModal(mode, index = null) {
     const backdrop = document.getElementById('crudModal');
-    const heading = document.getElementById('modalHeading');
-    const submitBtn = document.getElementById('modalSubmitBtn');
-    
     backdrop.classList.add('show');
 
     if (mode === 'create') {
-        heading.innerText = "Magdagdag ng Bagong TSV Profile";
-        submitBtn.innerText = "Idagdag sa Talaan";
+        document.getElementById('modalHeading').innerText = "Magdagdag ng Bagong TSV Profile";
         document.getElementById('entryRowIndex').value = "-1";
-        document.getElementById('formName').value = "";
-        document.getElementById('formBirthday').value = "";
-        document.getElementById('formPurok').value = "";
-        document.getElementById('formKapisanan').value = "Kadiwa";
-        document.getElementById('formGampanin').value = "TSV Officer";
-        document.getElementById('formContact').value = "";
-        document.getElementById('formIbangTungkulin').value = "N/A";
-        document.getElementById('formSumpaTSV').value = "N/A";
-        document.getElementById('formSumpaNDA').value = "N/A";
+        document.getElementById('formName').value = ""; document.getElementById('formName').disabled = false;
+        document.getElementById('formBirthday').value = ""; document.getElementById('formPurok').value = "";
+        document.getElementById('formKapisanan').value = "Kadiwa"; document.getElementById('formGampanin').value = "TSV Officer";
+        document.getElementById('formContact').value = ""; document.getElementById('formIbangTungkulin').value = "N/A";
+        document.getElementById('formSumpaTSV').value = "N/A"; document.getElementById('formSumpaNDA').value = "N/A";
         document.getElementById('formStatus').value = "Active";
     } else {
-        heading.innerText = "Baguhin ang TSV Impormasyon";
-        submitBtn.innerText = "I-save ang Pagbabago";
+        document.getElementById('modalHeading').innerText = "Baguhin ang TSV Impormasyon";
         document.getElementById('entryRowIndex').value = index;
-        
         const target = globalTsvProfiles[index];
-        document.getElementById('formName').value = target.name;
-        document.getElementById('formBirthday').value = target.birthday;
-        document.getElementById('formPurok').value = target.purok;
-        document.getElementById('formKapisanan').value = target.kapisanan;
-        document.getElementById('formGampanin').value = target.gampanin;
-        document.getElementById('formContact').value = target.contact;
-        document.getElementById('formIbangTungkulin').value = target.ibangTungkulin;
-        document.getElementById('formSumpaTSV').value = target.sumpaTSV;
-        document.getElementById('formSumpaNDA').value = target.sumpaNDA;
+        document.getElementById('formName').value = target.name; document.getElementById('formName').disabled = true; // Protect key link
+        document.getElementById('formBirthday').value = target.birthday; document.getElementById('formPurok').value = target.purok;
+        document.getElementById('formKapisanan').value = target.kapisanan; document.getElementById('formGampanin').value = target.gampanin;
+        document.getElementById('formContact').value = target.contact; document.getElementById('formIbangTungkulin').value = target.ibangTungkulin;
+        document.getElementById('formSumpaTSV').value = target.sumpaTSV; document.getElementById('formSumpaNDA').value = target.sumpaNDA;
         document.getElementById('formStatus').value = target.status;
     }
 }
 
-明确 function closeCrudModal() {
-    document.getElementById('crudModal').classList.remove('show');
-}
+function closeCrudModal() { document.getElementById('crudModal').classList.remove('show'); }
 
-function saveCrudForm() {
-    const idx = parseInt(document.getElementById('entryRowIndex').value);
+async function saveCrudForm() {
     const payload = {
         name: document.getElementById('formName').value.trim(),
         birthday: document.getElementById('formBirthday').value,
@@ -693,25 +431,23 @@ function saveCrudForm() {
         status: document.getElementById('formStatus').value
     };
 
-    if (!payload.name) {
-        alert("Paki-sulat ang pangalan.");
-        return;
-    }
+    if (!payload.name) return alert("Paki-sulat ang pangalan.");
 
-    if (idx === -1) {
-        globalTsvProfiles.push(payload);
-    } else {
-        globalTsvProfiles[idx] = payload;
-    }
-
-    calculateStatsAndRender();
-    closeCrudModal();
+    try {
+        const response = await fetch(`${WORKER_URL}/api/profiles`, {
+            method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload)
+        });
+        if (response.ok) { closeCrudModal(); fetchRawData(); }
+    } catch { alert("Network writing exception error."); }
 }
 
-function deleteProfileCard(idx) {
-    if (confirm(`Sigurado ka bang nais mong burahin si ${globalTsvProfiles[idx].name} sa TSV Hub?`)) {
-        globalTsvProfiles.splice(idx, 1);
-        calculateStatsAndRender();
+async function deleteProfileCard(idx) {
+    const targetName = globalTsvProfiles[idx].name;
+    if (confirm(`Sigurado ka bang nais mong burahin si ${targetName}?`)) {
+        try {
+            const response = await fetch(`${WORKER_URL}/api/profiles/delete/${encodeURIComponent(targetName)}`, { method: "POST" });
+            if (response.ok) fetchRawData();
+        } catch { alert("Network deletion error."); }
     }
 }
 </script>
