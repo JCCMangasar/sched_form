@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personnel Profile Registry</title>
+    <style>
+        :root {
+            --primary: #0f172a;
+            --sidebar-bg: #1e293b;
+            --accent: #0284c7;
+            --success: #16a34a;
+            --warning: #f59e0b;
+            --danger: #dc2626;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --border: #e2e8f0;
+            --text: #334155;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 0;
+            color: var(--text);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* NAVIGATION SIDEBAR */
+        .sidebar {
+            width: 280px;
+            background: var(--sidebar-bg);
+            color: white;
+            padding: 25px 15px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+        }
+
+        .sidebar h2 {
+            margin: 0;
+            font-size: 18px;
+            text-align: center;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 15px;
+            color: #f8fafc;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+        }
+
+        .nav-btn {
+            background: transparent;
+            color: #94a3b8;
+            border: none;
+            padding: 12px 15px;
+            text-align: left;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .nav-btn:hover, .nav-btn.active {
+            background: var(--accent);
+            color: white;
+        }
+
+        /* MAIN CONTENT AREA */
+        .main-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .top-header {
+            background: white;
+            padding: 15px 30px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .top-header h1 {
+            margin: 0;
+            font-size: 22px;
+            color: var(--primary);
+        }
+
+        .view-panel {
+            flex: 1;
+            padding: 30px;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+
+        /* SEARCH BAR */
+        .search-bar-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            gap: 15px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 12px 18px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);
+        }
+
+        .action-btn {
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-weight: bold;
+            font-size: 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: background 0.2s;
+        }
+        .btn-success { background-color: var(--success); }
+        .btn-success:hover { background-color: #11823b; }
+        .btn-primary { background-color: var(--accent); }
+
+        /* PROFILE CARDS GRID LAYOUT */
+        .profile-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        .profile-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02), 0 2px 4px -1px rgba(0,0,0,0.01);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            position: relative;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .profile-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
+        }
+
+        .profile-avatar {
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            color: var(--sidebar-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            border: 2px solid #cbd5e1;
+            flex-shrink: 0;
+        }
+
+        .profile-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            overflow: hidden;
+        }
+
+        .profile-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .profile-meta {
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .pill {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            width: max-content;
+            margin-top: 2px;
+        }
+        .pill-work { background: #fee2e2; color: #ef4444; }
+        .pill-school { background: #fef3c7; color: #d97706; }
+        .pill-church { background: #e0f2fe; color: #0284c7; }
+
+        .profile-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .btn-icon {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 15px;
+            padding: 6px;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+        .btn-icon:hover { background: #f1f5f9; }
+
+        /* MODALS */
+        .modal-backdrop {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(15, 23, 42, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+        }
+        .modal-backdrop.show { opacity: 1; pointer-events: auto; }
+        .modal-box {
+            background: white;
+            width: 420px;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .modal-box h3 { margin: 0; font-size: 18px; color: var(--primary); }
+        .modal-form-group { display: flex; flex-direction: column; gap: 5px; }
+        .modal-form-group label { font-size: 12px; font-weight: 600; color: #64748b; }
+        .modal-form-group input, .modal-form-group select { padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; }
+        .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px; }
+        .btn-secondary { background: #e2e8f0; color: #334155; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<!-- SIDEBAR NAVIGATION MENU -->
+<div class="sidebar">
+    <h2>Suguan Controller</h2>
+    <div class="nav-menu">
+        <a href="#" class="nav-btn active">👤 Profile Masterlist</a>
+        <!-- Dynamic reference switch pointing to your script architecture -->
+        <a href="suguan_0.html" class="nav-btn">⚡ Assignment Matrix</a>
+    </div>
+    <div style="font-size: 11px; text-align: center; color: #64748b; border-top: 1px solid #334155; padding-top: 15px;">
+        Database System Sandbox
+    </div>
+</div>
+
+<!-- MAIN WORKSPACE BOX -->
+<div class="main-container">
+    <div class="top-header">
+        <h1>Personnel Registry</h1>
+        <button class="action-btn btn-success" onclick="openCrudModal('create')">➕ Add New Profile</button>
+    </div>
+
+    <!-- MAIN INTERACTIVE MANAGEMENT VIEW -->
+    <div class="view-panel">
+        <div class="search-bar-row">
+            <input type="text" id="profileSearch" class="search-input" placeholder="🔍 Search profiles instantly by name or classification tier..." oninput="filterProfiles()">
+        </div>
+        
+        <div class="profile-grid" id="profileContainer">
+            <!-- Dynamic profile nodes mount here -->
+        </div>
+    </div>
+</div>
+
+<!-- MUTABLE CRUD ENTRY FORM MODAL -->
+<div id="crudModal" class="modal-backdrop">
+    <div class="modal-box">
+        <h3 id="modalHeading">Create New Profile Card</h3>
+        <input type="hidden" id="entryRowIndex">
+        
+        <div class="modal-form-group">
+            <label for="formName">Full Name</label>
+            <input type="text" id="formName" placeholder="e.g. Juan Dela Cruz">
+        </div>
+
+        <div class="modal-form-group">
+            <label for="formType">Primary Classification</label>
+            <select id="formType">
+                <option value="work">💼 Worker Pool</option>
+                <option value="school">🎓 Student Pool</option>
+                <option value="church: Choir">⛪ Church: Choir</option>
+                <option value="church: Scan">⛪ Church: Scan</option>
+                <option value="church: TSV">⛪ Church: TSV</option>
+                <option value="church: Deacon/Deaconess">⛪ Church: Deacon/Deaconess</option>
+            </select>
+        </div>
+
+        <div class="modal-form-group">
+            <label for="formContact">Contact Reference / Details</label>
+            <input type="text" id="formContact" placeholder="e.g. Active Personnel Profile">
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="closeCrudModal()">Cancel</button>
+            <button class="action-btn btn-primary" id="modalSubmitBtn" onclick="saveCrudForm()">Save Profile</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// =============== ADMIN GATEKEEPER SECURITY ===============
+(function checkAdminAccess() {
+    const ADMIN_PASSWORD = "july27,1914"; 
+    if (sessionStorage.getItem("admin_authenticated") === "true") return; 
+
+    const userAttempt = prompt("🔒 Restricted Area: Enter password to access Profile Hub:");
+    if (userAttempt === ADMIN_PASSWORD) {
+        sessionStorage.setItem("admin_authenticated", "true");
+    } else {
+        alert("❌ Access Denied.");
+        window.location.href = "suguan_0.html";
+    }
+})();
+
+const WORKER_URL = "https://schedule-api.jakemm04.workers.dev";
+let globalProfiles = [];
+
+window.addEventListener('DOMContentLoaded', () => {
+    fetchRawData();
+});
+
+// REST LOGIC: PIPELINE CONNECTION
+async function fetchRawData() {
+    try {
+        const response = await fetch(`${WORKER_URL}/api/reports`);
+        if (!response.ok) throw new Error();
+        const data = await response.json();
+        
+        // Transform the data into distinct human profiles
+        const temporaryProfilesMap = {};
+        data.forEach(item => {
+            if (!temporaryProfilesMap[item.name]) {
+                temporaryProfilesMap[item.name] = {
+                    name: item.name,
+                    schedule_type: item.schedule_type,
+                    meta: item.day_or_slot || "Registered Active Pool Member"
+                };
+            }
+        });
+        
+        globalProfiles = Object.values(temporaryProfilesMap);
+        renderProfileGrid(globalProfiles);
+    } catch {
+        alert("Pipeline Error: Failed to fetch profiles from Cloudflare Database API.");
+    }
+}
+
+// PROFILE UI CONSTRUCTOR ENGINE
+function renderProfileGrid(profilesArray) {
+    const container = document.getElementById('profileContainer');
+    if (profilesArray.length === 0) {
+        container.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding:80px; color:#94a3b8;">No personnel profiles matched database queries.</div>`;
+        return;
+    }
+
+    container.innerHTML = profilesArray.map((profile, index) => {
+        let pillClass = "pill-church";
+        let displayType = profile.schedule_type;
+        
+        if (profile.schedule_type === 'work') { pillClass = 'pill-work'; displayType = 'Worker'; }
+        else if (profile.schedule_type === 'school') { pillClass = 'pill-school'; displayType = 'Student'; }
+        else { displayType = profile.schedule_type.replace('church: ', ''); }
+
+        // Take initials for avatar display
+        const initials = profile.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+
+        return `
+            <div class="profile-card">
+                <div class="profile-avatar">${initials}</div>
+                <div class="profile-info">
+                    <p class="profile-name">${profile.name}</p>
+                    <span class="pill ${pillClass}">${displayType}</span>
+                    <span class="profile-meta" style="margin-top: 4px; display: block;">ID Tag: <code>#0${100 + index}</code></span>
+                </div>
+                <div class="profile-actions">
+                    <button class="btn-icon" style="color:var(--accent);" onclick="openCrudModal('update', ${index})" title="Edit Profile Name/Group">✏️</button>
+                    <button class="btn-icon" style="color:var(--danger);" onclick="deleteProfileCard(${index})" title="Remove Profile">🗑️</button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function filterProfiles() {
+    const query = document.getElementById('profileSearch').value.toLowerCase();
+    const filtered = globalProfiles.filter(p => 
+        p.name.toLowerCase().includes(query) || 
+        p.schedule_type.toLowerCase().includes(query)
+    );
+    renderProfileGrid(filtered);
+}
+
+// MODAL CONTROLS & CRUD OPERATIONS
+function openCrudModal(mode, index = null) {
+    const backdrop = document.getElementById('crudModal');
+    const heading = document.getElementById('modalHeading');
+    const submitBtn = document.getElementById('modalSubmitBtn');
+    
+    backdrop.classList.add('show');
+
+    if (mode === 'create') {
+        heading.innerText = "Create New Personnel Profile";
+        submitBtn.innerText = "Create Profile";
+        document.getElementById('entryRowIndex').value = "-1";
+        document.getElementById('formName').value = "";
+        document.getElementById('formContact').value = "Active Pool";
+    } else {
+        heading.innerText = "Modify Personnel Profile";
+        submitBtn.innerText = "Save Updates";
+        document.getElementById('entryRowIndex').value = index;
+        
+        const target = globalProfiles[index];
+        document.getElementById('formName').value = target.name;
+        document.getElementById('formType').value = target.schedule_type;
+        document.getElementById('formContact').value = target.meta;
+    }
+}
+
+function closeCrudModal() {
+    document.getElementById('crudModal').classList.remove('show');
+}
+
+function saveCrudForm() {
+    const idx = parseInt(document.getElementById('entryRowIndex').value);
+    const payload = {
+        name: document.getElementById('formName').value.trim(),
+        schedule_type: document.getElementById('formType').value,
+        meta: document.getElementById('formContact').value.trim()
+    };
+
+    if (!payload.name) {
+        alert("Name validation failed. Entry field is required.");
+        return;
+    }
+
+    if (idx === -1) {
+        globalProfiles.push(payload);
+    } else {
+        globalProfiles[idx] = payload;
+    }
+
+    renderProfileGrid(globalProfiles);
+    closeCrudModal();
+}
+
+function deleteProfileCard(idx) {
+    if (confirm(`Remove profile data and active pools for ${globalProfiles[idx].name}?`)) {
+        globalProfiles.splice(idx, 1);
+        renderProfileGrid(globalProfiles);
+    }
+}
+</script>
+</body>
+</html>
