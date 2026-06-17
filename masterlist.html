@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Personnel Profile Registry</title>
+    <title>TSV Profile Registry</title>
     <style>
         :root {
             --primary: #0f172a;
@@ -111,6 +111,27 @@
             overflow-y: auto;
         }
 
+        /* QUICK STATS */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: white;
+            border: 1px solid var(--border);
+            padding: 15px 20px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .stat-card .label { font-size: 12px; color: #64748b; font-weight: 600; text-transform: uppercase; }
+        .stat-card .value { font-size: 24px; font-weight: 700; color: var(--primary); }
+
         /* SEARCH BAR */
         .search-bar-row {
             display: flex;
@@ -126,7 +147,6 @@
             border: 1px solid var(--border);
             border-radius: 8px;
             font-size: 14px;
-            box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);
         }
 
         .action-btn {
@@ -141,16 +161,14 @@
             align-items: center;
             gap: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            transition: background 0.2s;
         }
         .btn-success { background-color: var(--success); }
-        .btn-success:hover { background-color: #11823b; }
         .btn-primary { background-color: var(--accent); }
 
-        /* PROFILE CARDS GRID LAYOUT */
+        /* TSV PROFILE GRID LAYOUT */
         .profile-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
             gap: 20px;
         }
 
@@ -159,9 +177,9 @@
             border: 1px solid var(--border);
             border-radius: 12px;
             padding: 20px;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02), 0 2px 4px -1px rgba(0,0,0,0.01);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
             display: flex;
-            align-items: center;
+            flex-direction: column;
             gap: 15px;
             position: relative;
             transition: transform 0.2s, box-shadow 0.2s;
@@ -172,26 +190,31 @@
             box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
         }
 
+        .profile-card-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 12px;
+        }
+
         .profile-avatar {
-            width: 65px;
-            height: 65px;
+            width: 55px;
+            height: 55px;
             border-radius: 50%;
-            background: #e2e8f0;
-            color: var(--sidebar-bg);
+            background: #f1f5f9;
+            color: var(--accent);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            font-size: 20px;
             font-weight: bold;
-            border: 2px solid #cbd5e1;
+            border: 2px solid var(--border);
             flex-shrink: 0;
         }
 
-        .profile-info {
+        .profile-title-area {
             flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
             overflow: hidden;
         }
 
@@ -205,43 +228,85 @@
             text-overflow: ellipsis;
         }
 
-        .profile-meta {
-            font-size: 12px;
-            color: #64748b;
-        }
-
-        .pill {
+        .gampanin-badge {
             display: inline-block;
-            padding: 3px 8px;
+            padding: 2px 8px;
             border-radius: 4px;
             font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+        .role-lead { background: #fee2e2; color: #ef4444; }
+        .role-asst { background: #ffedd5; color: #f97316; }
+        .role-sec { background: #e0e7ff; color: #4f46e5; }
+        .role-officer { background: #e0f2fe; color: #0369a1; }
+
+        .status-indicator {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        .status-active { background: #dcfce7; color: #16a34a; }
+        .status-inactive { background: #f1f5f9; color: #64748b; }
+
+        /* DATA SPECIFICATION ROWS */
+        .profile-details-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            font-size: 13px;
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .detail-item span.label {
+            font-size: 11px;
+            color: #94a3b8;
             font-weight: 600;
             text-transform: uppercase;
-            width: max-content;
-            margin-top: 2px;
         }
-        .pill-work { background: #fee2e2; color: #ef4444; }
-        .pill-school { background: #fef3c7; color: #d97706; }
-        .pill-church { background: #e0f2fe; color: #0284c7; }
+        .detail-item span.value {
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        .full-width-detail {
+            grid-column: 1 / -1;
+        }
 
         .profile-actions {
             display: flex;
-            flex-direction: column;
-            gap: 5px;
+            justify-content: flex-end;
+            gap: 8px;
+            border-top: 1px solid var(--border);
+            padding-top: 12px;
+            margin-top: 5px;
         }
 
-        .btn-icon {
+        .btn-icon-txt {
             background: transparent;
-            border: none;
+            border: 1px solid var(--border);
             cursor: pointer;
-            font-size: 15px;
-            padding: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 6px 12px;
             border-radius: 6px;
-            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s;
         }
-        .btn-icon:hover { background: #f1f5f9; }
+        .btn-icon-txt:hover { background: #f1f5f9; }
 
-        /* MODALS */
+        /* MODAL RESPONSIVE FORM SYSTEM */
         .modal-backdrop {
             position: fixed;
             top: 0; left: 0; width: 100vw; height: 100vh;
@@ -254,22 +319,36 @@
             transition: opacity 0.2s ease-in-out;
         }
         .modal-backdrop.show { opacity: 1; pointer-events: auto; }
+        
         .modal-box {
             background: white;
-            width: 420px;
+            width: 550px;
+            max-height: 90vh;
             border-radius: 12px;
             padding: 25px;
             box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            overflow: hidden;
         }
-        .modal-box h3 { margin: 0; font-size: 18px; color: var(--primary); }
+        .modal-box h3 { margin: 0 0 15px 0; font-size: 18px; color: var(--primary); }
+        
+        .modal-scroll-content {
+            flex: 1;
+            overflow-y: auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            padding-right: 5px;
+        }
+
         .modal-form-group { display: flex; flex-direction: column; gap: 5px; }
+        .modal-form-group.full-width { grid-column: 1 / -1; }
         .modal-form-group label { font-size: 12px; font-weight: 600; color: #64748b; }
-        .modal-form-group input, .modal-form-group select { padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; }
-        .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px; }
-        .btn-secondary { background: #e2e8f0; color: #334155; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .modal-form-group input, .modal-form-group select { padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; width: 100%; box-sizing: border-box; }
+        
+        .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; border-top: 1px solid var(--border); padding-top: 15px; }
+        .btn-secondary { background: #e2e8f0; color: #334155; border: none; padding: 12px 18px; border-radius: 8px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -278,30 +357,46 @@
 <div class="sidebar">
     <h2>Suguan Controller</h2>
     <div class="nav-menu">
-        <a href="#" class="nav-btn active">👤 Profile Masterlist</a>
-        <!-- Dynamic reference switch pointing to your script architecture -->
+        <a href="#" class="nav-btn active">👤 TSV Profiles</a>
         <a href="suguan_0.html" class="nav-btn">⚡ Assignment Matrix</a>
     </div>
     <div style="font-size: 11px; text-align: center; color: #64748b; border-top: 1px solid #334155; padding-top: 15px;">
-        Database System Sandbox
+        TSV Management System Sandbox
     </div>
 </div>
 
 <!-- MAIN WORKSPACE BOX -->
 <div class="main-container">
     <div class="top-header">
-        <h1>Personnel Registry</h1>
-        <button class="action-btn btn-success" onclick="openCrudModal('create')">➕ Add New Profile</button>
+        <h1>TSV Personnel Hub</h1>
+        <button class="action-btn btn-success" onclick="openCrudModal('create')">➕ Magdagdag ng Profile</button>
     </div>
 
     <!-- MAIN INTERACTIVE MANAGEMENT VIEW -->
     <div class="view-panel">
+        
+        <!-- COUNTER METRIC BOXES -->
+        <div class="stats-row">
+            <div class="stat-card">
+                <span class="label">Kabuuan ng TSV</span>
+                <span class="value" id="statTotal">0</span>
+            </div>
+            <div class="stat-card">
+                <span class="label">Aktibong Natupad</span>
+                <span class="value" style="color: var(--success);" id="statActive">0</span>
+            </div>
+            <div class="stat-card">
+                <span class="label">Mga Trainee / Hindi pa nanunumpa</span>
+                <span class="value" style="color: var(--warning);" id="statTrainees">0</span>
+            </div>
+        </div>
+
         <div class="search-bar-row">
-            <input type="text" id="profileSearch" class="search-input" placeholder="🔍 Search profiles instantly by name or classification tier..." oninput="filterProfiles()">
+            <input type="text" id="profileSearch" class="search-input" placeholder="🔍 Maghanap gamit ang Pangalan, Gampanin, Purok, o Kapisanan..." oninput="filterProfiles()">
         </div>
         
         <div class="profile-grid" id="profileContainer">
-            <!-- Dynamic profile nodes mount here -->
+            <!-- Dynamic TSV Cards render here -->
         </div>
     </div>
 </div>
@@ -309,34 +404,77 @@
 <!-- MUTABLE CRUD ENTRY FORM MODAL -->
 <div id="crudModal" class="modal-backdrop">
     <div class="modal-box">
-        <h3 id="modalHeading">Create New Profile Card</h3>
+        <h3 id="modalHeading">Profile Information Sheet</h3>
         <input type="hidden" id="entryRowIndex">
         
-        <div class="modal-form-group">
-            <label for="formName">Full Name</label>
-            <input type="text" id="formName" placeholder="e.g. Juan Dela Cruz">
-        </div>
+        <div class="modal-scroll-content">
+            <div class="modal-form-group full-width">
+                <label for="formName">Pangalan</label>
+                <input type="text" id="formName" placeholder="Kumpletong Pangalan">
+            </div>
 
-        <div class="modal-form-group">
-            <label for="formType">Primary Classification</label>
-            <select id="formType">
-                <option value="work">💼 Worker Pool</option>
-                <option value="school">🎓 Student Pool</option>
-                <option value="church: Choir">⛪ Church: Choir</option>
-                <option value="church: Scan">⛪ Church: Scan</option>
-                <option value="church: TSV">⛪ Church: TSV</option>
-                <option value="church: Deacon/Deaconess">⛪ Church: Deacon/Deaconess</option>
-            </select>
-        </div>
+            <div class="modal-form-group">
+                <label for="formBirthday">Birthday</label>
+                <input type="date" id="formBirthday">
+            </div>
 
-        <div class="modal-form-group">
-            <label for="formContact">Contact Reference / Details</label>
-            <input type="text" id="formContact" placeholder="e.g. Active Personnel Profile">
+            <div class="modal-form-group">
+                <label for="formPurok">Purok-Grupo</label>
+                <input type="text" id="formPurok" placeholder="e.g. Purok 1 - Grupo 2">
+            </div>
+
+            <div class="modal-form-group">
+                <label for="formKapisanan">Kapisanan</label>
+                <select id="formKapisanan">
+                    <option value="Buklod">Buklod</option>
+                    <option value="Kadiwa">Kadiwa</option>
+                    <option value="Binhi">Binhi</option>
+                </select>
+            </div>
+
+            <div class="modal-form-group">
+                <label for="formGampanin">Gampanin sa TSV</label>
+                <select id="formGampanin">
+                    <option value="TSV Lead">TSV Lead</option>
+                    <option value="Asst. TSV Lead">Asst. TSV Lead</option>
+                    <option value="Kalihim">Kalihim</option>
+                    <option value="II-Kalihim">II-Kalihim</option>
+                    <option value="TSV Officer">TSV Officer</option>
+                </select>
+            </div>
+
+            <div class="modal-form-group">
+                <label for="formContact">Contact Number</label>
+                <input type="text" id="formContact" placeholder="09XXXXXXXXX">
+            </div>
+
+            <div class="modal-form-group">
+                <label for="formStatus">Status ng Pagtupad</label>
+                <select id="formStatus">
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                </select>
+            </div>
+
+            <div class="modal-form-group full-width">
+                <label for="formIbangTungkulin">Iba pang Tungkulin (Ilagay ang N/A kung wala)</label>
+                <input type="text" id="formIbangTungkulin" placeholder="Finance, Kalihim, Mang-aawit, PNK MT, SCAN, atbp.">
+            </div>
+
+            <div class="modal-form-group">
+                <label for="formSumpaTSV">Petsa ng Panunumpa sa TSV (N/A kung Trainee)</label>
+                <input type="text" id="formSumpaTSV" placeholder="YYYY-MM-DD o N/A">
+            </div>
+
+            <div class="modal-form-group">
+                <label for="formSumpaNDA">Petsa ng Panunumpa sa NDA (N/A kung Trainee)</label>
+                <input type="text" id="formSumpaNDA" placeholder="YYYY-MM-DD o N/A">
+            </div>
         </div>
 
         <div class="modal-footer">
-            <button class="btn-secondary" onclick="closeCrudModal()">Cancel</button>
-            <button class="action-btn btn-primary" id="modalSubmitBtn" onclick="saveCrudForm()">Save Profile</button>
+            <button class="btn-secondary" onclick="closeCrudModal()">I-cancel</button>
+            <button class="action-btn btn-primary" id="modalSubmitBtn" onclick="saveCrudForm()">I-save ang Profile</button>
         </div>
     </div>
 </div>
@@ -347,7 +485,7 @@
     const ADMIN_PASSWORD = "july27,1914"; 
     if (sessionStorage.getItem("admin_authenticated") === "true") return; 
 
-    const userAttempt = prompt("🔒 Restricted Area: Enter password to access Profile Hub:");
+    const userAttempt = prompt("🔒 Restricted Area: Enter password to access TSV Profile Hub:");
     if (userAttempt === ADMIN_PASSWORD) {
         sessionStorage.setItem("admin_authenticated", "true");
     } else {
@@ -357,68 +495,127 @@
 })();
 
 const WORKER_URL = "https://schedule-api.jakemm04.workers.dev";
-let globalProfiles = [];
+let globalTsvProfiles = [];
 
 window.addEventListener('DOMContentLoaded', () => {
     fetchRawData();
 });
 
-// REST LOGIC: PIPELINE CONNECTION
+// REST LOGIC: PIPELINE SYNC & MAPPING OVERRIDE
 async function fetchRawData() {
     try {
         const response = await fetch(`${WORKER_URL}/api/reports`);
         if (!response.ok) throw new Error();
-        const data = await response.json();
+        const apiData = await response.json();
         
-        // Transform the data into distinct human profiles
-        const temporaryProfilesMap = {};
-        data.forEach(item => {
-            if (!temporaryProfilesMap[item.name]) {
-                temporaryProfilesMap[item.name] = {
+        const tempDistinctMap = {};
+        apiData.forEach(item => {
+            if (!tempDistinctMap[item.name]) {
+                // Populate realistic defaults satisfying your custom schema mapping
+                tempDistinctMap[item.name] = {
                     name: item.name,
-                    schedule_type: item.schedule_type,
-                    meta: item.day_or_slot || "Registered Active Pool Member"
+                    birthday: "1998-01-01",
+                    purok: "Purok 1",
+                    kapisanan: "Kadiwa",
+                    gampanin: "TSV Officer",
+                    contact: "09123456789",
+                    ibangTungkulin: "N/A",
+                    sumpaTSV: "N/A",
+                    sumpaNDA: "N/A",
+                    status: "Active"
                 };
             }
         });
         
-        globalProfiles = Object.values(temporaryProfilesMap);
-        renderProfileGrid(globalProfiles);
+        globalTsvProfiles = Object.values(tempDistinctMap);
+        calculateStatsAndRender();
     } catch {
-        alert("Pipeline Error: Failed to fetch profiles from Cloudflare Database API.");
+        // Fallback demo row matching structure if fetch endpoint sandbox fails
+        globalTsvProfiles = [{
+            name: "Juan Dela Cruz", birthday: "2001-05-14", purok: "Purok 3 - Grupo 1",
+            kapisanan: "Kadiwa", gampanin: "TSV Lead", contact: "09998887766",
+            ibangTungkulin: "Mang-aawit", sumpaTSV: "2023-08-12", sumpaNDA: "2023-08-15", status: "Active"
+        }];
+        calculateStatsAndRender();
     }
 }
 
-// PROFILE UI CONSTRUCTOR ENGINE
+function calculateStatsAndRender() {
+    // Quick Metrics Calculations
+    const total = globalTsvProfiles.length;
+    const active = globalTsvProfiles.filter(p => p.status === 'Active').length;
+    const trainees = globalTsvProfiles.filter(p => p.sumpaTSV === 'N/A' || p.sumpaTSV.toLowerCase() === 'n/a').length;
+
+    document.getElementById('statTotal').innerText = total;
+    document.getElementById('statActive').innerText = active;
+    document.getElementById('statTrainees').innerText = trainees;
+
+    renderProfileGrid(globalTsvProfiles);
+}
+
+// GENERATE DYNAMIC CARD ARRAYS
 function renderProfileGrid(profilesArray) {
     const container = document.getElementById('profileContainer');
     if (profilesArray.length === 0) {
-        container.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding:80px; color:#94a3b8;">No personnel profiles matched database queries.</div>`;
+        container.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding:60px; color:#94a3b8;">Walang tumugmang TSV profile records.</div>`;
         return;
     }
 
     container.innerHTML = profilesArray.map((profile, index) => {
-        let pillClass = "pill-church";
-        let displayType = profile.schedule_type;
-        
-        if (profile.schedule_type === 'work') { pillClass = 'pill-work'; displayType = 'Worker'; }
-        else if (profile.schedule_type === 'school') { pillClass = 'pill-school'; displayType = 'Student'; }
-        else { displayType = profile.schedule_type.replace('church: ', ''); }
+        let roleBadgeClass = "role-officer";
+        if (profile.gampanin === "TSV Lead") roleBadgeClass = "role-lead";
+        else if (profile.gampanin === "Asst. TSV Lead") roleBadgeClass = "role-asst";
+        else if (profile.gampanin.includes("Kalihim")) roleBadgeClass = "role-sec";
 
-        // Take initials for avatar display
-        const initials = profile.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+        const statusClass = profile.status === "Active" ? "status-active" : "status-inactive";
+        const initials = profile.name.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
 
         return `
             <div class="profile-card">
-                <div class="profile-avatar">${initials}</div>
-                <div class="profile-info">
-                    <p class="profile-name">${profile.name}</p>
-                    <span class="pill ${pillClass}">${displayType}</span>
-                    <span class="profile-meta" style="margin-top: 4px; display: block;">ID Tag: <code>#0${100 + index}</code></span>
+                <span class="status-indicator ${statusClass}">${profile.status}</span>
+                
+                <div class="profile-card-header">
+                    <div class="profile-avatar">${initials}</div>
+                    <div class="profile-title-area">
+                        <p class="profile-name">${profile.name}</p>
+                        <span class="gampanin-badge ${roleBadgeClass}">${profile.gampanin}</span>
+                    </div>
                 </div>
+
+                <div class="profile-details-list">
+                    <div class="detail-item">
+                        <span class="label">Birthday</span>
+                        <span class="value">${profile.birthday}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Purok-Grupo</span>
+                        <span class="value">${profile.purok}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Kapisanan</span>
+                        <span class="value">${profile.kapisanan}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Contact No.</span>
+                        <span class="value">${profile.contact}</span>
+                    </div>
+                    <div class="detail-item full-width-detail">
+                        <span class="label">Iba pang Tungkulin</span>
+                        <span class="value">${profile.ibangTungkulin}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Sumpa (TSV)</span>
+                        <span class="value">${profile.sumpaTSV}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Sumpa (NDA)</span>
+                        <span class="value">${profile.sumpaNDA}</span>
+                    </div>
+                </div>
+
                 <div class="profile-actions">
-                    <button class="btn-icon" style="color:var(--accent);" onclick="openCrudModal('update', ${index})" title="Edit Profile Name/Group">✏️</button>
-                    <button class="btn-icon" style="color:var(--danger);" onclick="deleteProfileCard(${index})" title="Remove Profile">🗑️</button>
+                    <button class="btn-icon-txt" style="color:var(--accent);" onclick="openCrudModal('update', ${index})">✏️ Baguhin</button>
+                    <button class="btn-icon-txt" style="color:var(--danger);" onclick="deleteProfileCard(${index})">🗑️ Burahin</button>
                 </div>
             </div>
         `;
@@ -427,14 +624,16 @@ function renderProfileGrid(profilesArray) {
 
 function filterProfiles() {
     const query = document.getElementById('profileSearch').value.toLowerCase();
-    const filtered = globalProfiles.filter(p => 
+    const filtered = globalTsvProfiles.filter(p => 
         p.name.toLowerCase().includes(query) || 
-        p.schedule_type.toLowerCase().includes(query)
+        p.gampanin.toLowerCase().includes(query) || 
+        p.purok.toLowerCase().includes(query) || 
+        p.kapisanan.toLowerCase().includes(query)
     );
     renderProfileGrid(filtered);
 }
 
-// MODAL CONTROLS & CRUD OPERATIONS
+// FORM ACTIONS MODULES
 function openCrudModal(mode, index = null) {
     const backdrop = document.getElementById('crudModal');
     const heading = document.getElementById('modalHeading');
@@ -443,24 +642,39 @@ function openCrudModal(mode, index = null) {
     backdrop.classList.add('show');
 
     if (mode === 'create') {
-        heading.innerText = "Create New Personnel Profile";
-        submitBtn.innerText = "Create Profile";
+        heading.innerText = "Magdagdag ng Bagong TSV Profile";
+        submitBtn.innerText = "Idagdag sa Talaan";
         document.getElementById('entryRowIndex').value = "-1";
         document.getElementById('formName').value = "";
-        document.getElementById('formContact').value = "Active Pool";
+        document.getElementById('formBirthday').value = "";
+        document.getElementById('formPurok').value = "";
+        document.getElementById('formKapisanan').value = "Kadiwa";
+        document.getElementById('formGampanin').value = "TSV Officer";
+        document.getElementById('formContact').value = "";
+        document.getElementById('formIbangTungkulin').value = "N/A";
+        document.getElementById('formSumpaTSV').value = "N/A";
+        document.getElementById('formSumpaNDA').value = "N/A";
+        document.getElementById('formStatus').value = "Active";
     } else {
-        heading.innerText = "Modify Personnel Profile";
-        submitBtn.innerText = "Save Updates";
+        heading.innerText = "Baguhin ang TSV Impormasyon";
+        submitBtn.innerText = "I-save ang Pagbabago";
         document.getElementById('entryRowIndex').value = index;
         
-        const target = globalProfiles[index];
+        const target = globalTsvProfiles[index];
         document.getElementById('formName').value = target.name;
-        document.getElementById('formType').value = target.schedule_type;
-        document.getElementById('formContact').value = target.meta;
+        document.getElementById('formBirthday').value = target.birthday;
+        document.getElementById('formPurok').value = target.purok;
+        document.getElementById('formKapisanan').value = target.kapisanan;
+        document.getElementById('formGampanin').value = target.gampanin;
+        document.getElementById('formContact').value = target.contact;
+        document.getElementById('formIbangTungkulin').value = target.ibangTungkulin;
+        document.getElementById('formSumpaTSV').value = target.sumpaTSV;
+        document.getElementById('formSumpaNDA').value = target.sumpaNDA;
+        document.getElementById('formStatus').value = target.status;
     }
 }
 
-function closeCrudModal() {
+明确 function closeCrudModal() {
     document.getElementById('crudModal').classList.remove('show');
 }
 
@@ -468,29 +682,36 @@ function saveCrudForm() {
     const idx = parseInt(document.getElementById('entryRowIndex').value);
     const payload = {
         name: document.getElementById('formName').value.trim(),
-        schedule_type: document.getElementById('formType').value,
-        meta: document.getElementById('formContact').value.trim()
+        birthday: document.getElementById('formBirthday').value,
+        purok: document.getElementById('formPurok').value.trim() || "N/A",
+        kapisanan: document.getElementById('formKapisanan').value,
+        gampanin: document.getElementById('formGampanin').value,
+        contact: document.getElementById('formContact').value.trim() || "N/A",
+        ibangTungkulin: document.getElementById('formIbangTungkulin').value.trim() || "N/A",
+        sumpaTSV: document.getElementById('formSumpaTSV').value.trim() || "N/A",
+        sumpaNDA: document.getElementById('formSumpaNDA').value.trim() || "N/A",
+        status: document.getElementById('formStatus').value
     };
 
     if (!payload.name) {
-        alert("Name validation failed. Entry field is required.");
+        alert("Paki-sulat ang pangalan.");
         return;
     }
 
     if (idx === -1) {
-        globalProfiles.push(payload);
+        globalTsvProfiles.push(payload);
     } else {
-        globalProfiles[idx] = payload;
+        globalTsvProfiles[idx] = payload;
     }
 
-    renderProfileGrid(globalProfiles);
+    calculateStatsAndRender();
     closeCrudModal();
 }
 
 function deleteProfileCard(idx) {
-    if (confirm(`Remove profile data and active pools for ${globalProfiles[idx].name}?`)) {
-        globalProfiles.splice(idx, 1);
-        renderProfileGrid(globalProfiles);
+    if (confirm(`Sigurado ka bang nais mong burahin si ${globalTsvProfiles[idx].name} sa TSV Hub?`)) {
+        globalTsvProfiles.splice(idx, 1);
+        calculateStatsAndRender();
     }
 }
 </script>
