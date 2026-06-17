@@ -151,6 +151,99 @@
         
         .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; border-top: 1px solid var(--border); padding-top: 15px; }
         .btn-secondary { background: #e2e8f0; color: #334155; border: none; padding: 12px 18px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+
+        /* VIEW TOGGLE CONTROLS */
+        .view-toggle-container {
+            display: flex;
+            background: #e2e8f0;
+            padding: 4px;
+            border-radius: 8px;
+            gap: 2px;
+        }
+        
+        .toggle-btn {
+            background: transparent;
+            border: none;
+            padding: 8px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #64748b;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .toggle-btn.active {
+            background: white;
+            color: var(--primary);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        /* DYNAMIC LAYOUT SWITCHING RULES */
+        /* List Mode Structural Reset */
+        .profile-grid.view-list-mode {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* Transforms Card Layout into a Compact Row */
+        .profile-grid.view-list-mode .profile-card {
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 20px;
+            gap: 20px;
+        }
+
+        .profile-grid.view-list-mode .profile-card-header {
+            border-bottom: none;
+            padding-bottom: 0;
+            width: 250px;
+            flex-shrink: 0;
+        }
+
+        .profile-grid.view-list-mode .profile-avatar {
+            width: 40px;
+            height: 40px;
+            font-size: 14px;
+        }
+
+        .profile-grid.view-list-mode .profile-details-list {
+            display: flex;
+            flex: 1;
+            gap: 25px;
+            justify-content: flex-start;
+            align-items: center;
+        }
+
+        /* Hide unnecessary headers inside row values to make it look clean like a spreadsheet */
+        .profile-grid.view-list-mode .detail-item .label {
+            display: none; 
+        }
+
+        .profile-grid.view-list-mode .detail-item {
+            min-width: 90px;
+        }
+
+        /* Make sure custom wide detail stays aligned in row view */
+        .profile-grid.view-list-mode .detail-item.full-width-detail {
+            min-width: 140px;
+        }
+
+        .profile-grid.view-list-mode .status-indicator {
+            position: static;
+            order: 3;
+            margin-left: auto;
+        }
+
+        .profile-grid.view-list-mode .profile-actions {
+            border-top: none;
+            padding-top: 0;
+            margin-top: 0;
+            order: 4;
+            flex-shrink: 0;
+        }
     </style>
 </head>
 <body>
@@ -190,6 +283,11 @@
 
         <div class="search-bar-row">
             <input type="text" id="profileSearch" class="search-input" placeholder="🔍 Maghanap gamit ang Pangalan, Gampanin, Purok..." oninput="filterProfiles()">
+
+            <div class="view-toggle-container">
+                <button id="btnCardView" class="toggle-btn active" onclick="switchViewMode('card')">📇 Cards</button>
+                <button id="btnListView" class="toggle-btn" onclick="switchViewMode('list')">📝 List View</button>
+            </div>
         </div>
         
         <div class="profile-grid" id="profileContainer"></div>
@@ -283,6 +381,35 @@
 const WORKER_URL = "https://schedule-api.jakemm04.workers.dev";
 let globalTsvProfiles = [];
 
+    // Track the active user layout setting
+let currentLayoutView = 'card'; 
+
+function switchViewMode(mode) {
+    currentLayoutView = mode;
+    
+    const container = document.getElementById('profileContainer');
+    const btnCard = document.getElementById('btnCardView');
+    const btnList = document.getElementById('btnListView');
+
+    if (mode === 'list') {
+        // Toggle Active Classes on UI Buttons
+        btnCard.classList.remove('active');
+        btnList.classList.add('active');
+        
+        // Change Structural CSS layout engine states
+        container.classList.remove('view-card-mode');
+        container.classList.add('view-list-mode');
+    } else {
+        btnList.classList.remove('active');
+        btnCard.classList.add('active');
+        
+        container.classList.remove('view-list-mode');
+        container.classList.add('view-card-mode');
+    }
+    
+    // Re-run filter so data remains intact during layout engine transformation
+    filterProfiles();
+}
 window.addEventListener('DOMContentLoaded', () => {
     fetchRawData();
 });
@@ -339,6 +466,8 @@ function calculateStatsAndRender() {
 
 function renderProfileGrid(profilesArray) {
     const container = document.getElementById('profileContainer');
+    container.className = `profile-grid view-${currentLayoutView}-mode`;
+    
     if (profilesArray.length === 0) {
         container.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding:60px; color:#94a3b8;">Walang tumugmang records.</div>`;
         return;
