@@ -505,13 +505,21 @@ async function fetchRawData() {
         });
 
         // Auto-merge names found in old schedule database
+        // Auto-merge names found in old schedule database (UPDATED to prevent duplicates)
         existingSchedules.forEach(sched => {
-            if (!profileMap[sched.name] && sched.name) {
-                profileMap[sched.name] = {
-                    name: sched.name, birthday: "N/A", purok: "N/A", kapisanan: "Kadiwa",
-                    gampanin: "TSV Officer", contact: "N/A", ibangTungkulin: "N/A",
-                    sumpaTSV: "N/A", sumpaNDA: "N/A", status: "Active"
-                };
+            if (sched.name) {
+                const cleanSchedName = sched.name.trim().toLowerCase();
+                
+                // Check if this person already exists in our profile map safely
+                const alreadyExists = Object.values(profileMap).some(p => p.name.trim().toLowerCase() === cleanSchedName);
+
+                if (!alreadyExists) {
+                    profileMap[sched.name.trim()] = {
+                        name: sched.name.trim(), birthday: "N/A", purok: "N/A", kapisanan: "Kadiwa",
+                        gampanin: "TSV Officer", contact: "N/A", ibangTungkulin: "N/A",
+                        sumpaTSV: "N/A", sumpaNDA: "N/A", status: "Active"
+                    };
+                }
             }
         });
 
