@@ -295,7 +295,8 @@
 
 <div class="sidebar">
     <h2>Suguan Controller</h2>
-    <div class="nav-menu"><div class="stat-card">
+    <div class="nav-menu">
+            <!--<div class="stat-card">
                 <span class="label">Kabuuan ng TSV</span>
                 <span class="value" id="statTotal">0</span>
             </div>
@@ -306,7 +307,7 @@
             <div class="stat-card">
                 <span class="label">Mga Trainee / Di Nanumpa</span>
                 <span class="value" style="color: var(--warning);" id="statTrainees">0</span>
-            </div>
+            </div>-->
         <a href="#" class="nav-btn active">👤 TSV Profiles</a>
         <a href="suguan_0.html" class="nav-btn">⚡ Assignment Matrix</a>
     </div>
@@ -319,9 +320,6 @@
         <h1>TSV Personnel Hub</h1>
           <input type="text" id="profileSearch" class="search-input" placeholder="🔍 Maghanap gamit ang Pangalan, Gampanin, Purok..." oninput="filterProfiles()">
         <button class="action-btn btn-success" onclick="openCrudModal('create')">➕ Magdagdag ng Profile</button>
-    </div>
-
-    <div class="view-panel">
         <div class="stats-row">
             <div class="stat-card">
                 <span class="label">Kabuuan ng TSV</span>
@@ -340,11 +338,16 @@
        
         <div class="search-bar-row">
             <input type="text" id="profileSearch" class="search-input" placeholder="🔍 Maghanap gamit ang Pangalan, Gampanin, Purok..." oninput="filterProfiles()">
-        </div>
             <div class="view-toggle-container">
                     <button id="btnCardView" class="toggle-btn active" onclick="switchViewMode('card')">📇 Cards</button>
                     <button id="btnListView" class="toggle-btn" onclick="switchViewMode('list')">📝 List View</button>
                 </div>
+        </div>
+    </div>
+
+    <div class="view-panel">
+        
+            
         <div class="profile-grid" id="profileContainer"></div>
     </div>
 </div>
