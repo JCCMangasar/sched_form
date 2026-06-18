@@ -60,18 +60,18 @@
 
         .view-panel { flex: 1; padding: 30px; box-sizing: border-box; overflow-y: auto; overflow-x: auto; }
 
-        .stats-row { display: flex; grid-template-column: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .stats-row { display: flex; gap: 15px; margin-bottom: 25px; }
         
         .stat-card {
             background: white; border: 1px solid var(--border); padding: 15px 20px;
-            border-radius: 10px; display: flex; flex-direction: row; gap: 5px;
+            border-radius: 10px; display: flex; flex-direction: row; gap: 5px; align-items: center;
         }
 
-        .stat-card .label { font-size: 12px; color: #64748b; font-weight: 600; text-transform: uppercase; }
+        .stat-card .label { font-size: 12px; color: #64748b; font-weight: 600; text-transform: uppercase; margin-right: 5px; }
         .stat-card .value { font-size: 24px; font-weight: 700; color: var(--primary); }
 
-        .search-bar-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; gap: 15px; }
-        .search-input { flex: 1; width: 450px; padding: 12px 18px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; }
+        .search-bar-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; gap: 15px; width: 100%; }
+        .search-input { flex: 1; max-width: 450px; padding: 12px 18px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; }
 
         .action-btn {
             color: white; border: none; padding: 12px 20px; font-weight: bold;
@@ -81,54 +81,61 @@
         .btn-success { background-color: var(--success); }
         .btn-primary { background-color: var(--accent); }
 
-        /* Hidden by default in Card View */
-        .profile-list-header {
-            display: none;
+        /* VIEW TOGGLE CONTROLS */
+        .view-toggle-container {
+            display: flex;
+            background: #e2e8f0;
+            padding: 4px;
+            border-radius: 8px;
+            gap: 2px;
+        }
+        
+        .toggle-btn {
+            background: transparent;
+            border: none;
+            padding: 8px 14px;
+            font-size: 13px;
             font-weight: 600;
             color: #64748b;
-            border-bottom: 2px solid #cbd5e1;
-            padding: 12px 16px;
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            box-sizing: border-box;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
         }
         
-        /* Show and structure the header grid explicitly when view-list-mode is active */
-        .view-list-mode .profile-list-header {
+        .toggle-btn.active {
+            background: white;
+            color: var(--primary);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        /* CARD VIEW LAYOUT OPTIONS */
+        .profile-grid.view-card-mode {
             display: grid;
-            grid-column: 1 / -1;
-            grid-template-columns: 240px 110px 110px 110px 130px 200px 110px 110px 100px;
-            align-items: center;
-            background: #f1f5f9;
-            border-radius: 8px 8px 0 0;
+            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+            gap: 20px;
         }
-
-        .profile-list-header div {
-            padding-right: 12px;
-            box-sizing: border-box;
-        }
-
-        .profile-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 20px; }
         
-        .profile-card {
+        .profile-grid.view-card-mode .profile-list-header {
+            display: none !important;
+        }
+
+        .profile-grid.view-card-mode .profile-card {
             background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px;
             padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); display: flex;
             flex-direction: column; gap: 15px; position: relative; transition: transform 0.2s, box-shadow 0.2s;
         }
 
-        .profile-card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); }
-
-        .profile-card-header { display: flex; align-items: center; gap: 15px; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
+        .profile-grid.view-card-mode .profile-card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); }
+        .profile-grid.view-card-mode .profile-card-header { display: flex; align-items: center; gap: 15px; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
         
-        .profile-avatar {
+        .profile-grid.view-card-mode .profile-avatar {
             width: 55px; height: 55px; border-radius: 50%; background: #f1f5f9; color: var(--accent);
             display: flex; align-items: center; justify-content: center; font-size: 20px;
             font-weight: bold; border: 2px solid var(--border); flex-shrink: 0;
         }
 
-        .profile-title-area { flex: 1; overflow: hidden; }
-        .profile-name { font-size: 16px; font-weight: 700; color: var(--primary); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .profile-grid.view-card-mode .profile-title-area { flex: 1; overflow: hidden; }
+        .profile-grid.view-card-mode .profile-name { font-size: 16px; font-weight: 700; color: var(--primary); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
         .gampanin-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; margin-top: 4px; }
         .role-lead { background: #fee2e2; color: #ef4444; }
@@ -136,18 +143,85 @@
         .role-sec { background: #e0e7ff; color: #4f46e5; }
         .role-officer { background: #e0f2fe; color: #0369a1; }
 
-        .status-indicator { position: absolute; top: 20px; right: 20px; font-size: 11px; font-weight: 600; padding: 2px 6px; border-radius: 4px; }
+        .profile-grid.view-card-mode .status-indicator { position: absolute; top: 20px; right: 20px; font-size: 11px; font-weight: 600; padding: 2px 6px; border-radius: 4px; }
         .status-active { background: #dcfce7; color: #16a34a; }
         .status-inactive { background: #f1f5f9; color: #64748b; }
 
-        .profile-details-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 13px; }
-        .detail-item { display: flex; flex-direction: column; gap: 2px; }
-        .detail-item span.label { font-size: 11px; color: #94a3b8; font-weight: 600; text-transform: uppercase; }
-        .detail-item span.value { color: var(--text); font-weight: 500; }
-        .full-width-detail { grid-column: 1 / -1; }
+        .profile-grid.view-card-mode .profile-details-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 13px; }
+        .profile-grid.view-card-mode .detail-item { display: flex; flex-direction: column; gap: 2px; }
+        .profile-grid.view-card-mode .detail-item span.label { font-size: 11px; color: #94a3b8; font-weight: 600; text-transform: uppercase; }
+        .profile-grid.view-card-mode .detail-item span.value { color: var(--text); font-weight: 500; }
+        .profile-grid.view-card-mode .full-width-detail { grid-column: 1 / -1; }
+        .profile-grid.view-card-mode .profile-actions { display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid var(--border); padding-top: 12px; margin-top: 5px; }
 
-        .profile-actions { display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid var(--border); padding-top: 12px; margin-top: 5px; }
-        
+        /* LIST VIEW SPREADSHEET ENGINE */
+        .profile-grid.view-list-mode {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-width: 1250px; /* Locks elements from wrapping or compressing */
+        }
+
+        .profile-grid.view-list-mode .profile-list-header,
+        .profile-grid.view-list-mode .list-row-item {
+            display: grid !important;
+            grid-template-columns: 260px 100px 110px 100px 120px 200px 110px 110px 70px 80px;
+            align-items: center;
+            padding: 8px 16px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 13px;
+            box-sizing: border-box;
+        }
+
+        .profile-grid.view-list-mode .profile-list-header {
+            background: #f1f5f9;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid #cbd5e1;
+        }
+
+        .profile-grid.view-list-mode .list-row-item:hover {
+            background: #f8fafc;
+        }
+
+        .profile-grid.view-list-mode .list-cell-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            overflow: hidden;
+        }
+
+        .profile-grid.view-list-mode .list-avatar {
+            width: 30px; height: 30px; border-radius: 50%; background: #f1f5f9; color: var(--accent);
+            display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; flex-shrink: 0;
+        }
+
+        .profile-grid.view-list-mode .list-name {
+            font-weight: 600; color: var(--primary); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-right: 5px;
+        }
+
+        .profile-grid.view-list-mode .list-cell {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding-right: 10px;
+        }
+
+        .profile-grid.view-list-mode .status-pill {
+            font-size: 11px; font-weight: 600; padding: 2px 6px; border-radius: 4px; width: fit-content; text-align: center;
+        }
+
+        .profile-grid.view-list-mode .list-actions {
+            display: flex;
+            gap: 4px;
+            justify-content: center;
+        }
+
         .btn-icon-txt {
             background: transparent; border: 1px solid var(--border); cursor: pointer;
             font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 6px;
@@ -180,127 +254,6 @@
         .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; border-top: 1px solid var(--border); padding-top: 15px; }
         .btn-secondary { background: #e2e8f0; color: #334155; border: none; padding: 12px 18px; border-radius: 8px; cursor: pointer; font-weight: bold; }
 
-        /* VIEW TOGGLE CONTROLS */
-        .view-toggle-container {
-            display: flex;
-            background: #e2e8f0;
-            padding: 4px;
-            border-radius: 8px;
-            gap: 2px;
-        }
-        
-        .toggle-btn {
-            background: transparent;
-            border: none;
-            padding: 8px 14px;
-            font-size: 13px;
-            font-weight: 600;
-            color: #64748b;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .toggle-btn.active {
-            background: white;
-            color: var(--primary);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-
-        /* DYNAMIC LAYOUT SWITCHING RULES */
-        .profile-grid.view-list-mode {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            min-width: 1190px;
-        }
-
-        /* Transform card block into row grid structural lines */
-        .profile-grid.view-list-mode .profile-card {
-            display: grid !important;
-            grid-template-columns: 240px 110px 110px 110px 130px 200px 110px 110px 100px;
-            align-items: center;
-            padding: 10px 16px;
-            gap: 0;
-            border-radius: 6px;
-            box-shadow: none;
-            box-sizing: border-box;
-            background: var(--card-bg);
-        }
-
-        .profile-grid.view-list-mode .profile-card:hover {
-            transform: none;
-            background: #f8fafc;
-        }
-
-        .profile-grid.view-list-mode .status-indicator {
-            position: static !important;
-            font-size: 10px;
-            padding: 2px 4px;
-            margin-top: 4px;
-            display: inline-block;
-            width: fit-content;
-        }
-
-        .profile-grid.view-list-mode .profile-card-header {
-            border-bottom: none;
-            padding-bottom: 0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            overflow: hidden;
-        }
-
-        .profile-grid.view-list-mode .profile-avatar {
-            width: 32px;
-            height: 32px;
-            font-size: 11px;
-        }
-
-        .profile-grid.view-list-mode .profile-title-area {
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        /* Dismantles sub-div so children layout properly inside row columns */
-        .profile-grid.view-list-mode .profile-details-list {
-            display: contents;
-        }
-
-        /* Clean text items and remove sub headers */
-        .profile-grid.view-list-mode .detail-item {
-            display: block;
-            font-size: 13px;
-            padding-right: 12px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            box-sizing: border-box;
-        }
-
-        .profile-grid.view-list-mode .detail-item .label {
-            display: none !important; 
-        }
-
-        .profile-grid.view-list-mode .detail-item.full-width-detail {
-            grid-column: auto; 
-        }
-
-        .profile-grid.view-list-mode .profile-actions {
-            border-top: none;
-            padding-top: 0;
-            margin-top: 0;
-            display: flex;
-            justify-content: center;
-            gap: 6px;
-        }
-
-        .profile-grid.view-list-mode .btn-icon-txt {
-            padding: 4px 8px;
-            font-size: 11px;
-        }
-
         /* TUNGKULIN CHECKBOX PILLS */
         .tungkulin-checkbox-grid {
             display: grid;
@@ -325,25 +278,10 @@
             transition: all 0.2s ease;
         }
         
-        .checkbox-pill:hover {
-            background: #f1f5f9;
-            border-color: #94a3b8;
-        }
-        
-        .checkbox-pill input[type="checkbox"]:checked + span {
-            color: var(--primary);
-            font-weight: 600;
-        }
-        
-        .checkbox-pill input[type="checkbox"]:checked {
-            accent-color: var(--primary);
-        }
-        
-        .checkbox-pill input[type="checkbox"] {
-            width: 16px;
-            height: 16px;
-            cursor: pointer;
-        }
+        .checkbox-pill:hover { background: #f1f5f9; border-color: #94a3b8; }
+        .checkbox-pill input[type="checkbox"]:checked + span { color: var(--primary); font-weight: 600; }
+        .checkbox-pill input[type="checkbox"]:checked { accent-color: var(--primary); }
+        .checkbox-pill input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -361,7 +299,7 @@
 <div class="main-container">
     <div class="top-header">
         <h1>TSV Masterlist 4.0</h1>
-        
+           
         <div class="stats-row">
             <div class="stat-card">
                 <span class="label">S#</span>
@@ -505,13 +443,10 @@
 
 const WORKER_URL = "https://schedule-api.jakemm04.workers.dev";
 let globalTsvProfiles = [];
-
-// Track the active user layout setting
 let currentLayoutView = 'list'; 
 
 function switchViewMode(mode) {
     currentLayoutView = mode;
-    
     const container = document.getElementById('profileContainer');
     const btnCard = document.getElementById('btnCardView');
     const btnList = document.getElementById('btnListView');
@@ -519,15 +454,12 @@ function switchViewMode(mode) {
     if (mode === 'list') {
         btnCard.classList.remove('active');
         btnList.classList.add('active');
-        container.classList.remove('view-card-mode');
-        container.classList.add('view-list-mode');
+        container.className = "profile-grid view-list-mode";
     } else {
         btnList.classList.remove('active');
         btnCard.classList.add('active');
-        container.classList.remove('view-list-mode');
-        container.classList.add('view-card-mode');
+        container.className = "profile-grid view-card-mode";
     }
-    
     filterProfiles();
 }
 
@@ -535,7 +467,6 @@ window.addEventListener('DOMContentLoaded', () => {
     fetchRawData();
 });
 
-// Advanced Sync Pipeline: Safely reads records and preserves historical schedules
 async function fetchRawData() {
     try {
         const [profilesRes, schedulesRes] = await Promise.all([
@@ -555,7 +486,6 @@ async function fetchRawData() {
             };
         });
 
-        // Auto-merge names found in old schedule database (Safely formatted to prevent duplicates)
         existingSchedules.forEach(sched => {
             if (sched.name) {
                 const cleanSchedName = sched.name.trim().toLowerCase();
@@ -573,21 +503,17 @@ async function fetchRawData() {
 
         let unsortedProfiles = Object.values(profileMap);
         
-        // Sort alphabetically by SURNAME (Last Name)
         globalTsvProfiles = unsortedProfiles.sort((a, b) => {
             const getSurname = (fullName) => {
                 const parts = fullName.trim().split(' ');
                 if (parts.length <= 1) return fullName.toLowerCase();
-                
                 const lastWord = parts[parts.length - 1];
                 const suffixes = ['jr', 'jr.', 'sr', 'sr.', 'iii', 'iv', 'v'];
-                
                 if (suffixes.includes(lastWord.toLowerCase()) && parts.length > 2) {
                     return parts[parts.length - 2].toLowerCase();
                 }
                 return lastWord.toLowerCase();
             };
-
             return getSurname(a.name).localeCompare(getSurname(b.name), undefined, { sensitivity: 'base' });
         });
         
@@ -620,59 +546,99 @@ function renderProfileGrid(profilesArray) {
         return;
     }
 
-    // 1. Create the Table Header Row (Only structured inside view-list-mode via CSS grid lines)
-    const tableHeaderHtml = `
-        <div class="profile-list-header">
-            <div>Pangalan / Gampanin</div>
-            <div>Birthday</div>
-            <div>Purok-Grupo</div>
-            <div>Kapisanan</div>
-            <div>Contact No.</div>
-            <div>Iba pang Tungkulin</div>
-            <div>Sumpa (TSV)</div>
-            <div>Sumpa (NDA)</div>
-            <div style="text-align: center;">Aksyon</div>
-        </div>
-    `;
-
-    // 2. Generate the rows/cards
-    const cardsHtml = profilesArray.map((profile, index) => {
-        let roleBadgeClass = "role-officer";
-        if (profile.gampanin === "TSV Lead") roleBadgeClass = "role-lead";
-        else if (profile.gampanin === "Asst. TSV Lead") roleBadgeClass = "role-asst";
-        else if (profile.gampanin.includes("Kalihim")) roleBadgeClass = "role-sec";
-
-        const statusClass = profile.status === "Active" ? "status-active" : "status-inactive";
-        const initials = profile.name.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
-
-        return `
-            <div class="profile-card">
-                <span class="status-indicator ${statusClass}">${profile.status}</span>
-                <div class="profile-card-header">
-                    <div class="profile-avatar">${initials}</div>
-                    <div class="profile-title-area">
-                        <p class="profile-name">${profile.name}</p>
-                        <span class="gampanin-badge ${roleBadgeClass}">${profile.gampanin}</span>
-                    </div>
-                </div>
-                <div class="profile-details-list">
-                    <div class="detail-item"><span class="label">Birthday</span><span class="value">${profile.birthday}</span></div>
-                    <div class="detail-item"><span class="label">Purok-Grupo</span><span class="value">${profile.purok}</span></div>
-                    <div class="detail-item"><span class="label">Kapisanan</span><span class="value">${profile.kapisanan}</span></div>
-                    <div class="detail-item"><span class="label">Contact No.</span><span class="value">${profile.contact}</span></div>
-                    <div class="detail-item full-width-detail"><span class="label">Iba pang Tungkulin</span><span class="value">${profile.ibangTungkulin}</span></div>
-                    <div class="detail-item"><span class="label">Sumpa (TSV)</span><span class="value">${profile.sumpaTSV}</span></div>
-                    <div class="detail-item"><span class="label">Sumpa (NDA)</span><span class="value">${profile.sumpaNDA}</span></div>
-                </div>
-                <div class="profile-actions">
-                    <button class="btn-icon-txt" style="color:var(--accent);" onclick="openCrudModal('update', ${index})">✏️</button>
-                    <button class="btn-icon-txt" style="color:var(--danger);" onclick="deleteProfileCard(${index})">🗑️</button>
-                </div>
+    if (currentLayoutView === 'list') {
+        // --- 1. SPREADSHEET TABLE MODE RENDER ---
+        const tableHeaderHtml = `
+            <div class="profile-list-header">
+                <div>Pangalan / Gampanin</div>
+                <div>Birthday</div>
+                <div>Purok-Grupo</div>
+                <div>Kapisanan</div>
+                <div>Contact No.</div>
+                <div>Iba pang Tungkulin</div>
+                <div>Sumpa (TSV)</div>
+                <div>Sumpa (NDA)</div>
+                <div style="text-align: center;">Status</div>
+                <div style="text-align: center;">Aksyon</div>
             </div>
         `;
-    }).join('');
 
-    container.innerHTML = tableHeaderHtml + cardsHtml;
+        const rowsHtml = profilesArray.map((profile, index) => {
+            let roleBadgeClass = "role-officer";
+            if (profile.gampanin === "TSV Lead") roleBadgeClass = "role-lead";
+            else if (profile.gampanin === "Asst. TSV Lead") roleBadgeClass = "role-asst";
+            else if (profile.gampanin.includes("Kalihim")) roleBadgeClass = "role-sec";
+
+            const statusClass = profile.status === "Active" ? "status-active" : "status-inactive";
+            const initials = profile.name.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
+
+            return `
+                <div class="list-row-item">
+                    <div class="list-cell-profile">
+                        <div class="list-avatar">${initials}</div>
+                        <div style="overflow: hidden;">
+                            <p class="list-name" title="${profile.name}">${profile.name}</p>
+                            <span class="gampanin-badge ${roleBadgeClass}">${profile.gampanin}</span>
+                        </div>
+                    </div>
+                    <div class="list-cell" title="${profile.birthday}">${profile.birthday}</div>
+                    <div class="list-cell" title="${profile.purok}">${profile.purok}</div>
+                    <div class="list-cell" title="${profile.kapisanan}">${profile.kapisanan}</div>
+                    <div class="list-cell" title="${profile.contact}">${profile.contact}</div>
+                    <div class="list-cell" title="${profile.ibangTungkulin}">${profile.ibangTungkulin}</div>
+                    <div class="list-cell" title="${profile.sumpaTSV}">${profile.sumpaTSV}</div>
+                    <div class="list-cell" title="${profile.sumpaNDA}">${profile.sumpaNDA}</div>
+                    <div style="display:flex; justify-content:center;">
+                        <span class="status-pill ${statusClass}">${profile.status}</span>
+                    </div>
+                    <div class="list-actions">
+                        <button class="btn-icon-txt" style="color:var(--accent); padding:4px 8px;" onclick="openCrudModal('update', ${index})">✏️</button>
+                        <button class="btn-icon-txt" style="color:var(--danger); padding:4px 8px;" onclick="deleteProfileCard(${index})">🗑️</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        container.innerHTML = tableHeaderHtml + rowsHtml;
+
+    } else {
+        // --- 2. BEAUTIFUL GRID CARD MODE RENDER ---
+        container.innerHTML = profilesArray.map((profile, index) => {
+            let roleBadgeClass = "role-officer";
+            if (profile.gampanin === "TSV Lead") roleBadgeClass = "role-lead";
+            else if (profile.gampanin === "Asst. TSV Lead") roleBadgeClass = "role-asst";
+            else if (profile.gampanin.includes("Kalihim")) roleBadgeClass = "role-sec";
+
+            const statusClass = profile.status === "Active" ? "status-active" : "status-inactive";
+            const initials = profile.name.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
+
+            return `
+                <div class="profile-card">
+                    <span class="status-indicator ${statusClass}">${profile.status}</span>
+                    <div class="profile-card-header">
+                        <div class="profile-avatar">${initials}</div>
+                        <div class="profile-title-area">
+                            <p class="profile-name">${profile.name}</p>
+                            <span class="gampanin-badge ${roleBadgeClass}">${profile.gampanin}</span>
+                        </div>
+                    </div>
+                    <div class="profile-details-list">
+                        <div class="detail-item"><span class="label">Birthday</span><span class="value">${profile.birthday}</span></div>
+                        <div class="detail-item"><span class="label">Purok-Grupo</span><span class="value">${profile.purok}</span></div>
+                        <div class="detail-item"><span class="label">Kapisanan</span><span class="value">${profile.kapisanan}</span></div>
+                        <div class="detail-item"><span class="label">Contact No.</span><span class="value">${profile.contact}</span></div>
+                        <div class="detail-item full-width-detail"><span class="label">Iba pang Tungkulin</span><span class="value">${profile.ibangTungkulin}</span></div>
+                        <div class="detail-item"><span class="label">Sumpa (TSV)</span><span class="value">${profile.sumpaTSV}</span></div>
+                        <div class="detail-item"><span class="label">Sumpa (NDA)</span><span class="value">${profile.sumpaNDA}</span></div>
+                    </div>
+                    <div class="profile-actions">
+                        <button class="btn-icon-txt" style="color:var(--accent);" onclick="openCrudModal('update', ${index})">✏️ Edit</button>
+                        <button class="btn-icon-txt" style="color:var(--danger);" onclick="deleteProfileCard(${index})">🗑️ Delete</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
 }
 
 function filterProfiles() {
