@@ -575,7 +575,6 @@ function calculateStatsAndRender() {
 
     renderProfileGrid(globalTsvProfiles);
 }
-
 function renderProfileGrid(profilesArray) {
     const container = document.getElementById('profileContainer');
     container.className = `profile-grid view-${currentLayoutView}-mode`;
@@ -585,7 +584,23 @@ function renderProfileGrid(profilesArray) {
         return;
     }
 
-    container.innerHTML = profilesArray.map((profile, index) => {
+    // 1. Create the Table Header Row (Only visible dynamically in view-list-mode via CSS)
+    const tableHeaderHtml = `
+        <div class="profile-list-header">
+            <div>Pangalan / Gampanin</div>
+            <div>Birthday</div>
+            <div>Purok-Grupo</div>
+            <div>Kapisanan</div>
+            <div>Contact No.</div>
+            <div>Iba pang Tungkulin</div>
+            <div>Sumpa (TSV)</div>
+            <div>Sumpa (NDA)</div>
+            <div style="text-align: center;">Aksyon</div>
+        </div>
+    `;
+
+    // 2. Generate the rows/cards
+    const cardsHtml = profilesArray.map((profile, index) => {
         let roleBadgeClass = "role-officer";
         if (profile.gampanin === "TSV Lead") roleBadgeClass = "role-lead";
         else if (profile.gampanin === "Asst. TSV Lead") roleBadgeClass = "role-asst";
@@ -620,6 +635,9 @@ function renderProfileGrid(profilesArray) {
             </div>
         `;
     }).join('');
+
+    // Combine header and cards together inside the container
+    container.innerHTML = tableHeaderHtml + cardsHtml;
 }
 
 function filterProfiles() {
