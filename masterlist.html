@@ -329,7 +329,10 @@
                 <span class="label">Active</span>
                 <span class="value" style="color: var(--success);" id="statActive">0</span>
             </div>
-            
+            <div class="stat-card">
+                <span class="label">Inactive</span>
+                <span class="value" style="color: var(--success);" id="statInactive">0</span>
+            </div>
             
             <div class="stat-card">
                 <span class="label">Trainee</span>
@@ -552,10 +555,12 @@ async function fetchRawData() {
 function calculateStatsAndRender() {
     const total = globalTsvProfiles.length;
     const active = globalTsvProfiles.filter(p => p.status === 'Active').length;
+    const inactive = globalTsvProfiles.filter(p => p.status === 'Inactive').length;
     const trainees = globalTsvProfiles.filter(p => p.sumpaTSV === 'N/A' || p.sumpaTSV.toLowerCase() === 'n/a').length;
 
     document.getElementById('statTotal').innerText = total;
     document.getElementById('statActive').innerText = active;
+    document.getElementById('statInactive').innerText = inactive;
     document.getElementById('statTrainees').innerText = trainees;
 
     renderProfileGrid(globalTsvProfiles);
