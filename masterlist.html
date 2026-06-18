@@ -81,6 +81,28 @@
         .btn-success { background-color: var(--success); }
         .btn-primary { background-color: var(--accent); }
 
+        
+                /* Table Header rules - Hidden by default in Card View */
+        .profile-list-header {
+            display: none;
+            font-weight: 600;
+            color: #64748b;
+            border-bottom: 2px solid #e2e8f0;
+            padding: 12px 16px;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        /* Automatically show and structure the header grid when view-list-mode is active */
+        .view-list-mode .profile-list-header {
+            display: grid;
+            grid-column: 1 / -1; /* Stretch across entire container width */
+            grid-template-columns: 2fr 1fr 1fr 1fr 1.2fr 2fr 1fr 1fr 1.2fr; /* Must match your row structure spacing */
+            align-items: center;
+            background: #f8fafc;
+            border-radius: 8px 8px 0 0;
+        }
         .profile-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 20px; }
         
         .profile-card {
