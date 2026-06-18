@@ -199,77 +199,117 @@
             background: white;
             color: var(--primary);
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-/* DYNAMIC LAYOUT SWITCHING RULES */
-        /* List Mode Structural Reset */
+        }/* DYNAMIC LAYOUT SWITCHING RULES */
+        
+        /* List Mode Container - Turns into a scrollable table layout */
         .profile-grid.view-list-mode {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
+            min-width: 1200px; /* Forces a stable width for all columns */
+        }
+        
+        /* Ensure the main panel allows horizontal scrolling when list mode expands */
+        .view-panel {
+            overflow-x: auto;
         }
 
-        /* UPDATED: Transforms Card into a CSS Grid Row matching the header exactly */
+        /* The Row Grid Rule (Matches Header exactly) */
+        .view-list-mode .profile-list-header,
         .profile-grid.view-list-mode .profile-card {
-            display: grid !important; /* Force grid engine */
-            grid-template-columns: 2fr 1fr 1fr 1fr 1.2fr 2fr 1fr 1fr 1.2fr; /* Exact matching spacing */
+            display: grid !important;
+            grid-template-columns: 240px 100px 110px 110px 130px 200px 110px 110px 120px;
             align-items: center;
-            padding: 12px 16px;
-            gap: 0px; /* Let explicit grid fractions handle column distribution spacing */
-        }
-
-        /* Removes relative badge offset positioning inside row rows */
-        .profile-grid.view-list-mode .status-indicator {
-            position: static !important;
-            order: unset;
-            margin-left: 0;
-            width: fit-content;
-        }
-
-        .profile-grid.view-list-mode .profile-card-header {
-            border-bottom: none;
-            padding-bottom: 0;
-            width: auto;
-            flex-shrink: unset;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .profile-grid.view-list-mode .profile-avatar {
-            width: 35px;
-            height: 35px;
-            font-size: 12px;
-        }
-
-        /* UPDATED: Allows individual items to break out and occupy grid cells naturally */
-        .profile-grid.view-list-mode .profile-details-list {
-            display: contents; /* Core Fix: Breaks the sub-container so items map directly to the parent grid layout */
-        }
-
-        /* Hide unnecessary text labels inside row cells to keep it clean */
-        .profile-grid.view-list-mode .detail-item .label {
-            display: none; 
-        }
-
-        /* Let explicit column mapping handle field distribution widths naturally */
-        .profile-grid.view-list-mode .detail-item {
-            min-width: 0; 
-            padding-right: 10px;
+            padding: 10px 16px;
+            gap: 0;
             box-sizing: border-box;
         }
 
-        /* Reset custom wide detail flags inside explicit multi-column layout flows */
+        /* Fix row card styling to look uniform */
+        .profile-grid.view-list-mode .profile-card {
+            flex-direction: row; /* reset flex engine */
+            border-radius: 6px;
+            margin: 0;
+            box-shadow: none;
+            background: var(--card-bg);
+        }
+        
+        .profile-grid.view-list-mode .profile-card:hover {
+            transform: none; /* Disable 3D tilt movement in table view */
+            background: #f8fafc;
+        }
+
+        /* Reset the floating status pill position into cell layout flows */
+        .profile-grid.view-list-mode .status-indicator {
+            position: static !important;
+            font-size: 10px;
+            padding: 2px 4px;
+            margin-top: 4px;
+            display: inline-block;
+            width: fit-content;
+        }
+
+        /* Profile Area Column alignment */
+        .profile-grid.view-list-mode .profile-card-header {
+            border-bottom: none;
+            padding-bottom: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            overflow: hidden;
+        }
+
+        .profile-grid.view-list-mode .profile-avatar {
+            width: 32px;
+            height: 32px;
+            font-size: 11px;
+        }
+        
+        .profile-grid.view-list-mode .profile-title-area {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Core Fix: Dismantles sub-div container so child text elements map directly onto columns */
+        .profile-grid.view-list-mode .profile-details-list {
+            display: contents;
+        }
+
+        /* Individual cells - clean text truncation */
+        .profile-grid.view-list-mode .detail-item {
+            display: block;
+            font-size: 13px;
+            padding-right: 12px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            box-sizing: border-box;
+        }
+
+        /* Hide field titles in table rows */
+        .profile-grid.view-list-mode .detail-item .label {
+            display: none !important; 
+        }
+
+        /* Reset custom card-wide breakout rules */
         .profile-grid.view-list-mode .detail-item.full-width-detail {
             grid-column: auto; 
         }
 
-        /* Maps row actionable control assets directly into the final structural cell block */
+        /* Action buttons column */
         .profile-grid.view-list-mode .profile-actions {
             border-top: none;
             padding-top: 0;
             margin-top: 0;
-            justify-content: center;
-            gap: 10px;
+            display: flex;
+            justify-content: flex-start;
+            gap: 6px;
+        }
+        
+        .profile-grid.view-list-mode .btn-icon-txt {
+            padding: 4px 8px;
+            font-size: 11px;
         }
 
         /* TUNGKULIN CHECKBOX PILLS */
