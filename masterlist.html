@@ -58,7 +58,7 @@
 
         .top-header h1 { margin: 0; font-size: 22px; color: var(--primary); }
 
-        .view-panel { flex: 1; padding: 30px; box-sizing: border-box; overflow-y: auto; }
+        .view-panel { flex: 1; padding: 30px; box-sizing: border-box; overflow-y: auto; overflow-x: auto; }
 
         .stats-row { display: flex; grid-template-column: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; margin-bottom: 25px; }
         
@@ -81,28 +81,34 @@
         .btn-success { background-color: var(--success); }
         .btn-primary { background-color: var(--accent); }
 
-        
-                /* Table Header rules - Hidden by default in Card View */
+        /* Hidden by default in Card View */
         .profile-list-header {
             display: none;
             font-weight: 600;
             color: #64748b;
-            border-bottom: 2px solid #e2e8f0;
+            border-bottom: 2px solid #cbd5e1;
             padding: 12px 16px;
             font-size: 0.85rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
+            box-sizing: border-box;
         }
         
-        /* Automatically show and structure the header grid when view-list-mode is active */
+        /* Show and structure the header grid explicitly when view-list-mode is active */
         .view-list-mode .profile-list-header {
             display: grid;
-            grid-column: 1 / -1; /* Stretch across entire container width */
-            grid-template-columns: 2fr 1fr 1fr 1fr 1.2fr 2fr 1fr 1fr 1.2fr; /* Must match your row structure spacing */
+            grid-column: 1 / -1;
+            grid-template-columns: 240px 110px 110px 110px 130px 200px 110px 110px 100px;
             align-items: center;
-            background: #f8fafc;
+            background: #f1f5f9;
             border-radius: 8px 8px 0 0;
         }
+
+        .profile-list-header div {
+            padding-right: 12px;
+            box-sizing: border-box;
+        }
+
         .profile-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 20px; }
         
         .profile-card {
@@ -199,47 +205,34 @@
             background: white;
             color: var(--primary);
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }/* DYNAMIC LAYOUT SWITCHING RULES */
-        
-        /* List Mode Container - Turns into a scrollable table layout */
+        }
+
+        /* DYNAMIC LAYOUT SWITCHING RULES */
         .profile-grid.view-list-mode {
             display: flex;
             flex-direction: column;
             gap: 8px;
-            min-width: 1200px; /* Forces a stable width for all columns */
-        }
-        
-        /* Ensure the main panel allows horizontal scrolling when list mode expands */
-        .view-panel {
-            overflow-x: auto;
+            min-width: 1190px;
         }
 
-        /* The Row Grid Rule (Matches Header exactly) */
-        .view-list-mode .profile-list-header,
+        /* Transform card block into row grid structural lines */
         .profile-grid.view-list-mode .profile-card {
             display: grid !important;
-            grid-template-columns: 240px 100px 110px 110px 130px 200px 110px 110px 120px;
+            grid-template-columns: 240px 110px 110px 110px 130px 200px 110px 110px 100px;
             align-items: center;
             padding: 10px 16px;
             gap: 0;
-            box-sizing: border-box;
-        }
-
-        /* Fix row card styling to look uniform */
-        .profile-grid.view-list-mode .profile-card {
-            flex-direction: row; /* reset flex engine */
             border-radius: 6px;
-            margin: 0;
             box-shadow: none;
+            box-sizing: border-box;
             background: var(--card-bg);
         }
-        
+
         .profile-grid.view-list-mode .profile-card:hover {
-            transform: none; /* Disable 3D tilt movement in table view */
+            transform: none;
             background: #f8fafc;
         }
 
-        /* Reset the floating status pill position into cell layout flows */
         .profile-grid.view-list-mode .status-indicator {
             position: static !important;
             font-size: 10px;
@@ -249,7 +242,6 @@
             width: fit-content;
         }
 
-        /* Profile Area Column alignment */
         .profile-grid.view-list-mode .profile-card-header {
             border-bottom: none;
             padding-bottom: 0;
@@ -264,19 +256,19 @@
             height: 32px;
             font-size: 11px;
         }
-        
+
         .profile-grid.view-list-mode .profile-title-area {
             display: flex;
             flex-direction: column;
             overflow: hidden;
         }
 
-        /* Core Fix: Dismantles sub-div container so child text elements map directly onto columns */
+        /* Dismantles sub-div so children layout properly inside row columns */
         .profile-grid.view-list-mode .profile-details-list {
             display: contents;
         }
 
-        /* Individual cells - clean text truncation */
+        /* Clean text items and remove sub headers */
         .profile-grid.view-list-mode .detail-item {
             display: block;
             font-size: 13px;
@@ -287,26 +279,23 @@
             box-sizing: border-box;
         }
 
-        /* Hide field titles in table rows */
         .profile-grid.view-list-mode .detail-item .label {
             display: none !important; 
         }
 
-        /* Reset custom card-wide breakout rules */
         .profile-grid.view-list-mode .detail-item.full-width-detail {
             grid-column: auto; 
         }
 
-        /* Action buttons column */
         .profile-grid.view-list-mode .profile-actions {
             border-top: none;
             padding-top: 0;
             margin-top: 0;
             display: flex;
-            justify-content: flex-start;
+            justify-content: center;
             gap: 6px;
         }
-        
+
         .profile-grid.view-list-mode .btn-icon-txt {
             padding: 4px 8px;
             font-size: 11px;
@@ -341,7 +330,6 @@
             border-color: #94a3b8;
         }
         
-        /* When checked, transform styling */
         .checkbox-pill input[type="checkbox"]:checked + span {
             color: var(--primary);
             font-weight: 600;
@@ -364,18 +352,6 @@
     <h2>Masterlist Management</h2>
     <div class="nav-menu">
         <button class="action-btn btn-success" onclick="openCrudModal('create')">➕ Add New Profile</button>
-            <!--<div class="stat-card">
-                <span class="label">Kabuuan ng TSV</span>
-                <span class="value" id="statTotal">0</span>
-            </div>
-            <div class="stat-card">
-                <span class="label">Aktibong Natupad</span>
-                <span class="value" style="color: var(--success);" id="statActive">0</span>
-            </div>
-            <div class="stat-card">
-                <span class="label">Mga Trainee / Di Nanumpa</span>
-                <span class="value" style="color: var(--warning);" id="statTrainees">0</span>
-            </div>-->
         <a href="#" class="nav-btn active">👤 TSV Profiles</a>
         <a href="suguan_0.html" class="nav-btn">⚡ Suguan</a>
     </div>
@@ -385,8 +361,7 @@
 <div class="main-container">
     <div class="top-header">
         <h1>TSV Masterlist 4.0</h1>
-           
-          
+        
         <div class="stats-row">
             <div class="stat-card">
                 <span class="label">S#</span>
@@ -398,33 +373,28 @@
             </div>
             <div class="stat-card">
                 <span class="label">Inactive</span>
-                <span class="value" style="color: var(--success);" id="statInactive">0</span>
+                <span class="value" style="color: var(--danger);" id="statInactive">0</span>
             </div>
-            
             <div class="stat-card">
                 <span class="label">Trainee</span>
                 <span class="value" style="color: var(--warning);" id="statTrainees">0</span>
             </div>
         </div>
 
-       
         <div class="search-bar-row">
             <input type="text" id="profileSearch" class="search-input" placeholder="🔍 Maghanap gamit ang Pangalan, Gampanin, Purok..." oninput="filterProfiles()">
             <div class="view-toggle-container">
-                    <button id="btnCardView" class="toggle-btn" onclick="switchViewMode('card')">📇 Cards</button>
-                    <button id="btnListView" class="toggle-btn active" onclick="switchViewMode('list')">📝 List View</button>
-                </div>
+                <button id="btnCardView" class="toggle-btn" onclick="switchViewMode('card')">📇 Cards</button>
+                <button id="btnListView" class="toggle-btn active" onclick="switchViewMode('list')">📝 List View</button>
+            </div>
         </div>
     </div>
 
     <div class="view-panel">
-        
-            
         <div class="profile-grid" id="profileContainer"></div>
     </div>
 </div>
 
-<!-- FORM MODAL -->
 <div id="crudModal" class="modal-backdrop">
     <div class="modal-box">
         <h3 id="modalHeading">Profile Information Sheet</h3>
@@ -472,7 +442,7 @@
                     <option value="Inactive">Inactive</option>
                 </select>
             </div>
-            <div class="form-group full-width">
+            <div class="modal-form-group full-width">
                 <label class="form-label">Iba pang Tungkulin sa Lokal</label>
                 <div class="tungkulin-checkbox-grid">
                     <label class="checkbox-pill">
@@ -517,6 +487,7 @@
         </div>
     </div>
 </div>
+
 <script>
 // Authentication check
 (function checkAdminAccess() {
@@ -546,22 +517,17 @@ function switchViewMode(mode) {
     const btnList = document.getElementById('btnListView');
 
     if (mode === 'list') {
-        // Toggle Active Classes on UI Buttons
         btnCard.classList.remove('active');
         btnList.classList.add('active');
-        
-        // Change Structural CSS layout engine states
         container.classList.remove('view-card-mode');
         container.classList.add('view-list-mode');
     } else {
         btnList.classList.remove('active');
         btnCard.classList.add('active');
-        
         container.classList.remove('view-list-mode');
         container.classList.add('view-card-mode');
     }
     
-    // Re-run filter so data remains intact during layout engine transformation
     filterProfiles();
 }
 
@@ -589,13 +555,10 @@ async function fetchRawData() {
             };
         });
 
-        // Auto-merge names found in old schedule database
-        // Auto-merge names found in old schedule database (UPDATED to prevent duplicates)
+        // Auto-merge names found in old schedule database (Safely formatted to prevent duplicates)
         existingSchedules.forEach(sched => {
             if (sched.name) {
                 const cleanSchedName = sched.name.trim().toLowerCase();
-                
-                // Check if this person already exists in our profile map safely
                 const alreadyExists = Object.values(profileMap).some(p => p.name.trim().toLowerCase() === cleanSchedName);
 
                 if (!alreadyExists) {
@@ -607,23 +570,28 @@ async function fetchRawData() {
                 }
             }
         });
-        // 1. Convert the map into an array
-                let unsortedProfiles = Object.values(profileMap);
+
+        let unsortedProfiles = Object.values(profileMap);
         
-                // 2. Sort them alphabetically by SURNAME (Last Name)
-                globalTsvProfiles = unsortedProfiles.sort((a, b) => {
-                    // Split names into arrays of words and grab the last word as the surname
-                    const namePartsA = a.name.trim().split(' ');
-                    const namePartsB = b.name.trim().split(' ');
-                    
-                    const surnameA = namePartsA[namePartsA.length - 1].toLowerCase();
-                    const surnameB = namePartsB[namePartsB.length - 1].toLowerCase();
+        // Sort alphabetically by SURNAME (Last Name)
+        globalTsvProfiles = unsortedProfiles.sort((a, b) => {
+            const getSurname = (fullName) => {
+                const parts = fullName.trim().split(' ');
+                if (parts.length <= 1) return fullName.toLowerCase();
+                
+                const lastWord = parts[parts.length - 1];
+                const suffixes = ['jr', 'jr.', 'sr', 'sr.', 'iii', 'iv', 'v'];
+                
+                if (suffixes.includes(lastWord.toLowerCase()) && parts.length > 2) {
+                    return parts[parts.length - 2].toLowerCase();
+                }
+                return lastWord.toLowerCase();
+            };
+
+            return getSurname(a.name).localeCompare(getSurname(b.name), undefined, { sensitivity: 'base' });
+        });
         
-                    // Compare the surnames alphabetically
-                    return surnameA.localeCompare(surnameB, undefined, { sensitivity: 'base' });
-                });
-        
-                calculateStatsAndRender();
+        calculateStatsAndRender();
     } catch {
         alert("Hindi makuha ang live profiles sa network pipeline.");
     }
@@ -642,6 +610,7 @@ function calculateStatsAndRender() {
 
     renderProfileGrid(globalTsvProfiles);
 }
+
 function renderProfileGrid(profilesArray) {
     const container = document.getElementById('profileContainer');
     container.className = `profile-grid view-${currentLayoutView}-mode`;
@@ -651,7 +620,7 @@ function renderProfileGrid(profilesArray) {
         return;
     }
 
-    // 1. Create the Table Header Row (Only visible dynamically in view-list-mode via CSS)
+    // 1. Create the Table Header Row (Only structured inside view-list-mode via CSS grid lines)
     const tableHeaderHtml = `
         <div class="profile-list-header">
             <div>Pangalan / Gampanin</div>
@@ -703,7 +672,6 @@ function renderProfileGrid(profilesArray) {
         `;
     }).join('');
 
-    // Combine header and cards together inside the container
     container.innerHTML = tableHeaderHtml + cardsHtml;
 }
 
@@ -718,8 +686,6 @@ function filterProfiles() {
 function openCrudModal(mode, index = null) {
     const backdrop = document.getElementById('crudModal');
     backdrop.classList.add('show');
-
-    // Get all your checkboxes by their shared name attribute
     const checkboxes = document.querySelectorAll('input[name="ibang_tungkulin"]');
 
     if (mode === 'create') {
@@ -732,20 +698,18 @@ function openCrudModal(mode, index = null) {
         document.getElementById('formSumpaTSV').value = "N/A"; document.getElementById('formSumpaNDA').value = "N/A";
         document.getElementById('formStatus').value = "Active";
 
-        // Uncheck all checkboxes for a fresh entry profile
         checkboxes.forEach(cb => cb.checked = false);
     } else {
         document.getElementById('modalHeading').innerText = "Baguhin ang TSV Impormasyon";
         document.getElementById('entryRowIndex').value = index;
         const target = globalTsvProfiles[index];
-        document.getElementById('formName').value = target.name; document.getElementById('formName').disabled = true; // Protect key link
+        document.getElementById('formName').value = target.name; document.getElementById('formName').disabled = true; 
         document.getElementById('formBirthday').value = target.birthday; document.getElementById('formPurok').value = target.purok;
         document.getElementById('formKapisanan').value = target.kapisanan; document.getElementById('formGampanin').value = target.gampanin;
         document.getElementById('formContact').value = target.contact; 
         document.getElementById('formSumpaTSV').value = target.sumpaTSV; document.getElementById('formSumpaNDA').value = target.sumpaNDA;
         document.getElementById('formStatus').value = target.status;
 
-        // Parse and check matching values from the profile's saved string array
         const activeTungkulinList = target.ibangTungkulin ? target.ibangTungkulin.split(', ') : [];
         checkboxes.forEach(cb => {
             cb.checked = activeTungkulinList.includes(cb.value);
@@ -756,7 +720,6 @@ function openCrudModal(mode, index = null) {
 function closeCrudModal() { document.getElementById('crudModal').classList.remove('show'); }
 
 async function saveCrudForm() {
-    // Collect all checked checkbox values into an array, then join them with commas
     const checkedBoxes = document.querySelectorAll('input[name="ibang_tungkulin"]:checked');
     const ibangTungkulinString = checkedBoxes.length > 0 
         ? Array.from(checkedBoxes).map(cb => cb.value).join(', ') 
@@ -769,7 +732,7 @@ async function saveCrudForm() {
         kapisanan: document.getElementById('formKapisanan').value,
         gampanin: document.getElementById('formGampanin').value,
         contact: document.getElementById('formContact').value.trim() || "N/A",
-        ibangTungkulin: ibangTungkulinString, // Injecting processed checkbox text data
+        ibangTungkulin: ibangTungkulinString, 
         sumpaTSV: document.getElementById('formSumpaTSV').value.trim() || "N/A",
         sumpaNDA: document.getElementById('formSumpaNDA').value.trim() || "N/A",
         status: document.getElementById('formStatus').value
