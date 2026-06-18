@@ -155,13 +155,14 @@
         .profile-grid.view-card-mode .profile-actions { display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid var(--border); padding-top: 12px; margin-top: 5px; }
 
         /* LIST VIEW SPREADSHEET ENGINE */
+        /* LIST VIEW SPREADSHEET ENGINE */
         .profile-grid.view-list-mode {
             display: flex;
             flex-direction: column;
             gap: 6px;
             min-width: 1250px; /* Locks elements from wrapping or compressing */
         }
-
+        
         .profile-grid.view-list-mode .profile-list-header,
         .profile-grid.view-list-mode .list-row-item {
             display: grid !important;
@@ -174,15 +175,21 @@
             font-size: 13px;
             box-sizing: border-box;
         }
-
+        
+        /* UPDATE THIS EXACT BLOCK BELOW */
         .profile-grid.view-list-mode .profile-list-header {
-            background: #f1f5f9;
+            background: #e2e8f0; /* Slightly darker slate so it stands out when scrolling */
             font-weight: 600;
-            color: #64748b;
+            color: #475569;
             text-transform: uppercase;
             font-size: 11px;
             letter-spacing: 0.5px;
             border-bottom: 2px solid #cbd5e1;
+            
+            /* Sticky Magic */
+            position: sticky;
+            top: 0;
+            z-index: 10; /* Ensures it stays floating above the data rows */
         }
 
         .profile-grid.view-list-mode .list-row-item:hover {
