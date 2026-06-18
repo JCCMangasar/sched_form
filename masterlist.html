@@ -294,9 +294,9 @@
 <body>
 
 <div class="sidebar">
-    <h2>Suguan Controller</h2>
+    <h2>Masterlist Management</h2>
     <div class="nav-menu">
-        <button class="action-btn btn-success" onclick="openCrudModal('create')">➕ Magdagdag ng Profile</button>
+        <button class="action-btn btn-success" onclick="openCrudModal('create')">➕ Add New Profile</button>
             <!--<div class="stat-card">
                 <span class="label">Kabuuan ng TSV</span>
                 <span class="value" id="statTotal">0</span>
@@ -310,11 +310,10 @@
                 <span class="value" style="color: var(--warning);" id="statTrainees">0</span>
             </div>-->
         <a href="#" class="nav-btn active">👤 TSV Profiles</a>
-        <a href="suguan_0.html" class="nav-btn">⚡ Assignment Matrix</a>
+        <a href="suguan_0.html" class="nav-btn">⚡ Suguan</a>
     </div>
     <div style="font-size: 11px; text-align: center; color: #64748b; border-top: 1px solid #334155; padding-top: 15px;">
-        TSV Management System Sandbox
-    </div>
+        TSV Management System
 </div>
 <div class="main-container">
     <div class="top-header">
@@ -331,6 +330,10 @@
                 <span class="value" style="color: var(--success);" id="statActive">0</span>
             </div>
             <div class="stat-card">
+                <span class="label">Inactive</span>
+                <span class="value" style="color: var(--success);" id="statInactive">0</span>
+            </div>
+            <div class="stat-card">
                 <span class="label">Trainee</span>
                 <span class="value" style="color: var(--warning);" id="statTrainees">0</span>
             </div>
@@ -340,8 +343,8 @@
         <div class="search-bar-row">
             <input type="text" id="profileSearch" class="search-input" placeholder="🔍 Maghanap gamit ang Pangalan, Gampanin, Purok..." oninput="filterProfiles()">
             <div class="view-toggle-container">
-                    <button id="btnCardView" class="toggle-btn active" onclick="switchViewMode('card')">📇 Cards</button>
-                    <button id="btnListView" class="toggle-btn" onclick="switchViewMode('list')">📝 List View</button>
+                    <button id="btnCardView" class="toggle-btn" onclick="switchViewMode('card')">📇 Cards</button>
+                    <button id="btnListView" class="toggle-btn active" onclick="switchViewMode('list')">📝 List View</button>
                 </div>
         </div>
     </div>
@@ -395,7 +398,7 @@
                 <input type="text" id="formContact" placeholder="09XXXXXXXXX">
             </div>
             <div class="modal-form-group">
-                <label for="formStatus">Status ng Pagtupad</label>
+                <label for="formStatus">Aktibo ba sa Pagtupad</label>
                 <select id="formStatus">
                     <option value="Active">Active</option>
                     <option value="Inactive">Inactive</option>
@@ -431,18 +434,18 @@
                 </div>
             </div>
             <div class="modal-form-group">
-                <label for="formSumpaTSV">Sumpa sa TSV</label>
+                <label for="formSumpaTSV">Petsa ng panunumpa</label>
                 <input type="text" id="formSumpaTSV" placeholder="YYYY-MM-DD o N/A">
             </div>
             <div class="modal-form-group">
-                <label for="formSumpaNDA">Sumpa sa NDA</label>
+                <label for="formSumpaNDA">Petsa ng panunumpa sa NDA</label>
                 <input type="text" id="formSumpaNDA" placeholder="YYYY-MM-DD o N/A">
             </div>
         </div>
 
         <div class="modal-footer">
-            <button class="btn-secondary" onclick="closeCrudModal()">I-cancel</button>
-            <button class="action-btn btn-primary" id="modalSubmitBtn" onclick="saveCrudForm()">I-save ang Profile</button>
+            <button class="btn-secondary" onclick="closeCrudModal()">Cancel</button>
+            <button class="action-btn btn-primary" id="modalSubmitBtn" onclick="saveCrudForm()">Save Profile</button>
         </div>
     </div>
 </div>
@@ -551,10 +554,12 @@ async function fetchRawData() {
 function calculateStatsAndRender() {
     const total = globalTsvProfiles.length;
     const active = globalTsvProfiles.filter(p => p.status === 'Active').length;
+    const inactive = globalTsvProfiles.filter(p => p.status === 'Inactive').length;
     const trainees = globalTsvProfiles.filter(p => p.sumpaTSV === 'N/A' || p.sumpaTSV.toLowerCase() === 'n/a').length;
 
     document.getElementById('statTotal').innerText = total;
     document.getElementById('statActive').innerText = active;
+    document.getElementById('statInactive').innerText = inactive;
     document.getElementById('statTrainees').innerText = trainees;
 
     renderProfileGrid(globalTsvProfiles);
