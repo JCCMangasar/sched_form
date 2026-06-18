@@ -541,12 +541,22 @@ async function fetchRawData() {
             }
         });
         // 1. Convert the map into an array
-        let unsortedProfiles = Object.values(profileMap);
+                let unsortedProfiles = Object.values(profileMap);
         
-        globalTsvProfiles = unsortedProfiles.sort((a, b) => {
-            return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
-        });
-        calculateStatsAndRender();
+                // 2. Sort them alphabetically by SURNAME (Last Name)
+                globalTsvProfiles = unsortedProfiles.sort((a, b) => {
+                    // Split names into arrays of words and grab the last word as the surname
+                    const namePartsA = a.name.trim().split(' ');
+                    const namePartsB = b.name.trim().split(' ');
+                    
+                    const surnameA = namePartsA[namePartsA.length - 1].toLowerCase();
+                    const surnameB = namePartsB[namePartsB.length - 1].toLowerCase();
+        
+                    // Compare the surnames alphabetically
+                    return surnameA.localeCompare(surnameB, undefined, { sensitivity: 'base' });
+                });
+        
+                calculateStatsAndRender();
     } catch {
         alert("Hindi makuha ang live profiles sa network pipeline.");
     }
