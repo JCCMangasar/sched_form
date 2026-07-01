@@ -66,7 +66,7 @@
 
         h3 { margin: 0 0 15px 0; font-size: 16px; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; display: flex; align-items: center; gap: 8px; }
 
-        /* UPLOAD REGION WITH DRAG & DROP TRACKING STATES */
+        /* UPLOAD REGION */
         .dropzone-area {
             border: 2px dashed #cbd5e1; background: #f8fafc; padding: 35px 20px;
             border-radius: 10px; text-align: center; cursor: pointer; transition: all 0.2s ease-in-out;
@@ -114,6 +114,9 @@
         .badge-status-active { background: #dcfce7; color: #16a34a; }
         .badge-status-deleted { background: #fee2e2; color: #dc2626; }
 
+        .action-cell-container { display: flex; gap: 6px; justify-content: center; align-items: center; }
+        .btn-download { background: transparent; border: 1px solid var(--border); color: var(--success); padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 12px; text-decoration: none; }
+        .btn-download:hover { background: #dcfce7; border-color: #86efac; }
         .btn-delete { background: transparent; border: 1px solid var(--border); color: var(--danger); padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 12px; }
         .btn-delete:hover { background: #fee2e2; border-color: #fca5a5; }
 
@@ -198,7 +201,7 @@
                         <th>Petsa Inilagay</th>
                         <th>Kailan Mabubura</th>
                         <th>Deskripsyon</th>
-                        <th style="text-align: center;">Aksyon</th>
+                        <th style="text-align: center; width: 160px;">Aksyon</th>
                     </tr>
                 </thead>
                 <tbody id="activeFilesBody"></tbody>
@@ -235,6 +238,7 @@ let activeStorageFiles = JSON.parse(localStorage.getItem('tsv_active_files')) ||
 let historicalStorageLogs = JSON.parse(localStorage.getItem('tsv_history_logs')) || [];
 const MAX_STORAGE_MB = 100; 
 let chosenFileObject = null;
+let chosenFileDataUrl = ""; // To safely buffer the data binary strings locally
 
 window.addEventListener('DOMContentLoaded', () => {
     setupDragAndDropHandlers();
@@ -242,22 +246,18 @@ window.addEventListener('DOMContentLoaded', () => {
     refreshInterfaceTables();
 });
 
-// Setup Advanced Drag & Drop listeners along with click routing
 function setupDragAndDropHandlers() {
     const dropzone = document.getElementById('dropzoneContainer');
     const inputField = document.getElementById('fileSelector');
 
-    // Make the card clickable to trigger hidden file selector
     dropzone.addEventListener('click', () => inputField.click());
 
-    // Listen to manual file explorer changes
     inputField.addEventListener('change', (e) => {
         if (e.target.files.length > 0) {
-            assignSelectedFile(e.target.files[0]);
+            processFileObject(e.target.files[0]);
         }
     });
 
-    // Drag-and-drop actions stopping page redirects
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
         dropzone.addEventListener(eventName, (e) => {
             e.preventDefault();
@@ -265,7 +265,6 @@ function setupDragAndDropHandlers() {
         }, false);
     });
 
-    // Highlight border states when hover dragging files over target
     ['dragenter', 'dragover'].forEach(eventName => {
         dropzone.addEventListener(eventName, () => dropzone.classList.add('dragover'), false);
     });
@@ -274,23 +273,30 @@ function setupDragAndDropHandlers() {
         dropzone.addEventListener(eventName, () => dropzone.classList.remove('dragover'), false);
     });
 
-    // Handle dropped documents cleanly
     dropzone.addEventListener('drop', (e) => {
         const transferData = e.dataTransfer;
         if (transferData && transferData.files.length > 0) {
-            assignSelectedFile(transferData.files[0]);
+            processFileObject(transferData.files[0]);
         }
     });
 }
 
-function assignSelectedFile(file) {
+function processFileObject(file) {
     chosenFileObject = file;
     const dropzoneText = document.getElementById('dropzoneText');
-    dropzoneText.innerHTML = `✅ Selected: <span style="color:var(--success); font-weight:700;">${file.name}</span> (${formatBytes(file.size)})`;
+    dropzoneText.innerHTML = `⏳ Processing: <b>${file.name}</b>...`;
+
+    // Reader buffer converts data to a re-downloadable dataUrl string payload
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        chosenFileDataUrl = e.target.result;
+        dropzoneText.innerHTML = `✅ Ready: <span style="color:var(--success); font-weight:700;">${file.name}</span> (${formatBytes(file.size)})`;
+    };
+    reader.readAsDataURL(file);
 }
 
 function uploadTemporaryFile() {
-    if(!chosenFileObject) {
+    if(!chosenFileObject || !chosenFileDataUrl) {
         alert("Paki-pili o i-drag muna ang file na nais i-upload bago i-save.");
         return;
     }
@@ -320,7 +326,8 @@ function uploadTemporaryFile() {
         added: dateAdded.toLocaleString(),
         expiry: dateExpiry,
         expiryRaw: expiryTimestamp,
-        notes: notesInput
+        notes: notesInput,
+        fileData: chosenFileDataUrl // Stored locally to allow physical downloading
     };
 
     activeStorageFiles.push(fileRecord);
@@ -338,14 +345,15 @@ function uploadTemporaryFile() {
 
     saveStateData();
     
-    // Reset state inputs
+    // Clear upload inputs
     chosenFileObject = null;
+    chosenFileDataUrl = "";
     document.getElementById('fileSelector').value = "";
     document.getElementById('fileNotes').value = "";
     document.getElementById('dropzoneText').innerText = "📁 I-drag at I-drop ang file dito o I-click para pumili";
 
     refreshInterfaceTables();
-    alert("Matagumpay na naidagdag ang temporary file sa database configuration!");
+    alert("Matagumpay na naidagdag ang temporary file! Pwede na itong i-download sa ibaba.");
 }
 
 function removeFileTrack(fileId, manualAction = true) {
@@ -400,8 +408,11 @@ function refreshInterfaceTables() {
                 <td>${file.added}</td>
                 <td style="color: ${file.expiry.includes('Manual') ? '#64748b' : 'var(--danger)'}; font-weight: 500;">${file.expiry}</td>
                 <td>${file.notes}</td>
-                <td style="text-align: center;">
-                    <button class="btn-delete" onclick="removeFileTrack('${file.id}', true)">🗑️ Tanggalin</button>
+                <td>
+                    <div class="action-cell-container">
+                        <a class="btn-download" href="${file.fileData}" download="${file.name}">💾 Download</a>
+                        <button class="btn-delete" onclick="removeFileTrack('${file.id}', true)">🗑️ Tapusin</button>
+                    </div>
                 </td>
             </tr>
         `;
