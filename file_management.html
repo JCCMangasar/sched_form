@@ -257,9 +257,10 @@
 </div>
 
 <script>
-// =============== ADMIN GATEKEEPER ===============
+// =============== ADMIN GATEKEEPER CONSTANT ===============
+const ADMIN_PASSWORD = "TSVfile2026"; 
+
 (function checkAdminAccess() {
-    const ADMIN_PASSWORD = "TSVfile2026"; 
     if (sessionStorage.getItem("admin_authenticated") === "true") return; 
     const userAttempt = prompt("🔒 Restricted Area: Enter password:");
     if (userAttempt === ADMIN_PASSWORD) {
@@ -347,9 +348,15 @@ async function uploadTemporaryFile() {
         return alert("Paki-pili o i-drag muna ang file na nais i-upload bago i-save.");
     }
 
-    const passwordInput = prompt("Ilagay ang Password para makapag-save ng file:");
-    if (passwordInput === null) return; 
-    if (!passwordInput.trim()) return alert("Hindi maaaring walang password.");
+    // Use your admin password verification rule here
+    let currentAuthToken = sessionStorage.getItem("admin_authenticated") === "true" ? ADMIN_PASSWORD : "";
+    if (!currentAuthToken) {
+        const passwordInput = prompt("Ilagay ang Admin Password para makapag-save ng file:");
+        if (passwordInput === null) return;
+        if (passwordInput !== ADMIN_PASSWORD) return alert("Maling password. Hindi naisave ang file.");
+        sessionStorage.setItem("admin_authenticated", "true");
+        currentAuthToken = ADMIN_PASSWORD;
+    }
 
     const btnSubmit = document.getElementById('btnSubmitFile');
     btnSubmit.disabled = true;
@@ -389,7 +396,7 @@ async function uploadTemporaryFile() {
             method: "POST",
             headers: { 
                 "Content-Type": "application/json",
-                "X-Storage-Password": passwordInput 
+                "X-Storage-Password": currentAuthToken 
             },
             body: JSON.stringify(fileRecord)
         });
@@ -405,7 +412,7 @@ async function uploadTemporaryFile() {
             alert("Matagumpay na naisave sa Cloud Database Pipeline!");
         } else {
             const errData = await response.json();
-            alert(errData.error || "Maling password. Hindi naisave ang file.");
+            alert(errData.error || "Maling password o Authorization error.");
         }
     } catch {
         alert("Failed transmitting tracking operations to worker gateway.");
@@ -416,16 +423,22 @@ async function uploadTemporaryFile() {
 }
 
 async function secureDownloadFile(fileId) {
-    const passwordInput = prompt("Ilagay ang Password para mai-download ang file na ito:");
-    if (passwordInput === null) return;
-    if (!passwordInput.trim()) return alert("Password required.");
+    // For downloads, we will use the same Admin Password 
+    let currentAuthToken = sessionStorage.getItem("admin_authenticated") === "true" ? ADMIN_PASSWORD : "";
+    if (!currentAuthToken) {
+        const passwordInput = prompt("Ilagay ang Admin Password para mai-download ang file:");
+        if (passwordInput === null) return;
+        if (passwordInput !== ADMIN_PASSWORD) return alert("Maling password. Hindi pwedeng i-download.");
+        sessionStorage.setItem("admin_authenticated", "true");
+        currentAuthToken = ADMIN_PASSWORD;
+    }
 
     try {
         const response = await fetch(`${WORKER_URL}/api/files/download`, {
             method: "POST",
             headers: { 
                 "Content-Type": "application/json",
-                "X-Storage-Password": passwordInput 
+                "X-Storage-Password": currentAuthToken 
             },
             body: JSON.stringify({ fileId })
         });
@@ -440,7 +453,7 @@ async function secureDownloadFile(fileId) {
             document.body.removeChild(tempAnchor);
         } else {
             const errData = await response.json();
-            alert(errData.error || "Maling password. Hindi pwedeng i-download.");
+            alert(errData.error || "Maling password o Download failure.");
         }
     } catch {
         alert("Error connecting to securely handle file fetch stream.");
@@ -448,13 +461,19 @@ async function secureDownloadFile(fileId) {
 }
 
 async function removeFileTrack(fileId, manualAction = true) {
-    let passwordInput = "";
+    let currentAuthToken = "";
     
     if (manualAction) {
         if (!confirm("Sigurado ka bang nais mong burahin/tapusin ang file na ito sa cloud?")) return;
-        passwordInput = prompt("Ilagay ang Password upang aprubahan ang pagbura:");
-        if (passwordInput === null) return;
-        if (!passwordInput.trim()) return alert("Kailangan ang password upang magbura.");
+        
+        currentAuthToken = sessionStorage.getItem("admin_authenticated") === "true" ? ADMIN_PASSWORD : "";
+        if (!currentAuthToken) {
+            const passwordInput = prompt("Ilagay ang Admin Password upang aprubahan ang pagbura:");
+            if (passwordInput === null) return;
+            if (passwordInput !== ADMIN_PASSWORD) return alert("Maling password. Hindi nabura ang file.");
+            sessionStorage.setItem("admin_authenticated", "true");
+            currentAuthToken = ADMIN_PASSWORD;
+        }
     }
 
     try {
@@ -462,14 +481,14 @@ async function removeFileTrack(fileId, manualAction = true) {
             method: "POST",
             headers: { 
                 "Content-Type": "application/json",
-                "X-Storage-Password": passwordInput
+                "X-Storage-Password": currentAuthToken
             },
             body: JSON.stringify({ fileId, manualAction })
         });
         if (response.ok) {
             await fetchCloudDatabaseFiles();
         } else {
-            if(manualAction) alert("Maling password. Hindi nabura ang file.");
+            if(manualAction) alert("Maling password o access error sa cloud platform.");
         }
     } catch {
         console.error("Failed communicating removal transactions.");
