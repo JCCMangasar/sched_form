@@ -66,34 +66,35 @@
 
         h3 { margin: 0 0 15px 0; font-size: 16px; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; display: flex; align-items: center; gap: 8px; }
 
-        /* UPLOAD REGION */
+        /* UPLOAD REGION WITH DRAG & DROP TRACKING STATES */
         .dropzone-area {
-            border: 2px dashed #cbd5e1; background: #f8fafc; padding: 30px;
-            border-radius: 10px; text-align: center; cursor: pointer; transition: all 0.2s;
+            border: 2px dashed #cbd5e1; background: #f8fafc; padding: 35px 20px;
+            border-radius: 10px; text-align: center; cursor: pointer; transition: all 0.2s ease-in-out;
+            position: relative;
         }
-        .dropzone-area:hover { background: #f1f5f9; border-color: var(--accent); }
+        .dropzone-area:hover, .dropzone-area.dragover { background: #f0fdf4; border-color: var(--success); }
         .dropzone-area input { display: none; }
-        .dropzone-text { font-size: 14px; color: #475569; font-weight: 500; }
-        .dropzone-sub { font-size: 12px; color: #94a3b8; margin-top: 5px; }
+        .dropzone-text { font-size: 15px; color: #334155; font-weight: 600; }
+        .dropzone-sub { font-size: 12px; color: #94a3b8; margin-top: 6px; }
 
         .form-row { display: flex; gap: 15px; margin-top: 15px; }
         .form-group { display: flex; flex-direction: column; gap: 5px; flex: 1; }
         .form-group label { font-size: 12px; font-weight: 600; color: #64748b; }
-        .form-group select, .form-group input { padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; background: white; }
+        .form-group select, .form-group input { padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; background: white; color: var(--text); }
 
         .btn-submit {
             background: var(--accent); color: white; border: none; padding: 12px 24px;
             font-weight: bold; border-radius: 6px; cursor: pointer; margin-top: 15px; width: 100%;
-            transition: opacity 0.2s;
+            transition: background 0.2s; font-size: 14px;
         }
-        .btn-submit:hover { opacity: 0.9; }
+        .btn-submit:hover { background: #0369a1; }
 
         /* STORAGE METERS */
         .progress-container { background: #e2e8f0; border-radius: 10px; height: 12px; overflow: hidden; margin: 10px 0; }
         .progress-bar { background: var(--accent); height: 100%; width: 0%; transition: width 0.3s; }
         .storage-text { font-size: 13px; color: #475569; display: flex; justify-content: space-between; font-weight: 500; }
 
-        /* LIVE & HISTORY TABLES */
+        /* TABLES */
         .table-wrapper { background: white; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
         .table-header-bar { background: #f1f5f9; padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
         .table-header-bar h2 { margin: 0; font-size: 15px; color: var(--primary); }
@@ -142,9 +143,9 @@
         <div class="dashboard-row">
             <div class="upload-section">
                 <h3>📤 Mag-upload ng Bagong Dokumento</h3>
-                <div class="dropzone-area" onclick="document.getElementById('fileSelector').click()">
-                    <input type="file" id="fileSelector" onchange="handleFileSelected()">
-                    <div class="dropzone-text" id="dropzoneText">📁 I-click dito para pumili ng file</div>
+                <div class="dropzone-area" id="dropzoneContainer">
+                    <input type="file" id="fileSelector">
+                    <div class="dropzone-text" id="dropzoneText">📁 I-drag at I-drop ang file dito o I-click para pumili</div>
                     <div class="dropzone-sub">Tinatanggap ang DOCX, PPT, JPG, PNG, MP4, atbp.</div>
                 </div>
                 
@@ -200,8 +201,7 @@
                         <th style="text-align: center;">Aksyon</th>
                     </tr>
                 </thead>
-                <tbody id="activeFilesBody">
-                    </tbody>
+                <tbody id="activeFilesBody"></tbody>
             </table>
             <div id="activeFilesEmpty" class="empty-state">Walang pansamantalang file na nakaimbak sa kasalukuyan.</div>
         </div>
@@ -222,8 +222,7 @@
                         <th>Paalala / Notes</th>
                     </tr>
                 </thead>
-                <tbody id="historyLogBody">
-                    </tbody>
+                <tbody id="historyLogBody"></tbody>
             </table>
             <div id="historyLogEmpty" class="empty-state">Walang nakaraang talaan ng kasaysayan ng file.</div>
         </div>
@@ -232,28 +231,67 @@
 </div>
 
 <script>
-// Mock data storage persistence simulation using LocalStorage
-// This simulates database rules so you don't exhaust Cloudflare KV boundaries safely.
 let activeStorageFiles = JSON.parse(localStorage.getItem('tsv_active_files')) || [];
 let historicalStorageLogs = JSON.parse(localStorage.getItem('tsv_history_logs')) || [];
 const MAX_STORAGE_MB = 100; 
 let chosenFileObject = null;
 
 window.addEventListener('DOMContentLoaded', () => {
+    setupDragAndDropHandlers();
     checkAndCleanExpiredFiles();
     refreshInterfaceTables();
 });
 
-function handleFileSelected() {
-    const selector = document.getElementById('fileSelector');
-    if(selector.files.length === 0) return;
-    chosenFileObject = selector.files[0];
-    document.getElementById('dropzoneText').innerText = `📄 Ready: ${chosenFileObject.name} (${formatBytes(chosenFileObject.size)})`;
+// Setup Advanced Drag & Drop listeners along with click routing
+function setupDragAndDropHandlers() {
+    const dropzone = document.getElementById('dropzoneContainer');
+    const inputField = document.getElementById('fileSelector');
+
+    // Make the card clickable to trigger hidden file selector
+    dropzone.addEventListener('click', () => inputField.click());
+
+    // Listen to manual file explorer changes
+    inputField.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            assignSelectedFile(e.target.files[0]);
+        }
+    });
+
+    // Drag-and-drop actions stopping page redirects
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropzone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+        }, false);
+    });
+
+    // Highlight border states when hover dragging files over target
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropzone.addEventListener(eventName, () => dropzone.classList.add('dragover'), false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropzone.addEventListener(eventName, () => dropzone.classList.remove('dragover'), false);
+    });
+
+    // Handle dropped documents cleanly
+    dropzone.addEventListener('drop', (e) => {
+        const transferData = e.dataTransfer;
+        if (transferData && transferData.files.length > 0) {
+            assignSelectedFile(transferData.files[0]);
+        }
+    });
+}
+
+function assignSelectedFile(file) {
+    chosenFileObject = file;
+    const dropzoneText = document.getElementById('dropzoneText');
+    dropzoneText.innerHTML = `✅ Selected: <span style="color:var(--success); font-weight:700;">${file.name}</span> (${formatBytes(file.size)})`;
 }
 
 function uploadTemporaryFile() {
     if(!chosenFileObject) {
-        alert("Paki-pili muna ang file na nais i-upload.");
+        alert("Paki-pili o i-drag muna ang file na nais i-upload bago i-save.");
         return;
     }
 
@@ -262,17 +300,18 @@ function uploadTemporaryFile() {
     
     const dateAdded = new Date();
     let dateExpiry = "Manual Deletion";
+    let expiryTimestamp = null;
     
     if(lifespanSetting !== "manual") {
         const days = parseInt(lifespanSetting);
         const expiryDateObj = new Date();
         expiryDateObj.setDate(dateAdded.getDate() + days);
         dateExpiry = expiryDateObj.toLocaleString();
+        expiryTimestamp = expiryDateObj.getTime();
     }
 
     const fileExtension = chosenFileObject.name.split('.').pop().toLowerCase();
     
-    // Create File Record metadata node
     const fileRecord = {
         id: 'file_' + Date.now(),
         name: chosenFileObject.name,
@@ -280,14 +319,12 @@ function uploadTemporaryFile() {
         size: chosenFileObject.size,
         added: dateAdded.toLocaleString(),
         expiry: dateExpiry,
-        expiryRaw: lifespanSetting !== "manual" ? new Date().setDate(new Date().getDate() + parseInt(lifespanSetting)) : null,
+        expiryRaw: expiryTimestamp,
         notes: notesInput
     };
 
-    // Insert into active table array
     activeStorageFiles.push(fileRecord);
     
-    // Mirror transaction logic instantly inside History Log tracking stream
     const logRecord = {
         name: fileRecord.name,
         type: fileRecord.type,
@@ -299,17 +336,16 @@ function uploadTemporaryFile() {
     };
     historicalStorageLogs.unshift(logRecord);
 
-    // Save state context configurations
     saveStateData();
     
-    // Clear elements for next cycle inputs
+    // Reset state inputs
     chosenFileObject = null;
     document.getElementById('fileSelector').value = "";
     document.getElementById('fileNotes').value = "";
-    document.getElementById('dropzoneText').innerText = "📁 I-click dito para pumili ng file";
+    document.getElementById('dropzoneText').innerText = "📁 I-drag at I-drop ang file dito o I-click para pumili";
 
     refreshInterfaceTables();
-    alert("Matagumpay na naidagdag ang temporary file track record!");
+    alert("Matagumpay na naidagdag ang temporary file sa database configuration!");
 }
 
 function removeFileTrack(fileId, manualAction = true) {
@@ -318,14 +354,12 @@ function removeFileTrack(fileId, manualAction = true) {
     
     const targetFile = activeStorageFiles[index];
     
-    // Update matching record tracking info inside historical log table array
     const historyItem = historicalStorageLogs.find(h => h.name === targetFile.name && h.added === targetFile.added);
     if(historyItem) {
         historyItem.deleted = new Date().toLocaleString();
         historyItem.status = manualAction ? 'Deleted Manually' : 'Expired & Cleared';
     }
 
-    // Remove from live queue visibility array
     activeStorageFiles.splice(index, 1);
     
     saveStateData();
@@ -334,14 +368,10 @@ function removeFileTrack(fileId, manualAction = true) {
 
 function checkAndCleanExpiredFiles() {
     const nowTimestamp = Date.now();
-    let updatedNeeded = false;
-
-    // Loop backward to handle removals gracefully
     for (let i = activeStorageFiles.length - 1; i >= 0; i--) {
         const file = activeStorageFiles[i];
         if(file.expiryRaw && nowTimestamp > file.expiryRaw) {
             removeFileTrack(file.id, false);
-            updatedNeeded = true;
         }
     }
 }
@@ -350,16 +380,14 @@ function refreshInterfaceTables() {
     const activeBody = document.getElementById('activeFilesBody');
     const historyBody = document.getElementById('historyLogBody');
     
-    // Clear current fields
     activeBody.innerHTML = "";
     historyBody.innerHTML = "";
 
-    // Toggle Empty state indicators
     document.getElementById('activeFilesEmpty').style.display = activeStorageFiles.length === 0 ? "block" : "none";
     document.getElementById('historyLogEmpty').style.display = historicalStorageLogs.length === 0 ? "block" : "none";
 
-    // 1. Compute and draw Live Files table rows
     let aggregatedBytesUsed = 0;
+    
     activeStorageFiles.forEach(file => {
         aggregatedBytesUsed += file.size;
         const typeBadge = getBadgeClassForExtension(file.type);
@@ -370,7 +398,7 @@ function refreshInterfaceTables() {
                 <td><span class="badge ${typeBadge}">${file.type.toUpperCase()}</span></td>
                 <td>${formatBytes(file.size)}</td>
                 <td>${file.added}</td>
-                <td style="color: ${file.expiry.includes('Manual') ? '#64748b' : 'var(--danger)'; font-weight: 500;">${file.expiry}</td>
+                <td style="color: ${file.expiry.includes('Manual') ? '#64748b' : 'var(--danger)'}; font-weight: 500;">${file.expiry}</td>
                 <td>${file.notes}</td>
                 <td style="text-align: center;">
                     <button class="btn-delete" onclick="removeFileTrack('${file.id}', true)">🗑️ Tanggalin</button>
@@ -379,7 +407,6 @@ function refreshInterfaceTables() {
         `;
     });
 
-    // 2. Compute and draw Historical Tracking rows
     historicalStorageLogs.forEach(log => {
         const typeBadge = getBadgeClassForExtension(log.type);
         const statusBadge = log.status === 'Active' ? 'badge-status-active' : 'badge-status-deleted';
@@ -397,7 +424,6 @@ function refreshInterfaceTables() {
         `;
     });
 
-    // 3. Update Storage capacity visualization parameters
     const totalMegabytesUsed = (aggregatedBytesUsed / (1024 * 1024)).toFixed(2);
     document.getElementById('storageLabel').innerText = `${totalMegabytesUsed} MB / ${MAX_STORAGE_MB} MB`;
     
