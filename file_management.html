@@ -30,6 +30,7 @@
             padding: 25px 15px; box-sizing: border-box;
             display: flex; flex-direction: column; gap: 20px;
             box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+            flex-shrink: 0;
         }
 
         .sidebar h2 {
@@ -49,19 +50,20 @@
 
         .nav-btn:hover, .nav-btn.active { background: var(--accent); color: white; }
 
-        .main-container { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .main-container { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
         
         .top-header {
             background: white; padding: 20px 30px; border-bottom: 1px solid var(--border);
             display: flex; justify-content: space-between; align-items: center;
+            flex-shrink: 0;
         }
 
         .top-header h1 { margin: 0; font-size: 22px; color: var(--primary); }
 
         .view-panel { flex: 1; padding: 30px; box-sizing: border-box; overflow-y: auto; display: flex; flex-direction: column; gap: 30px; }
 
-        .dashboard-row { display: flex; gap: 25px; align-items: flex-start; }
-        .upload-section { flex: 1; background: white; border: 1px solid var(--border); padding: 25px; border-radius: 12px; }
+        .dashboard-row { display: flex; gap: 25px; align-items: flex-start; flex-wrap: wrap; }
+        .upload-section { flex: 1; min-width: 300px; background: white; border: 1px solid var(--border); padding: 25px; border-radius: 12px; }
         .stats-section { width: 350px; background: white; border: 1px solid var(--border); padding: 25px; border-radius: 12px; }
 
         h3 { margin: 0 0 15px 0; font-size: 16px; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; display: flex; align-items: center; gap: 8px; }
@@ -77,10 +79,10 @@
         .dropzone-text { font-size: 15px; color: #334155; font-weight: 600; }
         .dropzone-sub { font-size: 12px; color: #94a3b8; margin-top: 6px; }
 
-        .form-row { display: flex; gap: 15px; margin-top: 15px; }
-        .form-group { display: flex; flex-direction: column; gap: 5px; flex: 1; }
+        .form-row { display: flex; gap: 15px; margin-top: 15px; flex-wrap: wrap; }
+        .form-group { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 200px; }
         .form-group label { font-size: 12px; font-weight: 600; color: #64748b; }
-        .form-group select, .form-group input { padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; background: white; color: var(--text); }
+        .form-group select, .form-group input { padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; background: white; color: var(--text); width: 100%; box-sizing: border-box; }
 
         .btn-submit {
             background: var(--accent); color: white; border: none; padding: 12px 24px;
@@ -95,11 +97,13 @@
         .storage-text { font-size: 13px; color: #475569; display: flex; justify-content: space-between; font-weight: 500; }
 
         /* TABLES */
-        .table-wrapper { background: white; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
-        .table-header-bar { background: #f1f5f9; padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .table-wrapper { background: white; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
+        .table-header-bar { background: #f1f5f9; padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
         .table-header-bar h2 { margin: 0; font-size: 15px; color: var(--primary); }
 
-        .file-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+        .responsive-table-container { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+        .file-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; min-width: 800px; }
         .file-table th { background: #f8fafc; padding: 12px 20px; font-weight: 600; color: #64748b; text-transform: uppercase; font-size: 11px; border-bottom: 1px solid var(--border); }
         .file-table td { padding: 12px 20px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: middle; }
         .file-table tr:last-child td { border-bottom: none; }
@@ -115,12 +119,27 @@
         .badge-status-deleted { background: #fee2e2; color: #dc2626; }
 
         .action-cell-container { display: flex; gap: 6px; justify-content: center; align-items: center; }
-        .btn-download-trigger { background: transparent; border: 1px solid var(--border); color: var(--success); padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 12px; }
+        .btn-download-trigger { background: transparent; border: 1px solid var(--border); color: var(--success); padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 12px; white-space: nowrap; }
         .btn-download-trigger:hover { background: #dcfce7; border-color: #86efac; }
-        .btn-delete { background: transparent; border: 1px solid var(--border); color: var(--danger); padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 12px; }
+        .btn-delete { background: transparent; border: 1px solid var(--border); color: var(--danger); padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 12px; white-space: nowrap; }
         .btn-delete:hover { background: #fee2e2; border-color: #fca5a5; }
 
         .empty-state { padding: 40px; text-align: center; color: #94a3b8; font-size: 14px; }
+
+        /* RESPONSIVE MEDIA QUERIES FOR MOBILE STYLING */
+        @media (max-width: 900px) {
+            body { flex-direction: column; overflow: auto; height: auto; }
+            .sidebar { width: 100%; padding: 15px; gap: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+            .sidebar h2 { padding-bottom: 8px; font-size: 16px; }
+            .nav-menu { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 6px; }
+            .nav-btn { padding: 8px 12px; font-size: 13px; justify-content: center; }
+            .main-container { height: auto; overflow: visible; }
+            .top-header { padding: 15px 20px; text-align: center; justify-content: center; }
+            .top-header h1 { font-size: 18px; }
+            .view-panel { padding: 15px; gap: 20px; overflow: visible; }
+            .dashboard-row { flex-direction: column; gap: 20px; align-items: stretch; }
+            .stats-section { width: 100%; box-sizing: border-box; }
+        }
     </style>
 </head>
 <body>
@@ -192,20 +211,22 @@
             <div class="table-header-bar">
                 <h2>📁 Kasalukuyang Nakaimbak na mga File (Active Temporary Files)</h2>
             </div>
-            <table class="file-table">
-                <thead>
-                    <tr>
-                        <th>Pangalan ng File</th>
-                        <th>Uri (Type)</th>
-                        <th>Sukat (Size)</th>
-                        <th>Petsa Inilagay</th>
-                        <th>Kailan Mabubura</th>
-                        <th>Deskripsyon</th>
-                        <th style="text-align: center; width: 160px;">Aksyon</th>
-                    </tr>
-                </thead>
-                <tbody id="activeFilesBody"></tbody>
-            </table>
+            <div class="responsive-table-container">
+                <table class="file-table">
+                    <thead>
+                        <tr>
+                            <th>Pangalan ng File</th>
+                            <th>Uri (Type)</th>
+                            <th>Sukat (Size)</th>
+                            <th>Petsa Inilagay</th>
+                            <th>Kailan Mabubura</th>
+                            <th>Deskripsyon</th>
+                            <th style="text-align: center; width: 160px;">Aksyon</th>
+                        </tr>
+                    </thead>
+                    <tbody id="activeFilesBody"></tbody>
+                </table>
+            </div>
             <div id="activeFilesEmpty" class="empty-state">Walang pansamantalang file na nakaimbak sa kasalukuyan.</div>
         </div>
 
@@ -213,20 +234,22 @@
             <div class="table-header-bar" style="background: #f8fafc;">
                 <h2>📜 Kasaysayan ng Pag-imbak at Pagbura (File History Log)</h2>
             </div>
-            <table class="file-table">
-                <thead>
-                    <tr>
-                        <th>Pangalan ng File</th>
-                        <th>Uri (Type)</th>
-                        <th>Sukat</th>
-                        <th>Kailan Idinagdag</th>
-                        <th>Kailan Nabura / Tinanggal</th>
-                        <th>Status</th>
-                        <th>Paalala / Notes</th>
-                    </tr>
-                </thead>
-                <tbody id="historyLogBody"></tbody>
-            </table>
+            <div class="responsive-table-container">
+                <table class="file-table">
+                    <thead>
+                        <tr>
+                            <th>Pangalan ng File</th>
+                            <th>Uri (Type)</th>
+                            <th>Sukat</th>
+                            <th>Kailan Idinagdag</th>
+                            <th>Kailan Nabura / Tinanggal</th>
+                            <th>Status</th>
+                            <th>Paalala / Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyLogBody"></tbody>
+                </table>
+            </div>
             <div id="historyLogEmpty" class="empty-state">Walang nakaraang talaan ng kasaysayan ng file.</div>
         </div>
 
@@ -325,7 +348,7 @@ async function uploadTemporaryFile() {
     }
 
     const passwordInput = prompt("Ilagay ang Password para makapag-save ng file:");
-    if (passwordInput === null) return; // User cancelled
+    if (passwordInput === null) return; 
     if (!passwordInput.trim()) return alert("Hindi maaaring walang password.");
 
     const btnSubmit = document.getElementById('btnSubmitFile');
@@ -366,7 +389,7 @@ async function uploadTemporaryFile() {
             method: "POST",
             headers: { 
                 "Content-Type": "application/json",
-                "X-Storage-Password": passwordInput // Send to backend for confirmation
+                "X-Storage-Password": passwordInput 
             },
             body: JSON.stringify(fileRecord)
         });
@@ -409,7 +432,6 @@ async function secureDownloadFile(fileId) {
 
         if (response.ok) {
             const data = await response.json();
-            // Programmatically force download using standard hidden anchor pattern
             const tempAnchor = document.createElement('a');
             tempAnchor.href = data.file_data;
             tempAnchor.download = data.name;
