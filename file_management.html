@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TSV File & Database Management</title>
+    <style>
+        :root {
+            --primary: #0f172a;
+            --sidebar-bg: #1e293b;
+            --accent: #0284c7;
+            --success: #16a34a;
+            --warning: #f59e0b;
+            --danger: #dc2626;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --border: #e2e8f0;
+            --text: #334155;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg);
+            margin: 0; padding: 0; color: var(--text);
+            display: flex; height: 100vh; overflow: hidden;
+        }
+
+        .sidebar {
+            width: 280px; background: var(--sidebar-bg); color: white;
+            padding: 25px 15px; box-sizing: border-box;
+            display: flex; flex-direction: column; gap: 20px;
+            box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+        }
+
+        .sidebar h2 {
+            margin: 0; font-size: 18px; text-align: center;
+            border-bottom: 1px solid #334155; padding-bottom: 15px;
+            color: #f8fafc; letter-spacing: 0.5px;
+        }
+
+        .nav-menu { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+        
+        .nav-btn {
+            background: transparent; color: #94a3b8; border: none;
+            padding: 12px 15px; text-align: left; font-size: 14px; font-weight: 600;
+            border-radius: 6px; cursor: pointer; display: flex; align-items: center;
+            gap: 10px; transition: all 0.2s; text-decoration: none;
+        }
+
+        .nav-btn:hover, .nav-btn.active { background: var(--accent); color: white; }
+
+        .main-container { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        
+        .top-header {
+            background: white; padding: 20px 30px; border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        .top-header h1 { margin: 0; font-size: 22px; color: var(--primary); }
+
+        .view-panel { flex: 1; padding: 30px; box-sizing: border-box; overflow-y: auto; }
+
+        .management-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 25px;
+            margin-top: 10px;
+        }
+
+        .tool-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .tool-card h3 {
+            margin: 0;
+            font-size: 18px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tool-card p {
+            margin: 0;
+            font-size: 14px;
+            color: #64748b;
+            line-height: 1.5;
+        }
+
+        .btn-action {
+            color: white; border: none; padding: 12px 20px; font-weight: bold;
+            font-size: 14px; border-radius: 8px; cursor: pointer; display: inline-flex;
+            align-items: center; justify-content: center; gap: 8px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: opacity 0.2s;
+        }
+        .btn-action:hover { opacity: 0.9; }
+        .btn-primary { background-color: var(--accent); }
+        .btn-success { background-color: var(--success); }
+        .btn-danger { background-color: var(--danger); }
+
+        .file-input-wrapper {
+            position: relative;
+            margin-top: 5px;
+        }
+
+        .file-input-wrapper input[type="file"] {
+            display: none;
+        }
+
+        .custom-file-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+            background: #f8fafc;
+            color: #64748b;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .custom-file-btn:hover {
+            background: #f1f5f9;
+            border-color: #94a3b8;
+        }
+
+        .db-status-bar {
+            display: flex;
+            gap: 15px;
+            background: #f1f5f9;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .status-pill {
+            background: white;
+            padding: 4px 10px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+        }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <h2>Masterlist Management</h2>
+    <div class="nav-menu">
+        <a href="masterlist.html" class="nav-btn">👤 TSV Profiles</a>
+        <a href="suguan_0.html" class="nav-btn">⚡ Suguan</a>
+        <a href="#" class="nav-btn active">📁 File Management</a>
+    </div>
+    <div style="font-size: 11px; text-align: center; color: #64748b; border-top: 1px solid #334155; padding-top: 15px;">
+        TSV Management System</div>
+</div>
+
+<div class="main-container">
+    <div class="top-header">
+        <h1>File & Database Control Center</h1>
+        <div class="db-status-bar">
+            <div>Profiles Cache: <span id="profileCount" class="status-pill">Loading...</span></div>
+            <div>Schedules Cache: <span id="reportCount" class="status-pill">Loading...</span></div>
+        </div>
+    </div>
+
+    <div class="view-panel">
+        <div class="management-grid">
+            
+            <div class="tool-card">
+                <h3>📥 Database Export & Backups</h3>
+                <p>Mag-download ng backup copy ng iyong buong live pipeline database bilang isang file. Inirerekomenda na gawin ito linggo-linggo upang maiwasan ang pagkawala ng records.</p>
+                <div style="display: flex; gap: 10px; margin-top: auto;">
+                    <button class="btn-action btn-primary" onclick="exportData('profiles')">👤 Export Profiles JSON</button>
+                    <button class="btn-action btn-primary" onclick="exportData('reports')">⚡ Export Suguan JSON</button>
+                </div>
+            </div>
+
+            <div class="tool-card">
+                <h3>📤 Database Restore / Import</h3>
+                <p>Mag-upload ng dati mong na-back up na JSON file upang maibalik ang mga nawalang data o mag-sync ng maramihang pagbabago sa iyong system platform.</p>
+                
+                <div class="file-input-wrapper">
+                    <label class="custom-file-btn" id="fileLabel" for="importFile">
+                        📂 Pumili ng Backup JSON File...
+                    </label>
+                    <input type="file" id="importFile" accept=".json" onchange="handleFileSelect()">
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: auto;">
+                    <button class="btn-action btn-success" id="btnImportProfiles" onclick="importData('profiles')" disabled>Restore to Profiles</button>
+                    <button class="btn-action btn-success" id="btnImportReports" onclick="importData('reports')" disabled>Restore to Suguan</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+// Authentication protection mechanism
+(function verifyAccess() {
+    if (sessionStorage.getItem("admin_authenticated") !== "true") {
+        alert("❌ Unauthorized access detected.");
+        window.location.href = "suguan_0.html";
+    }
+})();
+
+const WORKER_URL = "https://schedule-api.jakemm04.workers.dev";
+let parsedImportJsonData = null;
+
+window.addEventListener('DOMContentLoaded', () => {
+    fetchLiveStats();
+});
+
+// Fetches record lengths from cloud endpoint
+async function fetchLiveStats() {
+    try {
+        const [pRes, rRes] = await Promise.all([
+            fetch(`${WORKER_URL}/api/profiles`),
+            fetch(`${WORKER_URL}/api/reports`)
+        ]);
+        
+        const pData = pRes.ok ? await pRes.json() : [];
+        const rData = rRes.ok ? await rRes.json() : [];
+        
+        document.getElementById('profileCount').innerText = `${pData.length} records`;
+        document.getElementById('reportCount').innerText = `${rData.length} entries`;
+    } catch {
+        document.getElementById('profileCount').innerText = "Error Connecting";
+        document.getElementById('reportCount').innerText = "Error Connecting";
+    }
+}
+
+// Downloads JSON data cleanly to local machine
+async function exportData(targetType) {
+    try {
+        const response = await fetch(`${WORKER_URL}/api/${targetType}`);
+        if (!response.ok) throw new Error();
+        const data = await response.json();
+        
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        
+        const timestamp = new Date().toISOString().slice(0,10);
+        downloadAnchor.setAttribute("download", `tsv_backup_${targetType}_${timestamp}.json`);
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+    } catch {
+        alert(`Failed to export target data sequence: ${targetType}`);
+    }
+}
+
+// File system reader
+function handleFileSelect() {
+    const fileInput = document.getElementById('importFile');
+    const label = document.getElementById('fileLabel');
+    
+    if (fileInput.files.length === 0) return;
+    
+    const selectedFile = fileInput.files[0];
+    label.innerText = `📄 Loaded: ${selectedFile.name}`;
+    label.style.borderColor = "var(--accent)";
+    
+    const fileReader = new FileReader();
+    fileReader.onload = function(event) {
+        try {
+            parsedImportJsonData = JSON.parse(event.target.result);
+            document.getElementById('btnImportProfiles').disabled = false;
+            document.getElementById('btnImportReports').disabled = false;
+        } catch {
+            alert("Malformed JSON document file detected. Selection cleared.");
+            label.innerText = "📂 Pumili ng Backup JSON File...";
+            parsedImportJsonData = null;
+        }
+    };
+    fileReader.readAsText(selectedFile);
+}
+
+// Bulk loops uploaded dataset payload to Worker API endpoints
+async function importData(targetEndpoint) {
+    if (!parsedImportJsonData) return;
+    
+    const isArray = Array.isArray(parsedImportJsonData);
+    const recordsToProcess = isArray ? parsedImportJsonData : [parsedImportJsonData];
+    
+    if (!confirm(`Warning: This will overwrite or append ${recordsToProcess.length} items to your cloud storage. Continue?`)) {
+        return;
+    }
+    
+    let processedSuccessCount = 0;
+    const urlEndpoint = `${WORKER_URL}/api/${targetEndpoint}`;
+    
+    // Process items via API posting sequentially
+    for (const record of recordsToProcess) {
+        try {
+            const res = await fetch(urlEndpoint, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(record)
+            });
+            if (res.ok) processedSuccessCount++;
+        } catch (e) {
+            console.error("Transmission fault error on record loop write operations.", e);
+        }
+    }
+    
+    alert(`Import Complete. Cleanly processed (${processedSuccessCount}/${recordsToProcess.length}) entries inside database.`);
+    fetchLiveStats();
+}
+</script>
+</body>
+</html>
