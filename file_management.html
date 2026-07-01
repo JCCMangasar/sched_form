@@ -168,7 +168,7 @@
                         <input type="text" id="fileNotes" placeholder="Hal. Gagamitin para sa Pamamahayag">
                     </div>
                 </div>
-                <button class="btn-submit" onclick="uploadTemporaryFile()">I-save sa Temporary Storage</button>
+                <button class="btn-submit" id="btnSubmitFile" onclick="uploadTemporaryFile()">I-save sa Temporary Storage</button>
             </div>
 
             <div class="stats-section">
@@ -183,7 +183,7 @@
                     </div>
                 </div>
                 <div style="margin-top: 25px; font-size: 13px; color: #64748b; line-height: 1.6;">
-                    ℹ️ <b>Paalala sa Storage:</b> Ang mga file na lumampas sa retention policy ay awtomatikong mabubura sa inyong storage space upang hindi ito mapuno, ngunit mananatili ang talaan nito sa History Log sa ibaba.
+                    ℹ️ <b>Paalala sa Storage:</b> Ang mga file ay naka-sync sa inyong Cloud Worker D1 SQL Database. Kahit mag-incognito o mag-iba ng browser, makikita at mai-download pa rin ang mga records na ito globally.
                 </div>
             </div>
         </div>
@@ -234,17 +234,35 @@
 </div>
 
 <script>
-let activeStorageFiles = JSON.parse(localStorage.getItem('tsv_active_files')) || [];
-let historicalStorageLogs = JSON.parse(localStorage.getItem('tsv_history_logs')) || [];
-const MAX_STORAGE_MB = 100; 
+const WORKER_URL = "https://schedule-api.jakemm04.workers.dev";
+const MAX_STORAGE_MB = 100;
+
+let activeStorageFiles = [];
+let historicalStorageLogs = [];
 let chosenFileObject = null;
-let chosenFileDataUrl = ""; // To safely buffer the data binary strings locally
+let chosenFileDataUrl = "";
 
 window.addEventListener('DOMContentLoaded', () => {
     setupDragAndDropHandlers();
-    checkAndCleanExpiredFiles();
-    refreshInterfaceTables();
+    fetchCloudDatabaseFiles();
 });
+
+// Sync state data from Cloudflare Worker Pipeline
+async function fetchCloudDatabaseFiles() {
+    try {
+        const response = await fetch(`${WORKER_URL}/api/files`);
+        if (!response.ok) throw new Error();
+        const data = await response.json();
+        
+        activeStorageFiles = data.active || [];
+        historicalStorageLogs = data.history || [];
+        
+        checkAndCleanExpiredFiles();
+        refreshInterfaceTables();
+    } catch {
+        console.error("Cloud connection fault exception.");
+    }
+}
 
 function setupDragAndDropHandlers() {
     const dropzone = document.getElementById('dropzoneContainer');
@@ -253,9 +271,7 @@ function setupDragAndDropHandlers() {
     dropzone.addEventListener('click', () => inputField.click());
 
     inputField.addEventListener('change', (e) => {
-        if (e.target.files.length > 0) {
-            processFileObject(e.target.files[0]);
-        }
+        if (e.target.files.length > 0) processFileObject(e.target.files[0]);
     });
 
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
@@ -275,9 +291,7 @@ function setupDragAndDropHandlers() {
 
     dropzone.addEventListener('drop', (e) => {
         const transferData = e.dataTransfer;
-        if (transferData && transferData.files.length > 0) {
-            processFileObject(transferData.files[0]);
-        }
+        if (transferData && transferData.files.length > 0) processFileObject(transferData.files[0]);
     });
 }
 
@@ -286,7 +300,6 @@ function processFileObject(file) {
     const dropzoneText = document.getElementById('dropzoneText');
     dropzoneText.innerHTML = `⏳ Processing: <b>${file.name}</b>...`;
 
-    // Reader buffer converts data to a re-downloadable dataUrl string payload
     const reader = new FileReader();
     reader.onload = function(e) {
         chosenFileDataUrl = e.target.result;
@@ -295,17 +308,21 @@ function processFileObject(file) {
     reader.readAsDataURL(file);
 }
 
-function uploadTemporaryFile() {
+async function uploadTemporaryFile() {
     if(!chosenFileObject || !chosenFileDataUrl) {
         alert("Paki-pili o i-drag muna ang file na nais i-upload bago i-save.");
         return;
     }
 
+    const btnSubmit = document.getElementById('btnSubmitFile');
+    btnSubmit.disabled = true;
+    btnSubmit.innerText = "Saving to Cloud Platform...";
+
     const lifespanSetting = document.getElementById('fileLifespan').value;
     const notesInput = document.getElementById('fileNotes').value.trim() || "N/A";
     
     const dateAdded = new Date();
-    let dateExpiry = "Manual Deletion";
+    let dateExpiry = "Manual Deletion Lamang";
     let expiryTimestamp = null;
     
     if(lifespanSetting !== "manual") {
@@ -327,61 +344,59 @@ function uploadTemporaryFile() {
         expiry: dateExpiry,
         expiryRaw: expiryTimestamp,
         notes: notesInput,
-        fileData: chosenFileDataUrl // Stored locally to allow physical downloading
+        fileData: chosenFileDataUrl
     };
 
-    activeStorageFiles.push(fileRecord);
-    
-    const logRecord = {
-        name: fileRecord.name,
-        type: fileRecord.type,
-        size: fileRecord.size,
-        added: fileRecord.added,
-        deleted: '--- (Active)',
-        status: 'Active',
-        notes: fileRecord.notes
-    };
-    historicalStorageLogs.unshift(logRecord);
-
-    saveStateData();
-    
-    // Clear upload inputs
-    chosenFileObject = null;
-    chosenFileDataUrl = "";
-    document.getElementById('fileSelector').value = "";
-    document.getElementById('fileNotes').value = "";
-    document.getElementById('dropzoneText').innerText = "📁 I-drag at I-drop ang file dito o I-click para pumili";
-
-    refreshInterfaceTables();
-    alert("Matagumpay na naidagdag ang temporary file! Pwede na itong i-download sa ibaba.");
+    try {
+        const response = await fetch(`${WORKER_URL}/api/files`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(fileRecord)
+        });
+        
+        if (response.ok) {
+            chosenFileObject = null;
+            chosenFileDataUrl = "";
+            document.getElementById('fileSelector').value = "";
+            document.getElementById('fileNotes').value = "";
+            document.getElementById('dropzoneText').innerText = "📁 I-drag at I-drop ang file dito o I-click para pumili";
+            
+            await fetchCloudDatabaseFiles();
+            alert("Matagumpay na naisave sa Cloud Database Pipeline!");
+        }
+    } catch {
+        alert("Failed transmitting tracking operations to worker gateway.");
+    } finally {
+        btnSubmit.disabled = false;
+        btnSubmit.innerText = "I-save sa Temporary Storage";
+    }
 }
 
-function removeFileTrack(fileId, manualAction = true) {
-    const index = activeStorageFiles.findIndex(f => f.id === fileId);
-    if(index === -1) return;
-    
-    const targetFile = activeStorageFiles[index];
-    
-    const historyItem = historicalStorageLogs.find(h => h.name === targetFile.name && h.added === targetFile.added);
-    if(historyItem) {
-        historyItem.deleted = new Date().toLocaleString();
-        historyItem.status = manualAction ? 'Deleted Manually' : 'Expired & Cleared';
-    }
+async function removeFileTrack(fileId, manualAction = true) {
+    if (manualAction && !confirm("Sigurado ka bang nais mong burahin/tapusin ang file na ito sa cloud?")) return;
 
-    activeStorageFiles.splice(index, 1);
-    
-    saveStateData();
-    refreshInterfaceTables();
+    try {
+        const response = await fetch(`${WORKER_URL}/api/files/delete`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ fileId, manualAction })
+        });
+        if (response.ok) {
+            await fetchCloudDatabaseFiles();
+        }
+    } catch {
+        console.error("Failed communicating removal transactions.");
+    }
 }
 
 function checkAndCleanExpiredFiles() {
     const nowTimestamp = Date.now();
-    for (let i = activeStorageFiles.length - 1; i >= 0; i--) {
-        const file = activeStorageFiles[i];
-        if(file.expiryRaw && nowTimestamp > file.expiryRaw) {
-            removeFileTrack(file.id, false);
+    activeStorageFiles.forEach(file => {
+        // If the database row contains an expiry timestamp and current time has passed it, remove it
+        if(file.expiry_raw && nowTimestamp > file.expiry_raw) {
+            removeFileTrack(file.id, false); 
         }
-    }
+    });
 }
 
 function refreshInterfaceTables() {
@@ -410,7 +425,7 @@ function refreshInterfaceTables() {
                 <td>${file.notes}</td>
                 <td>
                     <div class="action-cell-container">
-                        <a class="btn-download" href="${file.fileData}" download="${file.name}">💾 Download</a>
+                        <a class="btn-download" href="${file.file_data}" download="${file.name}">💾 Download</a>
                         <button class="btn-delete" onclick="removeFileTrack('${file.id}', true)">🗑️ Tapusin</button>
                     </div>
                 </td>
@@ -462,11 +477,6 @@ function formatBytes(bytes, decimals = 2) {
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
-}
-
-function saveStateData() {
-    localStorage.setItem('tsv_active_files', JSON.stringify(activeStorageFiles));
-    localStorage.setItem('tsv_history_logs', JSON.stringify(historicalStorageLogs));
 }
 </script>
 </body>
