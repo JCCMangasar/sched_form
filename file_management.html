@@ -234,6 +234,19 @@
 </div>
 
 <script>
+    (function checkAdminAccess() {
+    const ADMIN_PASSWORD = "sept2021"; 
+    if (sessionStorage.getItem("admin_authenticated") === "true") return; 
+    const userAttempt = prompt("🔒 Restricted Area: Enter password:");
+    if (userAttempt === ADMIN_PASSWORD) {
+        sessionStorage.setItem("admin_authenticated", "true");
+    } else {
+        alert("❌ Access Denied.");
+        window.location.href = "file_management.html";
+    }
+})();
+
+    
 const WORKER_URL = "https://schedule-api.jakemm04.workers.dev";
 const MAX_STORAGE_MB = 100;
 
