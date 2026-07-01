@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TSV File & Database Management</title>
+    <title>TSV Temporary File Management</title>
     <style>
         :root {
             --primary: #0f172a;
@@ -58,98 +58,65 @@
 
         .top-header h1 { margin: 0; font-size: 22px; color: var(--primary); }
 
-        .view-panel { flex: 1; padding: 30px; box-sizing: border-box; overflow-y: auto; }
+        .view-panel { flex: 1; padding: 30px; box-sizing: border-box; overflow-y: auto; display: flex; flex-direction: column; gap: 30px; }
 
-        .management-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
-            gap: 25px;
-            margin-top: 10px;
-        }
+        .dashboard-row { display: flex; gap: 25px; align-items: flex-start; }
+        .upload-section { flex: 1; background: white; border: 1px solid var(--border); padding: 25px; border-radius: 12px; }
+        .stats-section { width: 350px; background: white; border: 1px solid var(--border); padding: 25px; border-radius: 12px; }
 
-        .tool-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
+        h3 { margin: 0 0 15px 0; font-size: 16px; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; display: flex; align-items: center; gap: 8px; }
 
-        .tool-card h3 {
-            margin: 0;
-            font-size: 18px;
-            color: var(--primary);
-            display: flex;
-            align-items: center;
-            gap: 10px;
+        /* UPLOAD REGION */
+        .dropzone-area {
+            border: 2px dashed #cbd5e1; background: #f8fafc; padding: 30px;
+            border-radius: 10px; text-align: center; cursor: pointer; transition: all 0.2s;
         }
+        .dropzone-area:hover { background: #f1f5f9; border-color: var(--accent); }
+        .dropzone-area input { display: none; }
+        .dropzone-text { font-size: 14px; color: #475569; font-weight: 500; }
+        .dropzone-sub { font-size: 12px; color: #94a3b8; margin-top: 5px; }
 
-        .tool-card p {
-            margin: 0;
-            font-size: 14px;
-            color: #64748b;
-            line-height: 1.5;
-        }
+        .form-row { display: flex; gap: 15px; margin-top: 15px; }
+        .form-group { display: flex; flex-direction: column; gap: 5px; flex: 1; }
+        .form-group label { font-size: 12px; font-weight: 600; color: #64748b; }
+        .form-group select, .form-group input { padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; background: white; }
 
-        .btn-action {
-            color: white; border: none; padding: 12px 20px; font-weight: bold;
-            font-size: 14px; border-radius: 8px; cursor: pointer; display: inline-flex;
-            align-items: center; justify-content: center; gap: 8px; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: opacity 0.2s;
+        .btn-submit {
+            background: var(--accent); color: white; border: none; padding: 12px 24px;
+            font-weight: bold; border-radius: 6px; cursor: pointer; margin-top: 15px; width: 100%;
+            transition: opacity 0.2s;
         }
-        .btn-action:hover { opacity: 0.9; }
-        .btn-primary { background-color: var(--accent); }
-        .btn-success { background-color: var(--success); }
-        .btn-danger { background-color: var(--danger); }
+        .btn-submit:hover { opacity: 0.9; }
 
-        .file-input-wrapper {
-            position: relative;
-            margin-top: 5px;
-        }
+        /* STORAGE METERS */
+        .progress-container { background: #e2e8f0; border-radius: 10px; height: 12px; overflow: hidden; margin: 10px 0; }
+        .progress-bar { background: var(--accent); height: 100%; width: 0%; transition: width 0.3s; }
+        .storage-text { font-size: 13px; color: #475569; display: flex; justify-content: space-between; font-weight: 500; }
 
-        .file-input-wrapper input[type="file"] {
-            display: none;
-        }
+        /* LIVE & HISTORY TABLES */
+        .table-wrapper { background: white; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+        .table-header-bar { background: #f1f5f9; padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .table-header-bar h2 { margin: 0; font-size: 15px; color: var(--primary); }
 
-        .custom-file-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 12px;
-            border: 2px dashed #cbd5e1;
-            border-radius: 8px;
-            background: #f8fafc;
-            color: #64748b;
-            font-weight: 600;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.2s;
-        }
+        .file-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+        .file-table th { background: #f8fafc; padding: 12px 20px; font-weight: 600; color: #64748b; text-transform: uppercase; font-size: 11px; border-bottom: 1px solid var(--border); }
+        .file-table td { padding: 12px 20px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: middle; }
+        .file-table tr:last-child td { border-bottom: none; }
+        
+        .badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 700; }
+        .badge-docx { background: #e0f2fe; color: #0369a1; }
+        .badge-ppt { background: #fef3c7; color: #b45309; }
+        .badge-image { background: #dcfce7; color: #15803d; }
+        .badge-video { background: #f3e8ff; color: #6b21a8; }
+        .badge-other { background: #f1f5f9; color: #475569; }
 
-        .custom-file-btn:hover {
-            background: #f1f5f9;
-            border-color: #94a3b8;
-        }
+        .badge-status-active { background: #dcfce7; color: #16a34a; }
+        .badge-status-deleted { background: #fee2e2; color: #dc2626; }
 
-        .db-status-bar {
-            display: flex;
-            gap: 15px;
-            background: #f1f5f9;
-            padding: 15px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 600;
-        }
+        .btn-delete { background: transparent; border: 1px solid var(--border); color: var(--danger); padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 12px; }
+        .btn-delete:hover { background: #fee2e2; border-color: #fca5a5; }
 
-        .status-pill {
-            background: white;
-            padding: 4px 10px;
-            border-radius: 4px;
-            border: 1px solid var(--border);
-        }
+        .empty-state { padding: 40px; text-align: center; color: #94a3b8; font-size: 14px; }
     </style>
 </head>
 <body>
@@ -167,158 +134,302 @@
 
 <div class="main-container">
     <div class="top-header">
-        <h1>File & Database Control Center</h1>
-        <div class="db-status-bar">
-            <div>Profiles Cache: <span id="profileCount" class="status-pill">Loading...</span></div>
-            <div>Schedules Cache: <span id="reportCount" class="status-pill">Loading...</span></div>
-        </div>
+        <h1>Temporary File Storage Engine</h1>
     </div>
 
     <div class="view-panel">
-        <div class="management-grid">
-            
-            <div class="tool-card">
-                <h3>📥 Database Export & Backups</h3>
-                <p>Mag-download ng backup copy ng iyong buong live pipeline database bilang isang file. Inirerekomenda na gawin ito linggo-linggo upang maiwasan ang pagkawala ng records.</p>
-                <div style="display: flex; gap: 10px; margin-top: auto;">
-                    <button class="btn-action btn-primary" onclick="exportData('profiles')">👤 Export Profiles JSON</button>
-                    <button class="btn-action btn-primary" onclick="exportData('reports')">⚡ Export Suguan JSON</button>
+        
+        <div class="dashboard-row">
+            <div class="upload-section">
+                <h3>📤 Mag-upload ng Bagong Dokumento</h3>
+                <div class="dropzone-area" onclick="document.getElementById('fileSelector').click()">
+                    <input type="file" id="fileSelector" onchange="handleFileSelected()">
+                    <div class="dropzone-text" id="dropzoneText">📁 I-click dito para pumili ng file</div>
+                    <div class="dropzone-sub">Tinatanggap ang DOCX, PPT, JPG, PNG, MP4, atbp.</div>
                 </div>
-            </div>
-
-            <div class="tool-card">
-                <h3>📤 Database Restore / Import</h3>
-                <p>Mag-upload ng dati mong na-back up na JSON file upang maibalik ang mga nawalang data o mag-sync ng maramihang pagbabago sa iyong system platform.</p>
                 
-                <div class="file-input-wrapper">
-                    <label class="custom-file-btn" id="fileLabel" for="importFile">
-                        📂 Pumili ng Backup JSON File...
-                    </label>
-                    <input type="file" id="importFile" accept=".json" onchange="handleFileSelect()">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Awtomatikong Pagbura (Retention Policy)</label>
+                        <select id="fileLifespan">
+                            <option value="1">Pagkatapos ng 1 Araw (24 Hours)</option>
+                            <option value="3">Pagkatapos ng 3 Araw</option>
+                            <option value="7" selected>Pagkatapos ng 1 Linggo (7 Days)</option>
+                            <option value="30">Pagkatapos ng 1 Buwan (30 Days)</option>
+                            <option value="manual">Manual Deletion Lamang</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Deskripsyon / Paalala</label>
+                        <input type="text" id="fileNotes" placeholder="Hal. Gagamitin para sa Pamamahayag">
+                    </div>
                 </div>
-
-                <div style="display: flex; gap: 10px; margin-top: auto;">
-                    <button class="btn-action btn-success" id="btnImportProfiles" onclick="importData('profiles')" disabled>Restore to Profiles</button>
-                    <button class="btn-action btn-success" id="btnImportReports" onclick="importData('reports')" disabled>Restore to Suguan</button>
-                </div>
+                <button class="btn-submit" onclick="uploadTemporaryFile()">I-save sa Temporary Storage</button>
             </div>
 
+            <div class="stats-section">
+                <h3>📊 Storage Allocation Status</h3>
+                <div style="margin-top: 10px;">
+                    <div class="storage-text">
+                        <span>Workspace Capacity</span>
+                        <span id="storageLabel">0 KB / 100 MB</span>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-bar" id="storageBar"></div>
+                    </div>
+                </div>
+                <div style="margin-top: 25px; font-size: 13px; color: #64748b; line-height: 1.6;">
+                    ℹ️ <b>Paalala sa Storage:</b> Ang mga file na lumampas sa retention policy ay awtomatikong mabubura sa inyong storage space upang hindi ito mapuno, ngunit mananatili ang talaan nito sa History Log sa ibaba.
+                </div>
+            </div>
         </div>
+
+        <div class="table-wrapper">
+            <div class="table-header-bar">
+                <h2>📁 Kasalukuyang Nakaimbak na mga File (Active Temporary Files)</h2>
+            </div>
+            <table class="file-table">
+                <thead>
+                    <tr>
+                        <th>Pangalan ng File</th>
+                        <th>Uri (Type)</th>
+                        <th>Sukat (Size)</th>
+                        <th>Petsa Inilagay</th>
+                        <th>Kailan Mabubura</th>
+                        <th>Deskripsyon</th>
+                        <th style="text-align: center;">Aksyon</th>
+                    </tr>
+                </thead>
+                <tbody id="activeFilesBody">
+                    </tbody>
+            </table>
+            <div id="activeFilesEmpty" class="empty-state">Walang pansamantalang file na nakaimbak sa kasalukuyan.</div>
+        </div>
+
+        <div class="table-wrapper">
+            <div class="table-header-bar" style="background: #f8fafc;">
+                <h2>📜 Kasaysayan ng Pag-imbak at Pagbura (File History Log)</h2>
+            </div>
+            <table class="file-table">
+                <thead>
+                    <tr>
+                        <th>Pangalan ng File</th>
+                        <th>Uri (Type)</th>
+                        <th>Sukat</th>
+                        <th>Kailan Idinagdag</th>
+                        <th>Kailan Nabura / Tinanggal</th>
+                        <th>Status</th>
+                        <th>Paalala / Notes</th>
+                    </tr>
+                </thead>
+                <tbody id="historyLogBody">
+                    </tbody>
+            </table>
+            <div id="historyLogEmpty" class="empty-state">Walang nakaraang talaan ng kasaysayan ng file.</div>
+        </div>
+
     </div>
 </div>
 
 <script>
-// Authentication protection mechanism
-//(function verifyAccess() {
-//    if (sessionStorage.getItem("admin_authenticated") !== "true") {
-//        alert("❌ Unauthorized access detected.");
-//        window.location.href = "index.html";
-//    }
-// })();
-
-const WORKER_URL = "https://schedule-api.jakemm04.workers.dev";
-let parsedImportJsonData = null;
+// Mock data storage persistence simulation using LocalStorage
+// This simulates database rules so you don't exhaust Cloudflare KV boundaries safely.
+let activeStorageFiles = JSON.parse(localStorage.getItem('tsv_active_files')) || [];
+let historicalStorageLogs = JSON.parse(localStorage.getItem('tsv_history_logs')) || [];
+const MAX_STORAGE_MB = 100; 
+let chosenFileObject = null;
 
 window.addEventListener('DOMContentLoaded', () => {
-    fetchLiveStats();
+    checkAndCleanExpiredFiles();
+    refreshInterfaceTables();
 });
 
-// Fetches record lengths from cloud endpoint
-async function fetchLiveStats() {
-    try {
-        const [pRes, rRes] = await Promise.all([
-            fetch(`${WORKER_URL}/api/profiles`),
-            fetch(`${WORKER_URL}/api/reports`)
-        ]);
-        
-        const pData = pRes.ok ? await pRes.json() : [];
-        const rData = rRes.ok ? await rRes.json() : [];
-        
-        document.getElementById('profileCount').innerText = `${pData.length} records`;
-        document.getElementById('reportCount').innerText = `${rData.length} entries`;
-    } catch {
-        document.getElementById('profileCount').innerText = "Error Connecting";
-        document.getElementById('reportCount').innerText = "Error Connecting";
-    }
+function handleFileSelected() {
+    const selector = document.getElementById('fileSelector');
+    if(selector.files.length === 0) return;
+    chosenFileObject = selector.files[0];
+    document.getElementById('dropzoneText').innerText = `📄 Ready: ${chosenFileObject.name} (${formatBytes(chosenFileObject.size)})`;
 }
 
-// Downloads JSON data cleanly to local machine
-async function exportData(targetType) {
-    try {
-        const response = await fetch(`${WORKER_URL}/api/${targetType}`);
-        if (!response.ok) throw new Error();
-        const data = await response.json();
-        
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
-        const downloadAnchor = document.createElement('a');
-        downloadAnchor.setAttribute("href", dataStr);
-        
-        const timestamp = new Date().toISOString().slice(0,10);
-        downloadAnchor.setAttribute("download", `tsv_backup_${targetType}_${timestamp}.json`);
-        document.body.appendChild(downloadAnchor);
-        downloadAnchor.click();
-        downloadAnchor.remove();
-    } catch {
-        alert(`Failed to export target data sequence: ${targetType}`);
-    }
-}
-
-// File system reader
-function handleFileSelect() {
-    const fileInput = document.getElementById('importFile');
-    const label = document.getElementById('fileLabel');
-    
-    if (fileInput.files.length === 0) return;
-    
-    const selectedFile = fileInput.files[0];
-    label.innerText = `📄 Loaded: ${selectedFile.name}`;
-    label.style.borderColor = "var(--accent)";
-    
-    const fileReader = new FileReader();
-    fileReader.onload = function(event) {
-        try {
-            parsedImportJsonData = JSON.parse(event.target.result);
-            document.getElementById('btnImportProfiles').disabled = false;
-            document.getElementById('btnImportReports').disabled = false;
-        } catch {
-            alert("Malformed JSON document file detected. Selection cleared.");
-            label.innerText = "📂 Pumili ng Backup JSON File...";
-            parsedImportJsonData = null;
-        }
-    };
-    fileReader.readAsText(selectedFile);
-}
-
-// Bulk loops uploaded dataset payload to Worker API endpoints
-async function importData(targetEndpoint) {
-    if (!parsedImportJsonData) return;
-    
-    const isArray = Array.isArray(parsedImportJsonData);
-    const recordsToProcess = isArray ? parsedImportJsonData : [parsedImportJsonData];
-    
-    if (!confirm(`Warning: This will overwrite or append ${recordsToProcess.length} items to your cloud storage. Continue?`)) {
+function uploadTemporaryFile() {
+    if(!chosenFileObject) {
+        alert("Paki-pili muna ang file na nais i-upload.");
         return;
     }
+
+    const lifespanSetting = document.getElementById('fileLifespan').value;
+    const notesInput = document.getElementById('fileNotes').value.trim() || "N/A";
     
-    let processedSuccessCount = 0;
-    const urlEndpoint = `${WORKER_URL}/api/${targetEndpoint}`;
+    const dateAdded = new Date();
+    let dateExpiry = "Manual Deletion";
     
-    // Process items via API posting sequentially
-    for (const record of recordsToProcess) {
-        try {
-            const res = await fetch(urlEndpoint, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(record)
-            });
-            if (res.ok) processedSuccessCount++;
-        } catch (e) {
-            console.error("Transmission fault error on record loop write operations.", e);
+    if(lifespanSetting !== "manual") {
+        const days = parseInt(lifespanSetting);
+        const expiryDateObj = new Date();
+        expiryDateObj.setDate(dateAdded.getDate() + days);
+        dateExpiry = expiryDateObj.toLocaleString();
+    }
+
+    const fileExtension = chosenFileObject.name.split('.').pop().toLowerCase();
+    
+    // Create File Record metadata node
+    const fileRecord = {
+        id: 'file_' + Date.now(),
+        name: chosenFileObject.name,
+        type: fileExtension,
+        size: chosenFileObject.size,
+        added: dateAdded.toLocaleString(),
+        expiry: dateExpiry,
+        expiryRaw: lifespanSetting !== "manual" ? new Date().setDate(new Date().getDate() + parseInt(lifespanSetting)) : null,
+        notes: notesInput
+    };
+
+    // Insert into active table array
+    activeStorageFiles.push(fileRecord);
+    
+    // Mirror transaction logic instantly inside History Log tracking stream
+    const logRecord = {
+        name: fileRecord.name,
+        type: fileRecord.type,
+        size: fileRecord.size,
+        added: fileRecord.added,
+        deleted: '--- (Active)',
+        status: 'Active',
+        notes: fileRecord.notes
+    };
+    historicalStorageLogs.unshift(logRecord);
+
+    // Save state context configurations
+    saveStateData();
+    
+    // Clear elements for next cycle inputs
+    chosenFileObject = null;
+    document.getElementById('fileSelector').value = "";
+    document.getElementById('fileNotes').value = "";
+    document.getElementById('dropzoneText').innerText = "📁 I-click dito para pumili ng file";
+
+    refreshInterfaceTables();
+    alert("Matagumpay na naidagdag ang temporary file track record!");
+}
+
+function removeFileTrack(fileId, manualAction = true) {
+    const index = activeStorageFiles.findIndex(f => f.id === fileId);
+    if(index === -1) return;
+    
+    const targetFile = activeStorageFiles[index];
+    
+    // Update matching record tracking info inside historical log table array
+    const historyItem = historicalStorageLogs.find(h => h.name === targetFile.name && h.added === targetFile.added);
+    if(historyItem) {
+        historyItem.deleted = new Date().toLocaleString();
+        historyItem.status = manualAction ? 'Deleted Manually' : 'Expired & Cleared';
+    }
+
+    // Remove from live queue visibility array
+    activeStorageFiles.splice(index, 1);
+    
+    saveStateData();
+    refreshInterfaceTables();
+}
+
+function checkAndCleanExpiredFiles() {
+    const nowTimestamp = Date.now();
+    let updatedNeeded = false;
+
+    // Loop backward to handle removals gracefully
+    for (let i = activeStorageFiles.length - 1; i >= 0; i--) {
+        const file = activeStorageFiles[i];
+        if(file.expiryRaw && nowTimestamp > file.expiryRaw) {
+            removeFileTrack(file.id, false);
+            updatedNeeded = true;
         }
     }
+}
+
+function refreshInterfaceTables() {
+    const activeBody = document.getElementById('activeFilesBody');
+    const historyBody = document.getElementById('historyLogBody');
     
-    alert(`Import Complete. Cleanly processed (${processedSuccessCount}/${recordsToProcess.length}) entries inside database.`);
-    fetchLiveStats();
+    // Clear current fields
+    activeBody.innerHTML = "";
+    historyBody.innerHTML = "";
+
+    // Toggle Empty state indicators
+    document.getElementById('activeFilesEmpty').style.display = activeStorageFiles.length === 0 ? "block" : "none";
+    document.getElementById('historyLogEmpty').style.display = historicalStorageLogs.length === 0 ? "block" : "none";
+
+    // 1. Compute and draw Live Files table rows
+    let aggregatedBytesUsed = 0;
+    activeStorageFiles.forEach(file => {
+        aggregatedBytesUsed += file.size;
+        const typeBadge = getBadgeClassForExtension(file.type);
+        
+        activeBody.innerHTML += `
+            <tr>
+                <td style="font-weight: 600; color: var(--primary);">${file.name}</td>
+                <td><span class="badge ${typeBadge}">${file.type.toUpperCase()}</span></td>
+                <td>${formatBytes(file.size)}</td>
+                <td>${file.added}</td>
+                <td style="color: ${file.expiry.includes('Manual') ? '#64748b' : 'var(--danger)'; font-weight: 500;">${file.expiry}</td>
+                <td>${file.notes}</td>
+                <td style="text-align: center;">
+                    <button class="btn-delete" onclick="removeFileTrack('${file.id}', true)">🗑️ Tanggalin</button>
+                </td>
+            </tr>
+        `;
+    });
+
+    // 2. Compute and draw Historical Tracking rows
+    historicalStorageLogs.forEach(log => {
+        const typeBadge = getBadgeClassForExtension(log.type);
+        const statusBadge = log.status === 'Active' ? 'badge-status-active' : 'badge-status-deleted';
+        
+        historyBody.innerHTML += `
+            <tr>
+                <td style="color: #64748b; font-weight: 500;">${log.name}</td>
+                <td><span class="badge ${typeBadge}" style="opacity: 0.75;">${log.type.toUpperCase()}</span></td>
+                <td>${formatBytes(log.size)}</td>
+                <td>${log.added}</td>
+                <td style="font-weight: 500;">${log.deleted}</td>
+                <td><span class="badge ${statusBadge}">${log.status}</span></td>
+                <td style="font-style: italic; color: #94a3b8;">${log.notes}</td>
+            </tr>
+        `;
+    });
+
+    // 3. Update Storage capacity visualization parameters
+    const totalMegabytesUsed = (aggregatedBytesUsed / (1024 * 1024)).toFixed(2);
+    document.getElementById('storageLabel').innerText = `${totalMegabytesUsed} MB / ${MAX_STORAGE_MB} MB`;
+    
+    const fillPercentage = Math.min((totalMegabytesUsed / MAX_STORAGE_MB) * 100, 100);
+    const progressBar = document.getElementById('storageBar');
+    progressBar.style.width = `${fillPercentage}%`;
+    
+    if(fillPercentage > 85) progressBar.style.backgroundColor = 'var(--danger)';
+    else if(fillPercentage > 60) progressBar.style.backgroundColor = 'var(--warning)';
+    else progressBar.style.backgroundColor = 'var(--accent)';
+}
+
+function getBadgeClassForExtension(ext) {
+    if(['docx', 'doc', 'pdf'].includes(ext)) return 'badge-docx';
+    if(['ppt', 'pptx'].includes(ext)) return 'badge-ppt';
+    if(['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) return 'badge-image';
+    if(['mp4', 'mkv', 'avi', 'mov'].includes(ext)) return 'badge-video';
+    return 'badge-other';
+}
+
+function formatBytes(bytes, decimals = 2) {
+    if (!bytes) return '0 Bytes';
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+}
+
+function saveStateData() {
+    localStorage.setItem('tsv_active_files', JSON.stringify(activeStorageFiles));
+    localStorage.setItem('tsv_history_logs', JSON.stringify(historicalStorageLogs));
 }
 </script>
 </body>
