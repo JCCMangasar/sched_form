@@ -128,8 +128,8 @@
 <div class="sidebar">
     <h2>Masterlist Management</h2>
     <div class="nav-menu">
-        <a href="masterlist.html" class="nav-btn">👤 TSV Profiles</a>
-        <a href="suguan_0.html" class="nav-btn">⚡ Suguan</a>
+        <a href="#" class="nav-btn">👤 TSV Profiles (for admin)</a>
+        <a href="#" class="nav-btn">⚡ Suguan (for admin)</a>
         <a href="#" class="nav-btn active">📁 File Management</a>
     </div>
     <div style="font-size: 11px; text-align: center; color: #64748b; border-top: 1px solid #334155; padding-top: 15px;">
@@ -373,7 +373,7 @@ async function uploadTemporaryFile() {
 }
 
 async function removeFileTrack(fileId, manualAction = true) {
-    if (manualAction && !confirm("Sigurado ka bang nais mong burahin/tapusin ang file na ito sa cloud?")) return;
+    if (manualAction && !confirm("Sigurado ka bang nais mong burahin/i-delete ang file na ito sa cloud?")) return;
 
     try {
         const response = await fetch(`${WORKER_URL}/api/files/delete`, {
@@ -426,7 +426,7 @@ function refreshInterfaceTables() {
                 <td>
                     <div class="action-cell-container">
                         <a class="btn-download" href="${file.file_data}" download="${file.name}">💾 Download</a>
-                        <button class="btn-delete" onclick="removeFileTrack('${file.id}', true)">🗑️ Tapusin</button>
+                        <button class="btn-delete" onclick="removeFileTrack('${file.id}', true)">🗑️ Delete</button>
                     </div>
                 </td>
             </tr>
