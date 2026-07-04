@@ -268,7 +268,8 @@ function populateDropdown() {
     const names = Object.keys(organizedProfiles).sort();
     
     let html = '<option value="">-- Choose Member --</option>';
-    names.forEach(name => { html += `<option value="${name}">${name}</option>'; });
+    // FIXED: Corrected the quote syntax here so all items render successfully
+    names.forEach(name => { html += `<option value="${name}">${name}</option>`; });
     select.innerHTML = html;
 }
 
@@ -332,7 +333,7 @@ function analyzeSelectedMember() {
                 const busyStartReal = timeToMinutes(constraint.time_in);
                 const busyEndReal = timeToMinutes(constraint.time_out);
 
-                // TRAVEL BUFFER UPDATED TO 150 MINUTES (2 Hours and 30 Minutes) for requested user demand leeway
+                // TRAVEL BUFFER APPLIED TO 150 MINUTES (2 Hours and 30 Minutes) for requested traffic adjustment
                 const buffer = constraint.isChurch ? 0 : 150;
                 const busyStartWithBuffer = busyStartReal - buffer; 
                 const busyEndWithBuffer = busyEndReal + buffer;
