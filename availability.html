@@ -207,8 +207,8 @@
     
     <div style="font-size: 12px; color: #64748b; margin-top: auto; line-height: 1.4;">
         💡 <strong>System Rules:</strong><br>
-        • Travel buffer (1.5 hrs) applied to Work & School.<br>
-        • Morning Suguan requires strict travel safety gap before work/school.
+        • Travel buffer (1 hr 30 mins) strictly applied before work/school.<br>
+        • Worship duration (~1 hr) + Travel buffer verified for all morning entries.
     </div>
 </div>
 
@@ -377,7 +377,8 @@ function analyzeBySlot() {
         
         for (let c of p.constraints) {
             if (c.day === slot.day) {
-                const buffer = c.isChurch ? 0 : 90; // 1.5 hours travel buffer for school/work
+                // Strict 1 Hour 30 Minutes Buffer (90 mins) for School/Work Travel Time
+                const buffer = c.isChurch ? 0 : 90; 
                 const bStart = convertMin(c.time_in) - buffer;
                 const bEnd = convertMin(c.time_out) + buffer;
                 
@@ -386,11 +387,11 @@ function analyzeBySlot() {
                     if (c.isChurch) {
                         reason = `May nakalaang suguan sa ${c.type} sa slot na ito (${c.slotName})`;
                     } else {
-                        // Special warning logic for morning service followed by work/school transit
+                        // Strict validation for morning shifts vs service end transit times
                         if (slotEndMin <= convertMin(c.time_in) && (convertMin(c.time_in) - slotEndMin) <= 90) {
-                            reason = `Masyadong gipit sa biyahe patungong ${c.type.toUpperCase()} (${convertTo12Hour(c.time_in)}). Halos 1 oras ang pagsamba + oras sa pagbibiyahe.`;
+                            reason = `Masyadong gipit sa biyahe patungong ${c.type.toUpperCase()} (${convertTo12Hour(c.time_in)}). Kulang ang 1 hr at 30 mins na travel window pagkatapos ng pagsamba.`;
                         } else {
-                            reason = `May pasok sa ${c.type.toUpperCase()} (${convertTo12Hour(c.time_in)} - ${convertTo12Hour(c.time_out)}) kasama ang allowance sa biyahe.`;
+                            reason = `May pasok sa ${c.type.toUpperCase()} (${convertTo12Hour(c.time_in)} - ${convertTo12Hour(c.time_out)}) kasama ang 1 hr 30 mins na biyahe.`;
                         }
                     }
                     break;
@@ -473,7 +474,7 @@ function analyzeByMember() {
 
         for (let c of p.constraints) {
             if (c.day === slot.day) {
-                const buffer = c.isChurch ? 0 : 90;
+                const buffer = c.isChurch ? 0 : 90; // 1 hr 30 mins
                 const bStart = convertMin(c.time_in) - buffer;
                 const bEnd = convertMin(c.time_out) + buffer;
                 
@@ -482,9 +483,8 @@ function analyzeByMember() {
                     if (c.isChurch) {
                         reason = `Naka-assign sa ${c.type}`;
                     } else {
-                        // Special logic breakdown for morning transit check
                         if (slotEndMin <= convertMin(c.time_in) && (convertMin(c.time_in) - slotEndMin) <= 90) {
-                            reason = `Gipit sa biyahe papuntang ${c.type.toUpperCase()} (Pasok: ${convertTo12Hour(c.time_in)})`;
+                            reason = `Gipit sa 1 hr 30 mins na biyahe pa-tungo sa ${c.type.toUpperCase()} (Pasok: ${convertTo12Hour(c.time_in)})`;
                         } else {
                             reason = `${c.type.toUpperCase()} (${convertTo12Hour(c.time_in)} - ${convertTo12Hour(c.time_out)})`;
                         }
