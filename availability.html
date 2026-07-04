@@ -42,96 +42,87 @@
         .sidebar h2 {
             margin: 0;
             font-size: 20px;
-            border-bottom: 1px solid #334155;
-            padding-bottom: 12px;
-            color: #f8fafc;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 10px;
         }
 
-        .sidebar-group {
+        .form-group {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
         }
 
-        .sidebar label {
-            font-size: 13px;
+        .form-group label {
+            font-size: 12px;
             font-weight: 600;
             color: #94a3b8;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
 
-        .sidebar select {
-            width: 100%;
+        select {
             padding: 10px;
-            border: 1px solid #334155;
+            border: 1px solid rgba(255,255,255,0.2);
             border-radius: 6px;
-            background: #0f172a;
+            background: rgba(255,255,255,0.05);
             color: white;
             font-size: 14px;
         }
+        select option {
+            background: var(--primary);
+            color: white;
+        }
+
+        .nav-btn {
+            display: inline-block;
+            background-color: #475569;
+            color: white;
+            text-decoration: none;
+            padding: 10px;
+            font-weight: 600;
+            font-size: 13px;
+            border-radius: 6px;
+            text-align: center;
+            margin-top: auto;
+        }
+        .nav-btn:hover { background-color: #334155; }
 
         .main-content {
             flex: 1;
             padding: 30px;
-            box-sizing: border-box;
             overflow-y: auto;
-            display: flex;
-            flex-direction: column;
+            box-sizing: border-box;
         }
 
-        .header-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .rules-banner {
+            background-color: #eff6ff;
+            border-left: 4px solid var(--accent);
+            padding: 12px 15px;
+            font-size: 13px;
+            color: #1e40af;
+            border-radius: 4px;
             margin-bottom: 25px;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 15px;
-        }
-
-        h1 { margin: 0; color: var(--primary); font-size: 26px; }
-
-        .nav-btn {
-            display: inline-block;
-            background-color: #64748b; 
-            color: white;
-            text-decoration: none; 
-            padding: 10px 18px;
-            font-weight: 600;
-            font-size: 14px;
-            border-radius: 6px;
-            transition: opacity 0.2s;
-        }
-        .nav-btn:hover { opacity: 0.9; }
-
-        .results-wrapper {
-            background: var(--card-bg);
-            border-radius: 8px;
-            padding: 25px;
-            border: 1px solid var(--border);
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-            flex: 1;
+            line-height: 1.5;
         }
 
         .roster-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
             gap: 15px;
-            margin-top: 15px;
         }
 
         .person-card {
+            background: var(--card-bg);
             padding: 15px;
             border-radius: 6px;
             border: 1px solid var(--border);
-            background: #f8fafc;
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
         }
 
         .person-card strong {
-            font-size: 16px;
+            font-size: 15px;
             color: var(--primary);
         }
 
@@ -153,11 +144,12 @@
             color: #64748b;
             font-style: italic;
             margin-top: 4px;
+            line-height: 1.4;
         }
 
         .placeholder-text {
             text-align: center;
-            padding: 80px 20px;
+            padding: 60px 20px;
             color: #94a3b8;
             font-size: 15px;
         }
@@ -166,25 +158,25 @@
 <body>
 
 <div class="sidebar">
-    <h2>Control Filters</h2>
+    <h2>Smart Analyzer</h2>
     
-    <div class="sidebar-group">
-        <label for="analysisMode">Analysis Mode</label>
+    <div class="form-group">
+        <label for="analysisMode">Analysis Filter</label>
         <select id="analysisMode" onchange="switchMode()">
             <option value="slot">Filter by Church Slot</option>
-            <option value="day">Filter by Whole Day (Mon-Sun)</option>
+            <option value="day">Filter by Whole Day</option>
             <option value="member">Analyze Individual Member</option>
         </select>
     </div>
 
-    <div id="slotModeControls" class="sidebar-group">
+    <div id="slotModeControls" class="form-group">
         <label for="churchSlotSelect">Target Church Duty Slot</label>
         <select id="churchSlotSelect" onchange="runAnalysis()">
             <option value="">-- Choose Time Slot --</option>
         </select>
     </div>
 
-    <div id="dayModeControls" class="sidebar-group" style="display: none;">
+    <div id="dayModeControls" class="form-group" style="display: none;">
         <label for="daySelect">Select Day of Week</label>
         <select id="daySelect" onchange="runAnalysis()">
             <option value="">-- Choose Day --</option>
@@ -198,32 +190,23 @@
         </select>
     </div>
 
-    <div id="memberModeControls" class="sidebar-group" style="display: none;">
+    <div id="memberModeControls" class="form-group" style="display: none;">
         <label for="memberSelect">Target Member Profile</label>
         <select id="memberSelect" onchange="runAnalysis()">
             <option value="">-- Choose Member --</option>
         </select>
     </div>
-    
-    <div style="font-size: 12px; color: #64748b; margin-top: auto; line-height: 1.4;">
-        💡 <strong>System Rules:</strong><br>
-        • Worship + Cleaning: Strictly 1 hr 30 mins.<br>
-        • Travel buffer to Work/School: 1 hr 30 mins.<br>
-        • Total Required Gap: 3 hours from service start.
-    </div>
+
+    <a href="view.html" class="nav-btn">📋 View Main Database</a>
 </div>
 
 <div class="main-content">
-    <div class="header-bar">
-        <h1 id="dashboardTitle">Predictive Group Availability</h1>
-        <a href="view.html" class="nav-btn">📋 View Table</a>
-        <a href="availability_1.html" class="nav-btn">📋 View Availability_0.1</a>
+    <div class="rules-banner">
+        ℹ️ <strong>System Logic Thresholds:</strong> Mismong Pagsamba + Paglilinis ay nakatakda sa <b>1 oras at 30 minuto</b>. Ang biyahe patungong trabaho o eskwela ay may pinalawak na allowance na <b>2 oras at 30 minuto</b> (150 mins buffer) dahil sa lala ng trapiko.
     </div>
 
-    <div class="results-wrapper">
-        <div id="dynamicOutput">
-            <div class="placeholder-text">Please utilize the left control panel to execute database lookup matrices.</div>
-        </div>
+    <div id="dynamicOutput">
+        <div class="placeholder-text">Please utilize the left controls panel to execute data cross-referencing lookups.</div>
     </div>
 </div>
 
@@ -246,7 +229,7 @@ const WORKER_URL = "https://schedule-api.jakemm04.workers.dev";
 let rawDatabaseRows = [];
 let organizedProfiles = {};
 
-// Updated Worship Service blocks to end exactly 1 hour and 30 minutes after start time
+// Adjusted slots to exactly 1 hour and 30 minutes duration for worship service and cleaning window
 const CHURCH_DUTY_ROSTER = [
     { name: "Wed 5am",  day: "wednesday", start: "05:00", end: "06:30" },
     { name: "Wed 5pm",  day: "wednesday", start: "17:00", end: "18:30" },
@@ -255,7 +238,7 @@ const CHURCH_DUTY_ROSTER = [
     { name: "Thu 5pm",  day: "thursday",  start: "17:00", end: "18:30" },
     { name: "Thu 8pm",  day: "thursday",  start: "20:00", end: "21:30" },
     { name: "Sat 6am",  day: "saturday",  start: "06:00", end: "07:30" },
-    { name: "Sat 10am (Laan)", day: "saturday", start: "10:00", end: "12:00" }, // Keep special 2hr block
+    { name: "Sat 10am (Laan)", day: "saturday", start: "10:00", end: "12:00" }, // standard special block
     { name: "Sat 2pm",  day: "saturday",  start: "14:00", end: "15:30" },
     { name: "Sat 6pm",  day: "saturday",  start: "18:00", end: "19:30" },
     { name: "Sun 6am",  day: "sunday",    start: "06:00", end: "07:30" },
@@ -274,7 +257,7 @@ async function fetchRawData() {
         processProfiles();
         populateControlMenus();
     } catch {
-        document.getElementById('dynamicOutput').innerHTML = '<div class="placeholder-text" style="color:red;">Failed to hook network streams.</div>';
+        document.getElementById('dynamicOutput').innerHTML = '<div class="placeholder-text" style="color:red;">Failed to hook network database pipeline streams.</div>';
     }
 }
 
@@ -289,7 +272,8 @@ function processProfiles() {
                 type: row.schedule_type,
                 day: row.day_or_slot.toLowerCase(),
                 time_in: row.time_in,
-                time_out: row.time_out
+                time_out: row.time_out,
+                isChurch: false
             });
         } 
         else if (row.schedule_type.startsWith('church:')) {
@@ -332,7 +316,7 @@ function switchMode() {
     document.getElementById('churchSlotSelect').value = "";
     document.getElementById('daySelect').value = "";
     document.getElementById('memberSelect').value = "";
-    document.getElementById('dynamicOutput').innerHTML = '<div class="placeholder-text">Select parameters inside the sidebar to process data filters.</div>';
+    document.getElementById('dynamicOutput').innerHTML = '<div class="placeholder-text">Select parameters inside left fields to trigger calculation matrix.</div>';
 }
 
 function convertMin(t) { 
@@ -357,69 +341,79 @@ function runAnalysis() {
     else analyzeByMember();
 }
 
-// 1. FILTER BY FIXED CHURCH SLOT
+// 1. PERSPECTIVE A: BY TIME SLOT
 function analyzeBySlot() {
     const slotIdx = document.getElementById('churchSlotSelect').value;
     const container = document.getElementById('dynamicOutput');
     if (!slotIdx) return;
 
     const slot = CHURCH_DUTY_ROSTER[slotIdx];
-    document.getElementById('dashboardTitle').innerText = `Slot Availability: ${slot.name}`;
-
     const slotStartMin = convertMin(slot.start);
     const slotEndMin = convertMin(slot.end);
 
-    let freeHtml = '<h3>Available (100% Clear)</h3><div class="roster-grid">';
-    let blockedHtml = '<h3>Unavailable (Has Conflicts)</h3><div class="roster-grid">';
+    let freeHtml = '<h3>Available Profiles (100% Clear)</h3><div class="roster-grid">';
+    let blockedHtml = '<h3 style="margin-top:25px;">Unavailable Profiles (Conflict Enforced)</h3><div class="roster-grid">';
+    let freeCount = 0, blockedCount = 0;
 
     Object.values(organizedProfiles).forEach(p => {
-        let conflict = false;
-        let reason = "";
+        let hasConflict = false;
+        let conflictReason = "";
         
-        for (let c of p.constraints) {
-            if (c.day === slot.day) {
-                // Travel buffer remains 1 hr 30 mins (90 mins)
-                const buffer = c.isChurch ? 0 : 90; 
-                const bStart = convertMin(c.time_in) - buffer;
-                const bEnd = convertMin(c.time_out) + buffer;
+        for (let constraint of p.constraints) {
+            if (constraint.day === slot.day) {
+                // TRAVEL BUFFER APPLIED TO 150 MINUTES (2 Hours and 30 Minutes) for requested traffic leeway
+                const travelBuffer = constraint.isChurch ? 0 : 150;
+                const busyStartWithBuffer = convertMin(constraint.time_in) - travelBuffer;
+                const busyEndWithBuffer = convertMin(constraint.time_out) + travelBuffer;
                 
-                if (slotStartMin < bEnd && slotEndMin > bStart) {
-                    conflict = true;
-                    if (c.isChurch) {
-                        reason = `May nakalaang suguan sa ${c.type} sa slot na ito (${c.slotName})`;
+                if (slotStartMin < busyEndWithBuffer && slotEndMin > busyStartWithBuffer) {
+                    hasConflict = true;
+                    if (constraint.isChurch) {
+                        conflictReason = `May suguan na sa ${constraint.type} (${constraint.slotName}).`;
                     } else {
-                        // Updated message explicitly explaining the 1.5hr service/cleaning + 1.5hr travel logic
-                        if (slotEndMin <= convertMin(c.time_in) && (convertMin(c.time_in) - slotEndMin) <= 90) {
-                            reason = `Masyadong gipit patungong ${c.type.toUpperCase()} (${convertTo12Hour(c.time_in)}). Kinakailangan ng 1 hr 30 mins para sa Pagsamba & Pagliligpit + hiwalay na 1 hr 30 mins para sa biyahe.`;
+                        if (slotEndMin <= convertMin(constraint.time_in) && (convertMin(constraint.time_in) - slotEndMin) <= 150) {
+                            conflictReason = `Gipit sa biyahe: 1.5 hrs Pagsamba/Pagliligpit + kulang ang 2.5 hrs transito dahil sa trapiko patungong ${constraint.type.toUpperCase()} (${convertTo12Hour(constraint.time_in)}).`;
                         } else {
-                            reason = `May pasok sa ${c.type.toUpperCase()} (${convertTo12Hour(c.time_in)} - ${convertTo12Hour(c.time_out)}) kasama ang allowance sa biyahe.`;
+                            conflictReason = `May pasok sa ${constraint.type.toUpperCase()} (${convertTo12Hour(constraint.time_in)} - ${convertTo12Hour(constraint.time_out)}) kasama ang 2.5-hr travel buffer.`;
                         }
                     }
                     break;
                 }
             }
         }
-        if (!conflict) {
-            freeHtml += `<div class="person-card" style="border-top:3px solid var(--success);"><strong>${p.name}</strong><span class="status-badge avail">✅ Free</span></div>`;
+
+        if (!hasConflict) {
+            freeCount++;
+            freeHtml += `
+            <div class="person-card" style="border-left: 4px solid var(--success);">
+                <strong>${p.name}</strong>
+                <span class="status-badge avail">✅ Free</span>
+            </div>`;
         } else {
-            blockedHtml += `<div class="person-card" style="border-top:3px solid var(--danger); opacity:0.8;"><strong>${p.name}</strong><span class="status-badge confl">❌ Blocked</span><span class="conflict-reason">${reason}</span></div>`;
+            blockedCount++;
+            blockedHtml += `
+            <div class="person-card" style="border-left: 4px solid var(--danger); opacity:0.9;">
+                <strong>${p.name}</strong>
+                <span class="status-badge confl">❌ Blocked</span>
+                <span class="conflict-reason">${conflictReason}</span>
+            </div>`;
         }
     });
+
+    freeHtml += freeCount === 0 ? '<div class="placeholder-text" style="padding:20px;">Walang available na miyembro.</div>' : '';
+    blockedHtml += blockedCount === 0 ? '<div class="placeholder-text" style="padding:20px;">Walang blocked na miyembro.</div>' : '';
 
     container.innerHTML = freeHtml + '</div>' + blockedHtml + '</div>';
 }
 
-// 2. FILTER BY WHOLE DAY
+// 2. PERSPECTIVE B: BY WHOLE DAY
 function analyzeByWholeDay() {
     const targetDay = document.getElementById('daySelect').value;
     const container = document.getElementById('dynamicOutput');
     if (!targetDay) return;
 
-    const capDay = targetDay.charAt(0).toUpperCase() + targetDay.slice(1);
-    document.getElementById('dashboardTitle').innerText = `Roster Analysis for: ${capDay}`;
-
     let fullyFreeHtml = '<h3>Completely Free (All Day)</h3><div class="roster-grid">';
-    let busyHtml = '<h3>Partially Busy / Scheduled on this Day</h3><div class="roster-grid">';
+    let busyHtml = '<h3 style="margin-top:25px;">Partially Busy / Scheduled Log</h3><div class="roster-grid">';
     let freeCount = 0, busyCount = 0;
 
     Object.values(organizedProfiles).forEach(p => {
@@ -428,10 +422,9 @@ function analyzeByWholeDay() {
         if (dayConstraints.length === 0) {
             freeCount++;
             fullyFreeHtml += `
-            <div class="person-card" style="border-top: 3px solid var(--success); background:#f0fdf4;">
+            <div class="person-card" style="border-left: 4px solid var(--success); background:#f0fdf4;">
                 <strong>${p.name}</strong>
                 <span class="status-badge avail">✅ Available All Day</span>
-                <span class="conflict-reason" style="color:var(--success);">No school, work, or church entries.</span>
             </div>`;
         } else {
             busyCount++;
@@ -441,32 +434,31 @@ function analyzeByWholeDay() {
             }).join('<br>');
 
             busyHtml += `
-            <div class="person-card" style="border-top: 3px solid #d97706;">
+            <div class="person-card" style="border-left: 4px solid #d97706;">
                 <strong>${p.name}</strong>
                 <span class="status-badge partial">⏳ Partially Busy</span>
-                <span class="conflict-reason" style="margin-top:6px; line-height:1.4; color:#334155;">
+                <span class="conflict-reason" style="margin-top:6px; color:#334155;">
                     ${scheduleLines}
                 </span>
             </div>`;
         }
     });
 
-    fullyFreeHtml += freeCount === 0 ? '<p style="color:#94a3b8; font-style:italic;">Nobody is completely free.</p>' : '';
-    busyHtml += busyCount === 0 ? '<p style="color:#94a3b8; font-style:italic;">Nobody has logged entries on this day.</p>' : '';
+    fullyFreeHtml += freeCount === 0 ? '<p style="color:#94a3b8; font-style:italic; padding-left:5px;">Walang ganap na bakante.</p>' : '';
+    busyHtml += busyCount === 0 ? '<p style="color:#94a3b8; font-style:italic; padding-left:5px;">Walang entries sa araw na ito.</p>' : '';
 
     container.innerHTML = fullyFreeHtml + '</div>' + busyHtml + '</div>';
 }
 
-// 3. ANALYZE INDIVIDUAL MEMBER
+// 3. PERSPECTIVE C: INDIVIDUAL MEMBER COMPREHENSIVE MATRIX
 function analyzeByMember() {
     const selectedName = document.getElementById('memberSelect').value;
     const container = document.getElementById('dynamicOutput');
     if (!selectedName) return;
 
-    document.getElementById('dashboardTitle').innerText = `Individual Evaluation: ${selectedName}`;
     const p = organizedProfiles[selectedName];
-    
     let gridHtml = '<div class="roster-grid">';
+
     CHURCH_DUTY_ROSTER.forEach(slot => {
         let conflict = false;
         let reason = "";
@@ -475,19 +467,20 @@ function analyzeByMember() {
 
         for (let c of p.constraints) {
             if (c.day === slot.day) {
-                const buffer = c.isChurch ? 0 : 90; 
+                // TRAVEL BUFFER APPLIED TO 150 MINUTES (2 Hours and 30 Minutes) for requested traffic leeway
+                const buffer = c.isChurch ? 0 : 150;
                 const bStart = convertMin(c.time_in) - buffer;
                 const bEnd = convertMin(c.time_out) + buffer;
                 
                 if (slotStartMin < bEnd && slotEndMin > bStart) {
                     conflict = true;
                     if (c.isChurch) {
-                        reason = `Naka-assign sa ${c.type}`;
+                        reason = `Naka-assign sa suguan sa ${c.type} (${c.slotName})`;
                     } else {
-                        if (slotEndMin <= convertMin(c.time_in) && (convertMin(c.time_in) - slotEndMin) <= 90) {
-                            reason = `Gipit sa biyahe: 1 hr 30 mins na Pagsamba/Pagliligpit + 1 hr 30 mins na Transito pa-tungo sa ${c.type.toUpperCase()}`;
+                        if (slotEndMin <= convertMin(c.time_in) && (convertMin(c.time_in) - slotEndMin) <= 150) {
+                            reason = `Gipit sa biyahe: 1.5 hrs Pagsamba/Pagliligpit + kulang ang 2.5 hrs transito dahil sa trapiko patungong ${c.type.toUpperCase()} (${convertTo12Hour(c.time_in)})`;
                         } else {
-                            reason = `${c.type.toUpperCase()} (${convertTo12Hour(c.time_in)} - ${convertTo12Hour(c.time_out)})`;
+                            reason = `May conflict sa ${c.type.toUpperCase()} (${convertTo12Hour(c.time_in)} - ${convertTo12Hour(c.time_out)}) kasama ang 2.5-hr biyahe.`;
                         }
                     }
                     break; 
@@ -496,12 +489,23 @@ function analyzeByMember() {
         }
 
         if (conflict) {
-            gridHtml += `<div class="person-card" style="border-left:4px solid var(--danger); background:#fef2f2;"><strong>${slot.name}</strong><span class="status-badge confl">❌ Conflict</span><span class="conflict-reason">${reason}</span></div>`;
+            gridHtml += `
+            <div class="person-card" style="border-left:4px solid var(--danger); background:#fef2f2;">
+                <strong>${slot.name}</strong>
+                <span class="status-badge confl">❌ Conflict</span>
+                <span class="conflict-reason">${reason}</span>
+            </div>`;
         } else {
-            gridHtml += `<div class="person-card" style="border-left:4px solid var(--success); background:#f0fdf4;"><strong>${slot.name}</strong><span class="status-badge avail">✅ Available</span></div>`;
+            gridHtml += `
+            <div class="person-card" style="border-left:4px solid var(--success); background:#f0fdf4;">
+                <strong>${slot.name}</strong>
+                <span class="status-badge avail">✅ Available</span>
+                <span class="conflict-reason" style="color:#16a34a;">Ligtas italaga. May pinahabang 2.5-hour travel clearance laban sa trapiko.</span>
+            </div>`;
         }
     });
-    container.innerHTML = '<h3>Kagawaran Suitability Matrix</h3>' + gridHtml + '</div>';
+
+    container.innerHTML = `<h3>Kagawaran Option Suitability for ${selectedName}</h3>` + gridHtml + '</div>';
 }
 </script>
 
