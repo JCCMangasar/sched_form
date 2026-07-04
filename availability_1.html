@@ -99,6 +99,7 @@
             margin-bottom: 6px;
             border-radius: 4px;
             font-size: 14px;
+            line-height: 1.4;
         }
 
         .grid-slots {
@@ -159,7 +160,7 @@
         <select id="memberSelect" onchange="analyzeSelectedMember()">
             <option value="">-- Loading Registered Names --</option>
         </select>
-        <span style="font-size:13px; color:#64748b;">(Calculates 1.5-hour travel buffer for Work/School & flags direct Church Duty overlaps)</span>
+        <span style="font-size:13px; color:#64748b;">(Calculates 1.5-hr Worship/Cleaning window & <b>2-hr Traffic-Adjusted Travel Buffer</b> for Work/School)</span>
     </div>
 
     <div id="noSelectionMsg" style="text-align:center; padding:50px; color:#94a3b8; background:white; border-radius:8px; border:1px solid var(--border);">
@@ -199,7 +200,7 @@ const WORKER_URL = "https://schedule-api.jakemm04.workers.dev";
 let rawDatabaseRows = [];
 let organizedProfiles = {};
 
-// Exact mapping of your website's Kagawaran time slots normalized for code execution logic
+// Adjusted slots to exactly 1 hour and 30 minutes duration for worship service and cleaning window
 const CHURCH_DUTY_ROSTER = [
     { name: "Wed 5am",  day: "wednesday", start: "05:00", end: "06:30" },
     { name: "Wed 5pm",  day: "wednesday", start: "17:00", end: "18:30" },
@@ -208,7 +209,7 @@ const CHURCH_DUTY_ROSTER = [
     { name: "Thu 5pm",  day: "thursday",  start: "17:00", end: "18:30" },
     { name: "Thu 8pm",  day: "thursday",  start: "20:00", end: "21:30" },
     { name: "Sat 6am",  day: "saturday",  start: "06:00", end: "07:30" },
-    { name: "Sat 10am (Laan)", day: "saturday", start: "10:00", end: "12:00" },
+    { name: "Sat 10am (Laan)", day: "saturday", start: "10:00", end: "12:00" }, // standard special 2hr block
     { name: "Sat 2pm",  day: "saturday",  start: "14:00", end: "15:30" },
     { name: "Sat 6pm",  day: "saturday",  start: "18:00", end: "19:30" },
     { name: "Sun 6am",  day: "sunday",    start: "06:00", end: "07:30" },
@@ -231,14 +232,12 @@ async function fetchRawData() {
     }
 }
 
-// Restructures data rows into clean objects holding structural time arrays
 function processProfiles() {
     rawDatabaseRows.forEach(row => {
         if (!organizedProfiles[row.name]) {
             organizedProfiles[row.name] = { name: row.name, constraints: [] };
         }
         
-        // 1. Process Work and School schedules
         if (row.schedule_type === 'work' || row.schedule_type === 'school') {
             organizedProfiles[row.name].constraints.push({
                 type: row.schedule_type,
@@ -248,7 +247,6 @@ function processProfiles() {
                 isChurch: false
             });
         }
-        // 2. Process existing Church Duties
         else if (row.schedule_type.startsWith('church:')) {
             const deptName = row.schedule_type.replace('church: ', '');
             const matchedSlot = CHURCH_DUTY_ROSTER.find(s => s.name.toLowerCase() === row.day_or_slot.toLowerCase());
@@ -274,7 +272,6 @@ function populateDropdown() {
     select.innerHTML = html;
 }
 
-// Converts standard HH:MM strings into raw minutes for comparative matching evaluation equations
 function timeToMinutes(timeStr) {
     const [h, m] = timeStr.split(':').map(Number);
     return h * 60 + m;
@@ -305,7 +302,7 @@ function analyzeSelectedMember() {
 
     const profile = organizedProfiles[selectedName];
     
-    // 1. Render Left Column (Base Items)
+    // 1. Render Left Column (Base Items Submitted Listing)
     const baseBusyList = document.getElementById('baseBusyList');
     if (profile.constraints.length === 0) {
         baseBusyList.innerHTML = '<li><i>No active work, school, or church commitments recorded. Totally free!</i></li>';
@@ -327,35 +324,35 @@ function analyzeSelectedMember() {
         let hasConflict = false;
         let conflictReason = "";
 
-        // Raw minutes calculation for Church event boundaries
         const slotStartMin = timeToMinutes(slot.start);
         const slotEndMin = timeToMinutes(slot.end);
 
-        // Scan every base constraint for matching day overlaps
         for (let constraint of profile.constraints) {
             if (constraint.day === slot.day) {
                 const busyStartReal = timeToMinutes(constraint.time_in);
                 const busyEndReal = timeToMinutes(constraint.time_out);
 
-                // Apply safety buffers based on category type
-                const buffer = constraint.isChurch ? 0 : 90;
+                // TRAVEL BUFFER UPDATED TO 120 MINUTES (2 Hours) due to heavy traffic conditions
+                const buffer = constraint.isChurch ? 0 : 120;
                 const busyStartWithBuffer = busyStartReal - buffer; 
                 const busyEndWithBuffer = busyEndReal + buffer;
 
-                // Evaluate overlap constraints
                 if (slotStartMin < busyEndWithBuffer && slotEndMin > busyStartWithBuffer) {
                     hasConflict = true;
                     if (constraint.isChurch) {
-                        conflictReason = `Already assigned to ${constraint.type} on this specific slot (${constraint.slotName}).`;
+                        conflictReason = `May suguan na sa ${constraint.type} sa slot na ito (${constraint.slotName}).`;
                     } else {
-                        conflictReason = `Conflicts with ${constraint.type.toUpperCase()} (${convertTo12Hour(constraint.time_in)} - ${convertTo12Hour(constraint.time_out)}) + 1.5hr Travel Buffer.`;
+                        if (slotEndMin <= busyStartReal && (busyStartReal - slotEndMin) <= 120) {
+                            conflictReason = `Gipit sa biyahe: Kulang ang 2 oras na transito dahil sa trapiko patungong ${constraint.type.toUpperCase()} (${convertTo12Hour(constraint.time_in)}).`;
+                        } else {
+                            conflictReason = `May conflict sa ${constraint.type.toUpperCase()} (${convertTo12Hour(constraint.time_in)} - ${convertTo12Hour(constraint.time_out)}) kasama ang 2-hr travel allowance.`;
+                        }
                     }
                     break; 
                 }
             }
         }
 
-        // Render card layout based on the boolean result
         if (hasConflict) {
             gridHtml += `
             <div class="slot-status-card status-conflict">
@@ -368,7 +365,7 @@ function analyzeSelectedMember() {
             <div class="slot-status-card status-available">
                 <strong>${slot.name}</strong>
                 <span class="badge-status badge-available">✅ Available</span>
-                <span class="reason-text" style="color:#16a34a;">Safe to assign. Complete clearance verified.</span>
+                <span class="reason-text" style="color:#16a34a;">Ligtas italaga. Ligtas sa trapiko (May 2-hour travel clearance).</span>
             </div>`;
         }
     });
