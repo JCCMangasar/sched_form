@@ -160,7 +160,7 @@
         <select id="memberSelect" onchange="analyzeSelectedMember()">
             <option value="">-- Loading Registered Names --</option>
         </select>
-        <span style="font-size:13px; color:#64748b;">(Calculates 1.5-hr Worship/Cleaning window & <b>2-hr Traffic-Adjusted Travel Buffer</b> for Work/School)</span>
+        <span style="font-size:13px; color:#64748b;">(Calculates 1.5-hr Worship/Cleaning window & <b>2.5-hr Heavy Traffic Travel Buffer</b> for Work/School)</span>
     </div>
 
     <div id="noSelectionMsg" style="text-align:center; padding:50px; color:#94a3b8; background:white; border-radius:8px; border:1px solid var(--border);">
@@ -268,7 +268,7 @@ function populateDropdown() {
     const names = Object.keys(organizedProfiles).sort();
     
     let html = '<option value="">-- Choose Member --</option>';
-    names.forEach(name => { html += `<option value="${name}">${name}</option>`; });
+    names.forEach(name => { html += `<option value="${name}">${name}</option>'; });
     select.innerHTML = html;
 }
 
@@ -332,8 +332,8 @@ function analyzeSelectedMember() {
                 const busyStartReal = timeToMinutes(constraint.time_in);
                 const busyEndReal = timeToMinutes(constraint.time_out);
 
-                // TRAVEL BUFFER UPDATED TO 120 MINUTES (2 Hours) due to heavy traffic conditions
-                const buffer = constraint.isChurch ? 0 : 120;
+                // TRAVEL BUFFER UPDATED TO 150 MINUTES (2 Hours and 30 Minutes) for requested user demand leeway
+                const buffer = constraint.isChurch ? 0 : 150;
                 const busyStartWithBuffer = busyStartReal - buffer; 
                 const busyEndWithBuffer = busyEndReal + buffer;
 
@@ -342,10 +342,10 @@ function analyzeSelectedMember() {
                     if (constraint.isChurch) {
                         conflictReason = `May suguan na sa ${constraint.type} sa slot na ito (${constraint.slotName}).`;
                     } else {
-                        if (slotEndMin <= busyStartReal && (busyStartReal - slotEndMin) <= 120) {
-                            conflictReason = `Gipit sa biyahe: Kulang ang 2 oras na transito dahil sa trapiko patungong ${constraint.type.toUpperCase()} (${convertTo12Hour(constraint.time_in)}).`;
+                        if (slotEndMin <= busyStartReal && (busyStartReal - slotEndMin) <= 150) {
+                            conflictReason = `Gipit sa biyahe: Kulang ang 2.5 oras na transito dahil sa lala ng trapiko patungong ${constraint.type.toUpperCase()} (${convertTo12Hour(constraint.time_in)}).`;
                         } else {
-                            conflictReason = `May conflict sa ${constraint.type.toUpperCase()} (${convertTo12Hour(constraint.time_in)} - ${convertTo12Hour(constraint.time_out)}) kasama ang 2-hr travel allowance.`;
+                            conflictReason = `May conflict sa ${constraint.type.toUpperCase()} (${convertTo12Hour(constraint.time_in)} - ${convertTo12Hour(constraint.time_out)}) kasama ang 2.5-hr travel allowance.`;
                         }
                     }
                     break; 
@@ -365,7 +365,7 @@ function analyzeSelectedMember() {
             <div class="slot-status-card status-available">
                 <strong>${slot.name}</strong>
                 <span class="badge-status badge-available">✅ Available</span>
-                <span class="reason-text" style="color:#16a34a;">Ligtas italaga. Ligtas sa trapiko (May 2-hour travel clearance).</span>
+                <span class="reason-text" style="color:#16a34a;">Ligtas italaga. Mas pinahabang travel clearance (2.5 hours allowance laban sa trapiko).</span>
             </div>`;
         }
     });
