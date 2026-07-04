@@ -207,8 +207,9 @@
     
     <div style="font-size: 12px; color: #64748b; margin-top: auto; line-height: 1.4;">
         💡 <strong>System Rules:</strong><br>
-        • Travel buffer (1 hr 30 mins) strictly applied before work/school.<br>
-        • Worship duration (~1 hr) + Travel buffer verified for all morning entries.
+        • Worship + Cleaning: Strictly 1 hr 30 mins.<br>
+        • Travel buffer to Work/School: 1 hr 30 mins.<br>
+        • Total Required Gap: 3 hours from service start.
     </div>
 </div>
 
@@ -245,7 +246,7 @@ const WORKER_URL = "https://schedule-api.jakemm04.workers.dev";
 let rawDatabaseRows = [];
 let organizedProfiles = {};
 
-// Hardcoded master details for standard church service blocks
+// Updated Worship Service blocks to end exactly 1 hour and 30 minutes after start time
 const CHURCH_DUTY_ROSTER = [
     { name: "Wed 5am",  day: "wednesday", start: "05:00", end: "06:30" },
     { name: "Wed 5pm",  day: "wednesday", start: "17:00", end: "18:30" },
@@ -254,7 +255,7 @@ const CHURCH_DUTY_ROSTER = [
     { name: "Thu 5pm",  day: "thursday",  start: "17:00", end: "18:30" },
     { name: "Thu 8pm",  day: "thursday",  start: "20:00", end: "21:30" },
     { name: "Sat 6am",  day: "saturday",  start: "06:00", end: "07:30" },
-    { name: "Sat 10am (Laan)", day: "saturday", start: "10:00", end: "12:00" },
+    { name: "Sat 10am (Laan)", day: "saturday", start: "10:00", end: "12:00" }, // Keep special 2hr block
     { name: "Sat 2pm",  day: "saturday",  start: "14:00", end: "15:30" },
     { name: "Sat 6pm",  day: "saturday",  start: "18:00", end: "19:30" },
     { name: "Sun 6am",  day: "sunday",    start: "06:00", end: "07:30" },
@@ -377,7 +378,7 @@ function analyzeBySlot() {
         
         for (let c of p.constraints) {
             if (c.day === slot.day) {
-                // Strict 1 Hour 30 Minutes Buffer (90 mins) for School/Work Travel Time
+                // Travel buffer remains 1 hr 30 mins (90 mins)
                 const buffer = c.isChurch ? 0 : 90; 
                 const bStart = convertMin(c.time_in) - buffer;
                 const bEnd = convertMin(c.time_out) + buffer;
@@ -387,11 +388,11 @@ function analyzeBySlot() {
                     if (c.isChurch) {
                         reason = `May nakalaang suguan sa ${c.type} sa slot na ito (${c.slotName})`;
                     } else {
-                        // Strict validation for morning shifts vs service end transit times
+                        // Updated message explicitly explaining the 1.5hr service/cleaning + 1.5hr travel logic
                         if (slotEndMin <= convertMin(c.time_in) && (convertMin(c.time_in) - slotEndMin) <= 90) {
-                            reason = `Masyadong gipit sa biyahe patungong ${c.type.toUpperCase()} (${convertTo12Hour(c.time_in)}). Kulang ang 1 hr at 30 mins na travel window pagkatapos ng pagsamba.`;
+                            reason = `Masyadong gipit patungong ${c.type.toUpperCase()} (${convertTo12Hour(c.time_in)}). Kinakailangan ng 1 hr 30 mins para sa Pagsamba & Pagliligpit + hiwalay na 1 hr 30 mins para sa biyahe.`;
                         } else {
-                            reason = `May pasok sa ${c.type.toUpperCase()} (${convertTo12Hour(c.time_in)} - ${convertTo12Hour(c.time_out)}) kasama ang 1 hr 30 mins na biyahe.`;
+                            reason = `May pasok sa ${c.type.toUpperCase()} (${convertTo12Hour(c.time_in)} - ${convertTo12Hour(c.time_out)}) kasama ang allowance sa biyahe.`;
                         }
                     }
                     break;
@@ -474,7 +475,7 @@ function analyzeByMember() {
 
         for (let c of p.constraints) {
             if (c.day === slot.day) {
-                const buffer = c.isChurch ? 0 : 90; // 1 hr 30 mins
+                const buffer = c.isChurch ? 0 : 90; 
                 const bStart = convertMin(c.time_in) - buffer;
                 const bEnd = convertMin(c.time_out) + buffer;
                 
@@ -484,7 +485,7 @@ function analyzeByMember() {
                         reason = `Naka-assign sa ${c.type}`;
                     } else {
                         if (slotEndMin <= convertMin(c.time_in) && (convertMin(c.time_in) - slotEndMin) <= 90) {
-                            reason = `Gipit sa 1 hr 30 mins na biyahe pa-tungo sa ${c.type.toUpperCase()} (Pasok: ${convertTo12Hour(c.time_in)})`;
+                            reason = `Gipit sa biyahe: 1 hr 30 mins na Pagsamba/Pagliligpit + 1 hr 30 mins na Transito pa-tungo sa ${c.type.toUpperCase()}`;
                         } else {
                             reason = `${c.type.toUpperCase()} (${convertTo12Hour(c.time_in)} - ${convertTo12Hour(c.time_out)})`;
                         }
