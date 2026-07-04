@@ -96,6 +96,14 @@
         .progress-bar { background: var(--accent); height: 100%; width: 0%; transition: width 0.3s; }
         .storage-text { font-size: 13px; color: #475569; display: flex; justify-content: space-between; font-weight: 500; }
 
+        /* 2-COLUMN GRID FOR TABLES */
+        .tables-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 25px;
+            align-items: flex-start;
+        }
+
         /* TABLES */
         .table-wrapper { background: white; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
         .table-header-bar { background: #f1f5f9; padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
@@ -103,9 +111,9 @@
 
         .responsive-table-container { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
 
-        .file-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; min-width: 800px; }
-        .file-table th { background: #f8fafc; padding: 12px 20px; font-weight: 600; color: #64748b; text-transform: uppercase; font-size: 11px; border-bottom: 1px solid var(--border); }
-        .file-table td { padding: 12px 20px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: middle; }
+        .file-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; min-width: 550px; }
+        .file-table th { background: #f8fafc; padding: 12px 15px; font-weight: 600; color: #64748b; text-transform: uppercase; font-size: 11px; border-bottom: 1px solid var(--border); }
+        .file-table td { padding: 12px 15px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: middle; }
         .file-table tr:last-child td { border-bottom: none; }
         
         .badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 700; }
@@ -118,7 +126,7 @@
         .badge-status-active { background: #dcfce7; color: #16a34a; }
         .badge-status-deleted { background: #fee2e2; color: #dc2626; }
 
-        .action-cell-container { display: flex; gap: 6px; justify-content: center; align-items: center; }
+        .action-cell-container { display: flex; gap: 6px; justify-content: flex-start; align-items: center; }
         .btn-download-trigger { background: transparent; border: 1px solid var(--border); color: var(--success); padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 12px; white-space: nowrap; }
         .btn-download-trigger:hover { background: #dcfce7; border-color: #86efac; }
         .btn-delete { background: transparent; border: 1px solid var(--border); color: var(--danger); padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 12px; white-space: nowrap; }
@@ -127,6 +135,10 @@
         .empty-state { padding: 40px; text-align: center; color: #94a3b8; font-size: 14px; }
 
         /* RESPONSIVE MEDIA QUERIES FOR MOBILE STYLING */
+        @media (max-width: 1100px) {
+            .tables-grid { grid-template-columns: 1fr; }
+        }
+
         @media (max-width: 900px) {
             body { flex-direction: column; overflow: auto; height: auto; }
             .sidebar { width: 100%; padding: 15px; gap: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
@@ -207,53 +219,52 @@
             </div>
         </div>
 
-        <div class="table-wrapper">
-            <div class="table-header-bar">
-                <h2>📁 Kasalukuyang Nakaimbak na mga File (Active Temporary Files)</h2>
+        <div class="tables-grid">
+            
+            <div class="table-wrapper">
+                <div class="table-header-bar">
+                    <h2>📁 Kasalukuyang Nakaimbak na mga File</h2>
+                </div>
+                <div class="responsive-table-container">
+                    <table class="file-table">
+                        <thead>
+                            <tr>
+                                <th>Pangalan</th>
+                                <th>Uri</th>
+                                <th>Sukat</th>
+                                <th>Mabubura</th>
+                                <th style="width: 140px;">Aksyon</th>
+                            </tr>
+                        </thead>
+                        <tbody id="activeFilesBody"></tbody>
+                    </table>
+                </div>
+                <div id="activeFilesEmpty" class="empty-state">Walang pansamantalang file na nakaimbak.</div>
             </div>
-            <div class="responsive-table-container">
-                <table class="file-table">
-                    <thead>
-                        <tr>
-                            <th>Pangalan ng File</th>
-                            <th>Uri (Type)</th>
-                            <th>Sukat (Size)</th>
-                            <th>Petsa Inilagay</th>
-                            <th>Kailan Mabubura</th>
-                            <th>Deskripsyon</th>
-                            <th style="text-align: center; width: 160px;">Aksyon</th>
-                        </tr>
-                    </thead>
-                    <tbody id="activeFilesBody"></tbody>
-                </table>
-            </div>
-            <div id="activeFilesEmpty" class="empty-state">Walang pansamantalang file na nakaimbak sa kasalukuyan.</div>
-        </div>
 
-        <div class="table-wrapper">
-            <div class="table-header-bar" style="background: #f8fafc;">
-                <h2>📜 Kasaysayan ng Pag-imbak at Pagbura (File History Log)</h2>
+            <div class="table-wrapper">
+                <div class="table-header-bar" style="background: #f8fafc;">
+                    <h2>📜 Kasaysayan ng Pag-imbak at Pagbura</h2>
+                </div>
+                <div class="responsive-table-container">
+                    <table class="file-table">
+                        <thead>
+                            <tr>
+                                <th>Pangalan</th>
+                                <th>Uri</th>
+                                <th>Sukat</th>
+                                <th>Nabura / Tinanggal</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyLogBody"></tbody>
+                    </table>
+                </div>
+                <div id="historyLogEmpty" class="empty-state">Walang nakaraang talaan ng kasaysayan.</div>
             </div>
-            <div class="responsive-table-container">
-                <table class="file-table">
-                    <thead>
-                        <tr>
-                            <th>Pangalan ng File</th>
-                            <th>Uri (Type)</th>
-                            <th>Sukat</th>
-                            <th>Kailan Idinagdag</th>
-                            <th>Kailan Nabura / Tinanggal</th>
-                            <th>Status</th>
-                            <th>Paalala / Notes</th>
-                        </tr>
-                    </thead>
-                    <tbody id="historyLogBody"></tbody>
-                </table>
-            </div>
-            <div id="historyLogEmpty" class="empty-state">Walang nakaraang talaan ng kasaysayan ng file.</div>
-        </div>
 
-    </div>
+        </div>
+        </div>
 </div>
 
 <script>
@@ -349,7 +360,6 @@ async function uploadTemporaryFile() {
         return alert("Paki-pili o i-drag muna ang file na nais i-upload bago i-save.");
     }
 
-    // Always request the explicit Admin password for saves/uploads
     const passwordInput = prompt("Ilagay ang Admin Password para makapag-save ng file:");
     if (passwordInput === null) return;
     if (passwordInput !== ADMIN_WRITE_PASSWORD) return alert("Maling password. Hindi naisave ang file.");
@@ -419,7 +429,6 @@ async function uploadTemporaryFile() {
 }
 
 async function secureDownloadFile(fileId) {
-    // Downloads use the simple Access/Download password
     const passwordInput = prompt("Ilagay ang Access Password para mai-download ang file:");
     if (passwordInput === null) return;
     if (passwordInput !== ACCESS_DOWNLOAD_PASSWORD) return alert("Maling password. Hindi pwedeng i-download.");
@@ -457,7 +466,6 @@ async function removeFileTrack(fileId, manualAction = true) {
     if (manualAction) {
         if (!confirm("Sigurado ka bang nais mong burahin/tapusin ang file na ito sa cloud?")) return;
         
-        // Requires Admin write credentials for deletion rules
         passwordInput = prompt("Ilagay ang Admin Password upang aprubahan ang pagbura:");
         if (passwordInput === null) return;
         if (passwordInput !== ADMIN_WRITE_PASSWORD) return alert("Maling password. Hindi nabura ang file.");
@@ -509,16 +517,14 @@ function refreshInterfaceTables() {
         
         activeBody.innerHTML += `
             <tr>
-                <td style="font-weight: 600; color: var(--primary);">${file.name}</td>
+                <td style="font-weight: 600; color: var(--primary); max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${file.name}">${file.name}</td>
                 <td><span class="badge ${typeBadge}">${file.type.toUpperCase()}</span></td>
                 <td>${formatBytes(file.size)}</td>
-                <td>${file.added}</td>
-                <td style="color: ${file.expiry.includes('Manual') ? '#64748b' : 'var(--danger)'}; font-weight: 500;">${file.expiry}</td>
-                <td>${file.notes}</td>
+                <td style="color: ${file.expiry.includes('Manual') ? '#64748b' : 'var(--danger)'}; font-weight: 500;" title="Notes: ${file.notes}">${file.expiry}</td>
                 <td>
                     <div class="action-cell-container">
-                        <button class="btn-download-trigger" onclick="secureDownloadFile('${file.id}')">💾 Download</button>
-                        <button class="btn-delete" onclick="removeFileTrack('${file.id}', true)">🗑️ Tapusin</button>
+                        <button class="btn-download-trigger" onclick="secureDownloadFile('${file.id}')">💾</button>
+                        <button class="btn-delete" onclick="removeFileTrack('${file.id}', true)">🗑️</button>
                     </div>
                 </td>
             </tr>
@@ -531,13 +537,11 @@ function refreshInterfaceTables() {
         
         historyBody.innerHTML += `
             <tr>
-                <td style="color: #64748b; font-weight: 500;">${log.name}</td>
+                <td style="color: #64748b; font-weight: 500; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${log.name}">${log.name}</td>
                 <td><span class="badge ${typeBadge}" style="opacity: 0.75;">${log.type.toUpperCase()}</span></td>
                 <td>${formatBytes(log.size)}</td>
-                <td>${log.added}</td>
-                <td style="font-weight: 500;">${log.deleted}</td>
+                <td>${log.deleted}</td>
                 <td><span class="badge ${statusBadge}">${log.status}</span></td>
-                <td style="font-style: italic; color: #94a3b8;">${log.notes}</td>
             </tr>
         `;
     });
