@@ -223,11 +223,10 @@
         <div id="suguanContainer"></div>
     </div>
     
-    <!-- Persistent Right Sidebar Panel -->
     <div class="right-sidebar">
         <div>
             <h3>🟢 Available for Selected Slot</h3>
-            <p style="font-size: 11px; color:#64748b; margin: 4px 0 8px 0;">Click on a schedule block card to filter candidates.</p>
+            <p style="font-size: 11px; color:#64748b; margin: 4px 0 8px 0;">Click on a schedule block card to filter candidates (with 2.5-hr Travel Buffer).</p>
             <div id="availableDelegates" class="available-list"></div>
         </div>
         
@@ -239,7 +238,6 @@
     </div>
 </div>
 
-<!-- Edit Modal -->
 <div id="editModal" class="modal">
     <div class="modal-content">
         <h3>Edit Time Slot</h3>
@@ -487,6 +485,15 @@ function timeToMinutes(timeStr) {
     return h * 60 + m;
 }
 
+function convertTo12Hour(timeStr) {
+    if (!timeStr || timeStr === "00:00") return "";
+    let [h, m] = timeStr.split(':');
+    let hours = parseInt(h, 10);
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12 || 12;
+    return `${hours}:${m} ${ampm}`;
+}
+
 function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -530,15 +537,15 @@ function generateAssignments(forceFreshRebuild = false) {
             } else {
                 const slotStartMin = timeToMinutes(slot.start);
                 const slotEndMin = timeToMinutes(slot.end);
-                const slotStartWithPrepBuffer = slotStartMin - 105;
 
                 let eligibleCandidates = Object.values(organizedProfiles).filter(p => {
                     let hasConflict = false;
                     for (let c of p.constraints) {
                         if (!c.isChurch && c.day === slot.day) {
-                            const workStart = timeToMinutes(c.time_in);
-                            const workEnd = timeToMinutes(c.time_out) + 90;
-                            if (slotStartWithPrepBuffer < workEnd && slotEndMin > workStart) hasConflict = true;
+                            // ADJUSTMENT: 150 mins travel buffer applied before and after work/school
+                            const busyStartWithBuffer = timeToMinutes(c.time_in) - 150;
+                            const busyEndWithBuffer = timeToMinutes(c.time_out) + 150;
+                            if (slotStartMin < busyEndWithBuffer && slotEndMin > busyStartWithBuffer) hasConflict = true;
                         }
                         if (c.isChurch && c.rawSlot === slot.name.toLowerCase()) hasConflict = true;
                     }
@@ -725,13 +732,17 @@ function executeAssignmentMove(movingPersonName, fromSlotId, toSlotId, isASwap =
                                  sourceSlot.location !== targetSlot.location;
     }
 
-    // A: External Schedule Checks (Work/School/Church limits)
+    // A: External Schedule Checks (Work/School/Church limits) with updated 150-minute buffer
     for (let c of person.constraints) {
         if (!c.isChurch && c.day === targetSlot.day) {
-            const workStart = timeToMinutes(c.time_in);
-            const workEnd = timeToMinutes(c.time_out) + 90;
-            if ((newStart - 105) < workEnd && newEnd > workStart) {
-                warnings.push(`• Work/School overlapping window limits on ${targetSlot.day.toUpperCase()}`);
+            const busyStartWithBuffer = timeToMinutes(c.time_in) - 150;
+            const busyEndWithBuffer = timeToMinutes(c.time_out) + 150;
+            if (newStart < busyEndWithBuffer && newEnd > busyStartWithBuffer) {
+                if (newEnd <= timeToMinutes(c.time_in) && (timeToMinutes(c.time_in) - newEnd) <= 150) {
+                    warnings.push(`• Gipit sa biyahe: Kulang ang 2.5 oras na transito dahil sa trapiko patungong ${c.type.toUpperCase()} (${convertTo12Hour(c.time_in)})`);
+                } else {
+                    warnings.push(`• Conflict sa ${c.type.toUpperCase()} (${convertTo12Hour(c.time_in)} - ${convertTo12Hour(c.time_out)}) kasama ang 2.5-hr buffer`);
+                }
             }
         }
         if (c.isChurch && c.rawSlot === targetSlot.name.toLowerCase()) {
@@ -841,9 +852,10 @@ function filterAvailableForSlot(slotId) {
 
         for (let c of p.constraints) {
             if (!c.isChurch && c.day === slot.day) {
-                const workStart = timeToMinutes(c.time_in);
-                const workEnd = timeToMinutes(c.time_out) + 90;
-                if (slotStartMin - 105 < workEnd && slotEndMin > workStart) hasConflict = true;
+                // ADJUSTMENT: 150 mins travel buffer applied for filtering window
+                const busyStartWithBuffer = timeToMinutes(c.time_in) - 150;
+                const busyEndWithBuffer = timeToMinutes(c.time_out) + 150;
+                if (slotStartMin < busyEndWithBuffer && slotEndMin > busyStartWithBuffer) hasConflict = true;
             }
             if (c.isChurch && c.rawSlot === slot.name.toLowerCase()) hasConflict = true;
         }
