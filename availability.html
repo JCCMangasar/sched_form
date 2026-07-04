@@ -177,7 +177,6 @@
         </select>
     </div>
 
-    <!-- Mode A: Fixed Kagawaran Slots -->
     <div id="slotModeControls" class="sidebar-group">
         <label for="churchSlotSelect">Target Church Duty Slot</label>
         <select id="churchSlotSelect" onchange="runAnalysis()">
@@ -185,7 +184,6 @@
         </select>
     </div>
 
-    <!-- Mode B: Whole Weekday Picker -->
     <div id="dayModeControls" class="sidebar-group" style="display: none;">
         <label for="daySelect">Select Day of Week</label>
         <select id="daySelect" onchange="runAnalysis()">
@@ -200,18 +198,17 @@
         </select>
     </div>
 
-    <!-- Mode C: Individual Profiles -->
     <div id="memberModeControls" class="sidebar-group" style="display: none;">
         <label for="memberSelect">Target Member Profile</label>
         <select id="memberSelect" onchange="runAnalysis()">
-            <option value="">-- Loading Names --</option>
+            <option value="">-- Choose Member --</option>
         </select>
     </div>
     
     <div style="font-size: 12px; color: #64748b; margin-top: auto; line-height: 1.4;">
         💡 <strong>System Rules:</strong><br>
         • Travel buffer (1.5 hrs) applied to Work & School.<br>
-        • Active church duty locks out matching slot assignments.
+        • Morning Suguan requires strict travel safety gap before work/school.
     </div>
 </div>
 
@@ -294,10 +291,8 @@ function processProfiles() {
                 time_out: row.time_out
             });
         } 
-        // SMART FIX: Map church assignments into active blocks!
         else if (row.schedule_type.startsWith('church:')) {
             const deptName = row.schedule_type.replace('church: ', '');
-            // Find standard time configuration matching the slot name entered
             const matchedSlot = CHURCH_DUTY_ROSTER.find(s => s.name.toLowerCase() === row.day_or_slot.toLowerCase());
             
             organizedProfiles[row.name].constraints.push({
@@ -375,31 +370,36 @@ function analyzeBySlot() {
 
     let freeHtml = '<h3>Available (100% Clear)</h3><div class="roster-grid">';
     let blockedHtml = '<h3>Unavailable (Has Conflicts)</h3><div class="roster-grid">';
-    let fCount = 0, bCount = 0;
 
     Object.values(organizedProfiles).forEach(p => {
-        let conflict = false, reason = "";
+        let conflict = false;
+        let reason = "";
+        
         for (let c of p.constraints) {
             if (c.day === slot.day) {
-                // If it is work/school, apply the 1.5-hour buffer. If it's a church duty, check exact overlap.
-                const buffer = c.isChurch ? 0 : 90;
+                const buffer = c.isChurch ? 0 : 90; // 1.5 hours travel buffer for school/work
                 const bStart = convertMin(c.time_in) - buffer;
                 const bEnd = convertMin(c.time_out) + buffer;
                 
                 if (slotStartMin < bEnd && slotEndMin > bStart) {
                     conflict = true;
-                    reason = c.isChurch 
-                        ? `Already assigned to ${c.type} during this specific slot (${c.slotName})`
-                        : `Occupied with ${c.type.toUpperCase()} (${convertTo12Hour(c.time_in)} - ${convertTo12Hour(c.time_out)})`;
+                    if (c.isChurch) {
+                        reason = `May nakalaang suguan sa ${c.type} sa slot na ito (${c.slotName})`;
+                    } else {
+                        // Special warning logic for morning service followed by work/school transit
+                        if (slotEndMin <= convertMin(c.time_in) && (convertMin(c.time_in) - slotEndMin) <= 90) {
+                            reason = `Masyadong gipit sa biyahe patungong ${c.type.toUpperCase()} (${convertTo12Hour(c.time_in)}). Halos 1 oras ang pagsamba + oras sa pagbibiyahe.`;
+                        } else {
+                            reason = `May pasok sa ${c.type.toUpperCase()} (${convertTo12Hour(c.time_in)} - ${convertTo12Hour(c.time_out)}) kasama ang allowance sa biyahe.`;
+                        }
+                    }
                     break;
                 }
             }
         }
         if (!conflict) {
-            fCount++;
             freeHtml += `<div class="person-card" style="border-top:3px solid var(--success);"><strong>${p.name}</strong><span class="status-badge avail">✅ Free</span></div>`;
         } else {
-            bCount++;
             blockedHtml += `<div class="person-card" style="border-top:3px solid var(--danger); opacity:0.8;"><strong>${p.name}</strong><span class="status-badge confl">❌ Blocked</span><span class="conflict-reason">${reason}</span></div>`;
         }
     });
@@ -466,7 +466,8 @@ function analyzeByMember() {
     
     let gridHtml = '<div class="roster-grid">';
     CHURCH_DUTY_ROSTER.forEach(slot => {
-        let conflict = false, reason = "";
+        let conflict = false;
+        let reason = "";
         const slotStartMin = convertMin(slot.start);
         const slotEndMin = convertMin(slot.end);
 
@@ -478,7 +479,16 @@ function analyzeByMember() {
                 
                 if (slotStartMin < bEnd && slotEndMin > bStart) {
                     conflict = true;
-                    reason = c.isChurch ? `Assigned to ${c.type}` : `${c.type.toUpperCase()} (${convertTo12Hour(c.time_in)} - ${convertTo12Hour(c.time_out)})`;
+                    if (c.isChurch) {
+                        reason = `Naka-assign sa ${c.type}`;
+                    } else {
+                        // Special logic breakdown for morning transit check
+                        if (slotEndMin <= convertMin(c.time_in) && (convertMin(c.time_in) - slotEndMin) <= 90) {
+                            reason = `Gipit sa biyahe papuntang ${c.type.toUpperCase()} (Pasok: ${convertTo12Hour(c.time_in)})`;
+                        } else {
+                            reason = `${c.type.toUpperCase()} (${convertTo12Hour(c.time_in)} - ${convertTo12Hour(c.time_out)})`;
+                        }
+                    }
                     break; 
                 }
             }
