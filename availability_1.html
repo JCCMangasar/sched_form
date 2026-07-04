@@ -37,6 +37,27 @@
 
         h1 { margin: 0; color: var(--primary); font-size: 26px; }
 
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        select {
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 15px;
+            min-width: 250px;
+            background: white;
+        }
+
         .nav-btn {
             display: inline-block;
             background-color: #64748b; 
@@ -50,130 +71,79 @@
         }
         .nav-btn:hover { opacity: 0.9; }
 
-        .controls {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 25px;
+        .analysis-container {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 25px;
+        }
+
+        .card {
             background: var(--card-bg);
+            border-radius: 8px;
             padding: 20px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            align-items: flex-end;
-            flex-wrap: wrap;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            min-width: 220px;
-        }
-
-        .form-group label {
-            font-size: 12px;
-            font-weight: 600;
-            color: #64748b;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .form-group select {
-            padding: 10px;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            font-size: 14px;
-            background-color: #f8fafc;
-            color: var(--primary);
-        }
-
-        .rules-banner {
-            background-color: #eff6ff;
-            border-left: 4px solid var(--accent);
-            padding: 12px 15px;
-            font-size: 13px;
-            color: #1e40af;
-            border-radius: 4px;
-            margin-bottom: 25px;
-            line-height: 1.5;
-        }
-
-        .results-container {
-            background: var(--card-bg);
-            border-radius: 8px;
-            padding: 25px;
             border: 1px solid var(--border);
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
         }
 
-        .section-title {
-            margin: 0 0 15px 0;
-            font-size: 16px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: #64748b;
+        h3 { margin-top: 0; color: var(--primary); border-bottom: 2px solid var(--border); padding-bottom: 8px; }
+
+        .busy-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
         }
 
-        .roster-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 15px;
-        }
-
-        .person-card {
-            padding: 15px;
-            border-radius: 6px;
-            border: 1px solid var(--border);
-            background: #f8fafc;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .person-card strong {
-            font-size: 16px;
-            color: var(--primary);
-        }
-
-        .status-badge {
-            font-size: 11px;
-            font-weight: bold;
-            padding: 2px 6px;
+        .busy-list li {
+            padding: 8px 12px;
+            background: #f1f5f9;
+            margin-bottom: 6px;
             border-radius: 4px;
-            width: fit-content;
-            text-transform: uppercase;
+            font-size: 14px;
+            line-height: 1.4;
         }
 
-        .status-badge.avail { background-color: #d1fae5; color: var(--success); }
-        .status-badge.confl { background-color: #fee2e2; color: var(--danger); }
-        .status-badge.partial { background-color: #fef3c7; color: #d97706; }
-
-        .conflict-reason {
-            font-size: 12px;
-            color: #64748b;
-            font-style: italic;
-            margin-top: 4px;
+        .grid-slots {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 12px;
         }
 
-        /* Styles specifically for Member Evaluation view */
         .slot-status-card {
             padding: 15px;
             border-radius: 6px;
             border: 1px solid var(--border);
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            gap: 6px;
         }
-        .status-available { background-color: #f0fdf4; border-left: 4px solid var(--success); }
-        .status-conflict { background-color: #fef2f2; border-left: 4px solid var(--danger); }
-        .badge-available { background-color: #d1fae5; color: var(--success); }
-        .badge-conflict { background-color: #fee2e2; color: var(--danger); }
-        .reason-text { font-size: 12px; color: #64748b; font-style: italic; }
 
-        .placeholder-text {
-            text-align: center;
-            padding: 60px 20px;
-            color: #94a3b8;
-            font-size: 15px;
+        .status-available {
+            background-color: #f0fdf4;
+            border-color: #bbf7d0;
+        }
+
+        .status-conflict {
+            background-color: #fef2f2;
+            border-color: #fecaca;
+        }
+
+        .badge-status {
+            font-size: 11px;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 4px;
+            display: inline-block;
+            text-transform: uppercase;
+            width: fit-content;
+        }
+
+        .badge-available { background: #d1fae5; color: var(--success); }
+        .badge-conflict { background: #fee2e2; color: var(--danger); }
+
+        .reason-text {
+            font-size: 12px;
+            color: #64748b;
+            font-style: italic;
         }
     </style>
 </head>
@@ -181,56 +151,32 @@
 
 <div class="wrapper">
     <div class="header-bar">
-        <h1>Predictive Group Availability Analyzer (V0.2)</h1>
-        <a href="availability.html" class="nav-btn">📋 View Sidebar Version</a>
+        <h1>🔍 Availability Analyzer (With Church Duty)</h1>
+        <a href="view.html" class="nav-btn">📋 View Table</a>
     </div>
 
     <div class="controls">
-        <div class="form-group">
-            <label for="analysisMode">Analysis Perspective</label>
-            <select id="analysisMode" onchange="switchMode()">
-                <option value="slot">Filter by Church Slot</option>
-                <option value="day">Filter by Whole Day (Mon-Sun)</option>
-                <option value="member">Analyze Individual Member</option>
-            </select>
-        </div>
-
-        <div id="slotModeControls" class="form-group">
-            <label for="churchSlotSelect">Target Church Duty Slot</label>
-            <select id="churchSlotSelect" onchange="runAnalysis()">
-                <option value="">-- Choose Time Slot --</option>
-            </select>
-        </div>
-
-        <div id="dayModeControls" class="form-group" style="display: none;">
-            <label for="daySelect">Select Day of Week</label>
-            <select id="daySelect" onchange="runAnalysis()">
-                <option value="">-- Choose Day --</option>
-                <option value="monday">Monday</option>
-                <option value="tuesday">Tuesday</option>
-                <option value="wednesday">Wednesday</option>
-                <option value="thursday">Thursday</option>
-                <option value="friday">Friday</option>
-                <option value="saturday">Saturday</option>
-                <option value="sunday">Sunday</option>
-            </select>
-        </div>
-
-        <div id="memberModeControls" class="form-group" style="display: none;">
-            <label for="memberSelect">Target Member Profile</label>
-            <select id="memberSelect" onchange="runAnalysis()">
-                <option value="">-- Choose Member --</option>
-            </select>
-        </div>
+        <label for="memberSelect" style="font-weight:600;">Select Member to Analyze:</label>
+        <select id="memberSelect" onchange="analyzeSelectedMember()">
+            <option value="">-- Loading Registered Names --</option>
+        </select>
+        <span style="font-size:13px; color:#64748b;">(Calculates 1.5-hr Worship/Cleaning window & 1.5-hr Travel Buffer for Work/School)</span>
     </div>
 
-    <div class="rules-banner">
-        ℹ️ <strong>System Logic Thresholds:</strong> Mismong Pagsamba + Paglilinis ay nakatakda sa <b>1 oras at 30 minuto</b>. Ang biyahe patungong trabaho o eskwela ay may mahigpit na allowance na <b>1 oras at 30 minuto</b> (90 mins buffer).
+    <div id="noSelectionMsg" style="text-align:center; padding:50px; color:#94a3b8; background:white; border-radius:8px; border:1px solid var(--border);">
+        Please select a member above to execute the predictive availability algorithms.
     </div>
 
-    <div class="results-container">
-        <div id="dynamicOutput">
-            <div class="placeholder-text">Please utilize the upper controls to execute data cross-referencing lookups.</div>
+    <div id="analysisDashboard" class="analysis-container" style="display:none;">
+        <div class="card">
+            <h3>Logged Base Schedule</h3>
+            <p style="font-size:13px; color:#64748b; margin-bottom:15px;">Fixed constraints provided by user:</p>
+            <ul id="baseBusyList" class="busy-list"></ul>
+        </div>
+
+        <div class="card">
+            <h3>Calculated Kagawaran Option Suitability</h3>
+            <div id="slotsGrid" class="grid-slots"></div>
         </div>
     </div>
 </div>
@@ -263,7 +209,7 @@ const CHURCH_DUTY_ROSTER = [
     { name: "Thu 5pm",  day: "thursday",  start: "17:00", end: "18:30" },
     { name: "Thu 8pm",  day: "thursday",  start: "20:00", end: "21:30" },
     { name: "Sat 6am",  day: "saturday",  start: "06:00", end: "07:30" },
-    { name: "Sat 10am (Laan)", day: "saturday", start: "10:00", end: "12:00" }, // standard special block
+    { name: "Sat 10am (Laan)", day: "saturday", start: "10:00", end: "12:00" }, // standard special 2hr block
     { name: "Sat 2pm",  day: "saturday",  start: "14:00", end: "15:30" },
     { name: "Sat 6pm",  day: "saturday",  start: "18:00", end: "19:30" },
     { name: "Sun 6am",  day: "sunday",    start: "06:00", end: "07:30" },
@@ -280,9 +226,9 @@ async function fetchRawData() {
         rawDatabaseRows = await response.json();
         
         processProfiles();
-        populateControlMenus();
+        populateDropdown();
     } catch {
-        document.getElementById('dynamicOutput').innerHTML = '<div class="placeholder-text" style="color:red;">Failed to hook network database pipeline streams.</div>';
+        alert("Failed to initialize database calculation pipes.");
     }
 }
 
@@ -297,9 +243,10 @@ function processProfiles() {
                 type: row.schedule_type,
                 day: row.day_or_slot.toLowerCase(),
                 time_in: row.time_in,
-                time_out: row.time_out
+                time_out: row.time_out,
+                isChurch: false
             });
-        } 
+        }
         else if (row.schedule_type.startsWith('church:')) {
             const deptName = row.schedule_type.replace('church: ', '');
             const matchedSlot = CHURCH_DUTY_ROSTER.find(s => s.name.toLowerCase() === row.day_or_slot.toLowerCase());
@@ -316,41 +263,22 @@ function processProfiles() {
     });
 }
 
-function populateControlMenus() {
-    const slotSelect = document.getElementById('churchSlotSelect');
-    let slotHtml = '<option value="">-- Choose Time Slot --</option>';
-    CHURCH_DUTY_ROSTER.forEach((slot, index) => {
-        slotHtml += `<option value="${index}">${slot.name}</option>`;
-    });
-    slotSelect.innerHTML = slotHtml;
-
-    const memberSelect = document.getElementById('memberSelect');
+function populateDropdown() {
+    const select = document.getElementById('memberSelect');
     const names = Object.keys(organizedProfiles).sort();
-    let memberHtml = '<option value="">-- Choose Member --</option>';
-    names.forEach(name => { memberHtml += `<option value="${name}">${name}</option>`; });
-    memberSelect.innerHTML = memberHtml;
-}
-
-function switchMode() {
-    const mode = document.getElementById('analysisMode').value;
-    document.getElementById('slotModeControls').style.display = mode === 'slot' ? 'flex' : 'none';
-    document.getElementById('dayModeControls').style.display = mode === 'day' ? 'flex' : 'none';
-    document.getElementById('memberModeControls').style.display = mode === 'member' ? 'flex' : 'none';
     
-    document.getElementById('churchSlotSelect').value = "";
-    document.getElementById('daySelect').value = "";
-    document.getElementById('memberSelect').value = "";
-    document.getElementById('dynamicOutput').innerHTML = '<div class="placeholder-text">Select parameters inside upper fields to trigger calculation matrix.</div>';
+    let html = '<option value="">-- Choose Member --</option>';
+    names.forEach(name => { html += `<option value="${name}">${name}</option>`; });
+    select.innerHTML = html;
 }
 
-function convertMin(t) { 
-    if(!t) return 0;
-    const [h,m] = t.split(':').map(Number); 
-    return h * 60 + m; 
+function timeToMinutes(timeStr) {
+    const [h, m] = timeStr.split(':').map(Number);
+    return h * 60 + m;
 }
 
 function convertTo12Hour(timeStr) {
-    if(!timeStr || timeStr === "00:00") return "";
+    if (!timeStr || timeStr === "00:00") return "";
     let [h, m] = timeStr.split(':');
     let hours = parseInt(h, 10);
     const ampm = hours >= 12 ? 'PM' : 'AM';
@@ -358,151 +286,66 @@ function convertTo12Hour(timeStr) {
     return `${hours}:${m} ${ampm}`;
 }
 
-function runAnalysis() {
-    const mode = document.getElementById('analysisMode').value;
-    if (mode === 'slot') analyzeBySlot();
-    else if (mode === 'day') analyzeByWholeDay();
-    else analyzeByMember();
-}
-
-// 1. PERSPECTIVE A: BY FIXED SLOT
-function analyzeBySlot() {
-    const slotIdx = document.getElementById('churchSlotSelect').value;
-    const container = document.getElementById('dynamicOutput');
-    if (!slotIdx) return;
-
-    const slot = CHURCH_DUTY_ROSTER[slotIdx];
-    const slotStartMin = convertMin(slot.start);
-    const slotEndMin = convertMin(slot.end);
-
-    let freeHtml = '<h3 class="section-title" style="color:var(--success);">Available Profiles (100% Clear)</h3><div class="roster-grid">';
-    let blockedHtml = '<h3 class="section-title" style="color:var(--danger); margin-top:25px;">Unavailable Profiles (Conflict Enforced)</h3><div class="roster-grid">';
-    let freeCount = 0, blockedCount = 0;
-
-    Object.values(organizedProfiles).forEach(p => {
-        let hasConflict = false;
-        let conflictReason = "";
-        
-        for (let constraint of p.constraints) {
-            if (constraint.day === slot.day) {
-                const travelBuffer = constraint.isChurch ? 0 : 90; // 1 hr 30 mins travel allowance
-                const busyStartWithBuffer = convertMin(constraint.time_in) - travelBuffer;
-                const busyEndWithBuffer = convertMin(constraint.time_out) + travelBuffer;
-                
-                if (slotStartMin < busyEndWithBuffer && slotEndMin > busyStartWithBuffer) {
-                    hasConflict = true;
-                    if (constraint.isChurch) {
-                        conflictReason = `May suguan na sa ${constraint.type} (${constraint.slotName}).`;
-                    } else {
-                        if (slotEndMin <= convertMin(constraint.time_in) && (convertMin(constraint.time_in) - slotEndMin) <= 90) {
-                            conflictReason = `Gipit sa biyahe patungong ${constraint.type.toUpperCase()} (${convertTo12Hour(constraint.time_in)}). Kailangan ng 1.5 hrs na Pagsamba/Pagliligpit + hiwalay na 1.5 hrs na transito.`;
-                        } else {
-                            conflictReason = `May pasok sa ${constraint.type.toUpperCase()} (${convertTo12Hour(constraint.time_in)} - ${convertTo12Hour(constraint.time_out)}) kasama ang biyahe.`;
-                        }
-                    }
-                    break;
-                }
-            }
-        }
-
-        if (!hasConflict) {
-            freeCount++;
-            freeHtml += `
-            <div class="person-card" style="border-top: 3px solid var(--success);">
-                <strong>${p.name}</strong>
-                <span class="status-badge avail">✅ Free</span>
-            </div>`;
-        } else {
-            blockedCount++;
-            blockedHtml += `
-            <div class="person-card" style="border-top: 3px solid var(--danger); opacity:0.85;">
-                <strong>${p.name}</strong>
-                <span class="status-badge confl">❌ Blocked</span>
-                <span class="conflict-reason">${conflictReason}</span>
-            </div>`;
-        }
-    });
-
-    freeHtml += freeCount === 0 ? '<div class="placeholder-text" style="padding:20px;">Walang available na miyembro sa slot na ito.</div>' : '';
-    blockedHtml += blockedCount === 0 ? '<div class="placeholder-text" style="padding:20px;">Walang blocked na miyembro sa slot na ito.</div>' : '';
-
-    container.innerHTML = freeHtml + '</div>' + blockedHtml + '</div>';
-}
-
-// 2. PERSPECTIVE B: BY DAY OF WEEK
-function analyzeByWholeDay() {
-    const targetDay = document.getElementById('daySelect').value;
-    const container = document.getElementById('dynamicOutput');
-    if (!targetDay) return;
-
-    let fullyFreeHtml = '<h3 class="section-title" style="color:var(--success);">Completely Free (All Day)</h3><div class="roster-grid">';
-    let busyHtml = '<h3 class="section-title" style="color:#d97706; margin-top:25px;">Partially Busy / Scheduled Log</h3><div class="roster-grid">';
-    let freeCount = 0, busyCount = 0;
-
-    Object.values(organizedProfiles).forEach(p => {
-        const dayConstraints = p.constraints.filter(c => c.day === targetDay);
-
-        if (dayConstraints.length === 0) {
-            freeCount++;
-            fullyFreeHtml += `
-            <div class="person-card" style="border-top: 3px solid var(--success); background:#f0fdf4;">
-                <strong>${p.name}</strong>
-                <span class="status-badge avail">✅ Available All Day</span>
-            </div>`;
-        } else {
-            busyCount++;
-            let scheduleLines = dayConstraints.map(c => {
-                const timeString = c.isChurch ? `[${c.slotName}]` : `(${convertTo12Hour(c.time_in)} - ${convertTo12Hour(c.time_out)})`;
-                return `• <strong>${c.type}:</strong> ${timeString}`;
-            }).join('<br>');
-
-            busyHtml += `
-            <div class="person-card" style="border-top: 3px solid #d97706;">
-                <strong>${p.name}</strong>
-                <span class="status-badge partial">⏳ Partially Busy</span>
-                <span class="conflict-reason" style="margin-top:6px; line-height:1.4; color:#334155;">
-                    ${scheduleLines}
-                </span>
-            </div>`;
-        }
-    });
-
-    fullyFreeHtml += freeCount === 0 ? '<p style="color:#94a3b8; font-style:italic; padding-left:5px;">Walang ganap na bakante.</p>' : '';
-    busyHtml += busyCount === 0 ? '<p style="color:#94a3b8; font-style:italic; padding-left:5px;">Walang entries sa araw na ito.</p>' : '';
-
-    container.innerHTML = fullyFreeHtml + '</div>' + busyHtml + '</div>';
-}
-
-// 3. PERSPECTIVE C: MEMBER SPECIFIC MATRIX
-function analyzeByMember() {
+function analyzeSelectedMember() {
     const selectedName = document.getElementById('memberSelect').value;
-    const container = document.getElementById('dynamicOutput');
-    if (!selectedName) return;
+    const dashboard = document.getElementById('analysisDashboard');
+    const fallback = document.getElementById('noSelectionMsg');
 
-    const p = organizedProfiles[selectedName];
-    let gridHtml = '<div class="roster-grid">';
+    if (!selectedName) {
+        dashboard.style.display = 'none';
+        fallback.style.display = 'block';
+        return;
+    }
+
+    fallback.style.display = 'none';
+    dashboard.style.display = 'grid';
+
+    const profile = organizedProfiles[selectedName];
+    
+    // 1. Render Left Column (Base Items Submitted Listing)
+    const baseBusyList = document.getElementById('baseBusyList');
+    if (profile.constraints.length === 0) {
+        baseBusyList.innerHTML = '<li><i>No active work, school, or church commitments recorded. Totally free!</i></li>';
+    } else {
+        baseBusyList.innerHTML = profile.constraints.map(c => {
+            if (c.isChurch) {
+                return `<li><strong style="color: var(--accent);">${c.type}</strong>:<br>Assigned Slot: ${c.slotName}</li>`;
+            } else {
+                return `<li><strong>${c.type.toUpperCase()}</strong> (${c.day.charAt(0).toUpperCase() + c.day.slice(1)}):<br>${convertTo12Hour(c.time_in)} - ${convertTo12Hour(c.time_out)}</li>`;
+            }
+        }).join('');
+    }
+
+    // 2. Compute Conflicts on Right Column
+    const grid = document.getElementById('slotsGrid');
+    let gridHtml = '';
 
     CHURCH_DUTY_ROSTER.forEach(slot => {
         let hasConflict = false;
         let conflictReason = "";
-        const slotStartMin = convertMin(slot.start);
-        const slotEndMin = convertMin(slot.end);
 
-        for (let constraint of p.constraints) {
+        const slotStartMin = timeToMinutes(slot.start);
+        const slotEndMin = timeToMinutes(slot.end);
+
+        for (let constraint of profile.constraints) {
             if (constraint.day === slot.day) {
-                const travelBuffer = constraint.isChurch ? 0 : 90;
-                const busyStartWithBuffer = convertMin(constraint.time_in) - travelBuffer;
-                const busyEndWithBuffer = convertMin(constraint.time_out) + travelBuffer;
-                
+                const busyStartReal = timeToMinutes(constraint.time_in);
+                const busyEndReal = timeToMinutes(constraint.time_out);
+
+                // 1 hr 30 mins travel allowance buffer applied to Work/School
+                const buffer = constraint.isChurch ? 0 : 90;
+                const busyStartWithBuffer = busyStartReal - buffer; 
+                const busyEndWithBuffer = busyEndReal + buffer;
+
                 if (slotStartMin < busyEndWithBuffer && slotEndMin > busyStartWithBuffer) {
                     hasConflict = true;
                     if (constraint.isChurch) {
-                        conflictReason = `Naka-assign na sa suguan sa ${constraint.type} (${constraint.slotName}).`;
+                        conflictReason = `May suguan na sa ${constraint.type} sa slot na ito (${constraint.slotName}).`;
                     } else {
-                        if (slotEndMin <= convertMin(constraint.time_in) && (convertMin(constraint.time_in) - slotEndMin) <= 90) {
-                            conflictReason = `Gipit sa biyahe: 1.5 hrs Pagsamba/Paglilinis + 1.5 hrs Transito patungong ${constraint.type.toUpperCase()}`;
+                        if (slotEndMin <= busyStartReal && (busyStartReal - slotEndMin) <= 90) {
+                            conflictReason = `Gipit sa biyahe: 1.5 hrs Pagsamba/Pagliligpit + kulang ang 1.5 hrs transito patungong ${constraint.type.toUpperCase()} (${convertTo12Hour(constraint.time_in)}).`;
                         } else {
-                            conflictReason = `May conflict sa ${constraint.type.toUpperCase()} (${convertTo12Hour(constraint.time_in)} - ${convertTo12Hour(constraint.time_out)}) + 1.5hr Biyahe.`;
+                            conflictReason = `May conflict sa ${constraint.type.toUpperCase()} (${convertTo12Hour(constraint.time_in)} - ${convertTo12Hour(constraint.time_out)}) kasama ang biyahe.`;
                         }
                     }
                     break; 
@@ -522,16 +365,14 @@ function analyzeByMember() {
             <div class="slot-status-card status-available">
                 <strong>${slot.name}</strong>
                 <span class="badge-status badge-available">✅ Available</span>
-                <span class="reason-text" style="color:#16a34a;">Ligtas italaga. May clearance sa biyahe at pag-aayos.</span>
+                <span class="reason-text" style="color:#16a34a;">Ligtas italaga. May sapat na oras para sa pagliligpit at biyahe.</span>
             </div>`;
         }
     });
 
-    container.innerHTML = `<h3 class="section-title">Suitability Evaluation for ${selectedName}</h3>` + gridHtml + '</div>';
+    grid.innerHTML = gridHtml;
 }
 </script>
 
 </body>
 </html>
-
-```
